@@ -68,6 +68,64 @@
           {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
         {%- endif -%}
 
+        {%- if product.tags contains 'custom-inputs' -%}
+          <custom-shirt-customizer class="customization-section" style="margin-bottom: 2rem; display: block;">
+            <div data-drawer style="display: none; padding: 1.5rem; margin-bottom: 1rem; background: rgba(var(--color-foreground), 0.03); border-radius: 8px; border: 1px solid rgba(var(--color-foreground), 0.1);">
+              <div class="field" style="margin-bottom: 1.5rem;">
+                <input class="field__input" type="text" id="CustomNameInput-{{ section.id }}" name="properties[Name]" placeholder="Enter Name" maxlength="15" data-name-input>
+                <label class="field__label" for="CustomNameInput-{{ section.id }}">Name</label>
+              </div>
+              <div class="field">
+                <input class="field__input" type="number" id="CustomNumberInput-{{ section.id }}" name="properties[Number]" placeholder="Enter Number" min="0" max="99" data-number-input>
+                <label class="field__label" for="CustomNumberInput-{{ section.id }}">Number</label>
+              </div>
+            </div>
+            <button type="button" class="button button--secondary button--full-width" data-toggle style="margin-bottom: 1rem;">
+              Customize
+            </button>
+          </custom-shirt-customizer>
+          <script>
+            if (!customElements.get('custom-shirt-customizer')) {
+              customElements.define('custom-shirt-customizer', class CustomShirtCustomizer extends HTMLElement {
+                constructor() {
+                  super();
+                  this.toggleBtn = this.querySelector('[data-toggle]');
+                  this.drawer = this.querySelector('[data-drawer]');
+                  this.nameInput = this.querySelector('[data-name-input]');
+                  this.numberInput = this.querySelector('[data-number-input]');
+                  
+                  if (this.toggleBtn) this.toggleBtn.addEventListener('click', this.toggleDrawer.bind(this));
+                  if (this.nameInput) this.nameInput.addEventListener('input', this.updatePreview.bind(this));
+                  if (this.numberInput) this.numberInput.addEventListener('input', this.updatePreview.bind(this));
+                }
+
+                toggleDrawer() {
+                  const isHidden = this.drawer.style.display === 'none';
+                  this.drawer.style.display = isHidden ? 'block' : 'none';
+                  
+                  const variantPicker = document.querySelector('variant-selects') || document.querySelector('variant-radios');
+                  if (variantPicker) {
+                    variantPicker.style.display = isHidden ? 'none' : '';
+                  }
+                  
+                  if (isHidden) {
+                    const backBtn = document.querySelector('.custom-media-controls button:last-child');
+                    if (backBtn) backBtn.click();
+                  }
+                }
+
+                updatePreview() {
+                  const previewName = document.getElementById('PreviewName');
+                  const previewNumber = document.getElementById('PreviewNumber');
+                  
+                  if (previewName) previewName.innerText = this.nameInput.value;
+                  if (previewNumber) previewNumber.innerText = this.numberInput.value;
+                }
+              });
+            }
+          </script>
+        {%- endif -%}
+
         <div class="product-form__buttons">
           {%- liquid
             assign check_against_inventory = true
