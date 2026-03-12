@@ -96,7 +96,7 @@
                       </div>
                     </div>
                   </div>
-                  <input type="hidden" name="properties[Flag]" data-flag-input>
+                  <input type="hidden" name="properties[Country Name]" data-flag-input>
                 </div>
               {%- endif -%}
             </div>
@@ -165,6 +165,20 @@
                   });
 
                   this.populateFlags();
+                  
+                  // Reset inputs on load to ensure they are empty unless browser preserved them differently
+                  // and then force-sync the variant to match the state.
+                  setTimeout(() => {
+                    if (this.nameInput) this.nameInput.value = '';
+                    if (this.numberInput) this.numberInput.value = '';
+                    if (this.flagInput) {
+                      this.flagInput.value = '';
+                      if (this.selectedName) this.selectedName.innerText = 'Select Country';
+                      this.updateFlagPreview(''); // Clear flag previews
+                    }
+                    this.updatePreview(); // Clear name/number previews
+                    this.updateVariantOption();
+                  }, 100);
                 }
 
                 populateFlags(search = "") {
@@ -185,6 +199,7 @@
                   this.selectedName.innerHTML = `<img src="https://flagcdn.com/w40/${country.code}.png" class="item-flag" alt="${country.name}"> ${country.name}`;
                   this.flagItems.classList.add('select-hide');
                   this.updateFlagPreview(country.code);
+                  this.updateVariantOption();
                 }
 
                 updateFlagPreview(code) {
@@ -232,6 +247,49 @@
                     const num = this.numberInput.value;
                     previewNumber.innerText = num;
                     previewNumber.setAttribute('data-char-count', num.length);
+                  }
+                  this.updateVariantOption();
+                }
+
+                updateVariantOption() {
+                  const hasCustomization = (this.nameInput && this.nameInput.value.trim() !== '') || 
+                                         (this.numberInput && this.numberInput.value.trim() !== '') || 
+                                         (this.flagInput && this.flagInput.value.trim() !== '');
+                  
+                  const newValue = hasCustomization ? 'YES' : 'NO';
+                  
+                  const container = document.querySelector('variant-selects') || document.querySelector('variant-radios');
+                  if (!container) return;
+
+                  let flagOptionSelect = container.querySelector('select[name="options[Flag]"]');
+                  let flagOptionRadios = container.querySelectorAll('input[name^="Flag"]');
+
+                  if (!flagOptionSelect && flagOptionRadios.length === 0) {
+                    const labels = container.querySelectorAll('.form__label, label, legend');
+                    for (const label of labels) {
+                      if (label.textContent.split(':')[0].trim().toLowerCase() === 'flag') {
+                        const parent = label.closest('.product-form__input');
+                        if (parent) {
+                          flagOptionSelect = parent.querySelector('select');
+                          flagOptionRadios = parent.querySelectorAll('input[type="radio"]');
+                          break;
+                        }
+                      }
+                    }
+                  }
+
+                  if (flagOptionSelect) {
+                    if (flagOptionSelect.value !== newValue) {
+                      flagOptionSelect.value = newValue;
+                      flagOptionSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                  } else if (flagOptionRadios.length > 0) {
+                    flagOptionRadios.forEach(radio => {
+                      if (radio.value === newValue && !radio.checked) {
+                        radio.checked = true;
+                        radio.dispatchEvent(new Event('change', { bubbles: true }));
+                      }
+                    });
                   }
                 }
               });
