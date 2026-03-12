@@ -261,36 +261,44 @@
                   const container = document.querySelector('variant-selects') || document.querySelector('variant-radios');
                   if (!container) return;
 
-                  let flagOptionSelect = container.querySelector('select[name="options[Flag]"]');
-                  let flagOptionRadios = container.querySelectorAll('input[name^="Flag"]');
+                  // List of possible option names to check
+                  const optionNames = ['Flag', 'NameAndNumber'];
+                  
+                  optionNames.forEach(optionName => {
+                    let optionSelect = container.querySelector(`select[name="options[${optionName}]"]`);
+                    let optionRadios = container.querySelectorAll(`input[name^="${optionName}"]`);
 
-                  if (!flagOptionSelect && flagOptionRadios.length === 0) {
-                    const labels = container.querySelectorAll('.form__label, label, legend');
-                    for (const label of labels) {
-                      if (label.textContent.split(':')[0].trim().toLowerCase() === 'flag') {
-                        const parent = label.closest('.product-form__input');
-                        if (parent) {
-                          flagOptionSelect = parent.querySelector('select');
-                          flagOptionRadios = parent.querySelectorAll('input[type="radio"]');
-                          break;
+                    // Fallback search by label
+                    if (!optionSelect && optionRadios.length === 0) {
+                      const labels = container.querySelectorAll('.form__label, label, legend');
+                      for (const label of labels) {
+                        const labelText = label.textContent.split(':')[0].trim().toLowerCase();
+                        if (labelText === optionName.toLowerCase()) {
+                          const parent = label.closest('.product-form__input');
+                          if (parent) {
+                            optionSelect = parent.querySelector('select');
+                            optionRadios = parent.querySelectorAll('input[type="radio"]');
+                            break;
+                          }
                         }
                       }
                     }
-                  }
 
-                  if (flagOptionSelect) {
-                    if (flagOptionSelect.value !== newValue) {
-                      flagOptionSelect.value = newValue;
-                      flagOptionSelect.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                  } else if (flagOptionRadios.length > 0) {
-                    flagOptionRadios.forEach(radio => {
-                      if (radio.value === newValue && !radio.checked) {
-                        radio.checked = true;
-                        radio.dispatchEvent(new Event('change', { bubbles: true }));
+                    // Update found elements
+                    if (optionSelect) {
+                      if (optionSelect.value !== newValue) {
+                        optionSelect.value = newValue;
+                        optionSelect.dispatchEvent(new Event('change', { bubbles: true }));
                       }
-                    });
-                  }
+                    } else if (optionRadios.length > 0) {
+                      optionRadios.forEach(radio => {
+                        if (radio.value === newValue && !radio.checked) {
+                          radio.checked = true;
+                          radio.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                      });
+                    }
+                  });
                 }
               });
             }

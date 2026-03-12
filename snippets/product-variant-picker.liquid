@@ -27,8 +27,16 @@
           endif
         endif
       -%}
+      {%- liquid
+        assign hide_option = false
+        if option.name == 'Flag' and product.tags contains 'custom-flags'
+          assign hide_option = true
+        elsif option.name == 'NameAndNumber' and product.tags contains 'custom-inputs'
+          assign hide_option = true
+        endif
+      -%}
       {%- if picker_type == 'swatch' -%}
-        <fieldset class="js product-form__input product-form__input--swatch" {% if option.name == 'Flag' and product.tags contains 'custom-flags' %}style="display: none;"{% endif %}>
+        <fieldset class="js product-form__input product-form__input--swatch" {% if hide_option %}style="display: none;"{% endif %}>
           <legend class="form__label">
             {{ option.name }}:
             <span data-selected-value>
@@ -43,7 +51,7 @@
           %}
         </fieldset>
       {%- elsif picker_type == 'button' -%}
-        <fieldset class="js product-form__input product-form__input--pill" {% if option.name == 'Flag' and product.tags contains 'custom-flags' %}style="display: none;"{% endif %}>
+        <fieldset class="js product-form__input product-form__input--pill" {% if hide_option %}style="display: none;"{% endif %}>
           <legend class="form__label">{{ option.name }}</legend>
           {% render 'product-variant-options',
             product: product,
@@ -53,7 +61,7 @@
           %}
         </fieldset>
       {%- else -%}
-        <div class="product-form__input product-form__input--dropdown" {% if option.name == 'Flag' and product.tags contains 'custom-flags' %}style="display: none;"{% endif %}>
+        <div class="product-form__input product-form__input--dropdown" {% if hide_option %}style="display: none;"{% endif %}>
           <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
             {{ option.name }}
           </label>
