@@ -16,22 +16,51 @@
   <div class="custom-media-images" style="width: 100%; max-width: 650px; margin: 0 auto; overflow: hidden;">
     <div id="media-slider-wrapper" style="display: flex; transition: transform 0.4s ease-in-out; width: {% if product.media[1] != blank %}200%{% else %}100%{% endif %};">
       {%- if product.media[0] != blank -%}
-        <div id="custom-media-front" style="width: {% if product.media[1] != blank %}50%{% else %}100%{% endif %}; flex-shrink: 0;">
-          <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
-            {{ product.media[0].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'eager', alt: product.media[0].alt }}
-          </div>
+        <div id="custom-media-front" style="width: {% if product.media[1] != blank %}50%{% else %}100%{% endif %}; flex-shrink: 0; position: relative;">
+        <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
+          {{ product.media[0].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'eager', alt: product.media[0].alt }}
         </div>
-      {%- endif -%}
-      {%- if product.media[1] != blank -%}
-        <div id="custom-media-back" style="width: 50%; flex-shrink: 0; position: relative;">
-          <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
-            {{ product.media[1].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'lazy', alt: product.media[1].alt }}
+        {%- if product.tags contains 'custom-flags' -%}
+          <div id="PreviewFlagFrontContainer" style="position: absolute; top: 47%; right: 40%; width: 12%; border: 1px solid rgba(0,0,0,0.1); border-radius: 2px; overflow: hidden; display: none;">
+            <img id="PreviewFlagFront" src="{{ 'transparent.png' | asset_url }}" width="100%" height="auto" style="display: block;">
           </div>
-          {%- if product.tags contains 'custom-inputs' -%}
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+    {%- if product.media[1] != blank -%}
+      <div id="custom-media-back" style="width: 50%; flex-shrink: 0; position: relative;">
+        <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
+          {{ product.media[1].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'lazy', alt: product.media[1].alt }}
+        </div>
+        {%- if product.tags contains 'custom-flags' -%}
+          <div id="PreviewFlagBackContainer" style="position: absolute; top: 36%; left: 50%; transform: translateX(-50%); width: 8%; border: 1px solid rgba(0,0,0,0.1); border-radius: 2px; overflow: hidden; display: none;">
+            <img id="PreviewFlagBack" src="{{ 'transparent.png' | asset_url }}" width="100%" height="auto" style="display: block;">
+          </div>
+        {%- endif -%}
+        {%- if product.tags contains 'custom-inputs' -%}
             <div style="position: absolute; top: 45%; left: 0; right: 0; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
               <span id="PreviewName" style="font-size: 3rem; font-weight: bold; font-family: 'Bebas Neue', Impact, sans-serif; text-transform: uppercase; color: #000; letter-spacing: 2px; line-height: 1; margin-bottom: 0.5rem; text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;"></span>
-              <span id="PreviewNumber" style="font-size: 8rem; font-weight: bold; font-family: 'Bebas Neue', Impact, sans-serif; color: #000; line-height: 1; text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff;"></span>
+              <span id="PreviewNumber" style="font-weight: bold; font-family: 'Bebas Neue', Impact, sans-serif; color: #000; line-height: 1; text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff;"></span>
             </div>
+            <style>
+              #PreviewNumber { font-size: 8rem; }
+              #PreviewNumber[data-char-count="2"] { font-size: 7.5rem; }
+              #PreviewNumber[data-char-count="3"] { font-size: 6rem; }
+              
+              /* Tablet Device (Portrait) */
+              @media screen and (min-width: 481px) and (max-width: 749px) {
+                #PreviewNumber { font-size: 6rem; }
+                #PreviewNumber[data-char-count="2"] { font-size: 5rem; }
+                #PreviewNumber[data-char-count="3"] { font-size: 4rem; }
+              }
+
+              /* Mobile Device (Small) */
+              @media screen and (max-width: 480px) {
+                #PreviewNumber { font-size: 5rem; }
+                #PreviewNumber[data-char-count="2"] { font-size: 3.5rem; }
+                #PreviewNumber[data-char-count="3"] { font-size: 2.8rem; }
+              }
+            </style>
           {%- endif -%}
         </div>
       {%- endif -%}

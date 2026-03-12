@@ -75,11 +75,37 @@
                 <input class="field__input" type="text" id="CustomNameInput-{{ section.id }}" name="properties[Name]" placeholder="Enter Name" maxlength="10" data-name-input>
                 <label class="field__label" for="CustomNameInput-{{ section.id }}">Name (Max 10)</label>
               </div>
-              <div class="field">
+              <div class="field" style="margin-bottom: 1.5rem;">
                 <input class="field__input" type="text" id="CustomNumberInput-{{ section.id }}" name="properties[Number]" placeholder="Enter Number" maxlength="3" data-number-input oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                 <label class="field__label" for="CustomNumberInput-{{ section.id }}">Number (Max 3)</label>
               </div>
+
+              {%- if product.tags contains 'custom-flags' -%}
+                <div class="field" style="position: relative; margin-bottom: 1.5rem;">
+                  <div id="FlagSelector-{{ section.id }}" class="custom-select" style="width: 100%;">
+                    <div class="select-selected" style="padding: 1rem; border: 1px solid rgba(var(--color-foreground), 0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: #fff;">
+                      <span data-selected-name>Select Country</span>
+                      <span style="font-size: 0.8em;">▼</span>
+                    </div>
+                    <div class="select-items select-hide" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 99; border: 1px solid rgba(var(--color-foreground), 0.2); border-top: none; max-height: 250px; overflow-y: auto; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 0 0 4px 4px;">
+                      <div style="padding: 0.5rem; position: sticky; top: 0; background: #fff; border-bottom: 1px solid #eee;">
+                        <input type="text" class="field__input" placeholder="Search country..." data-flag-search style="height: 3.5rem; padding: 0 1rem;">
+                      </div>
+                      <div data-flag-list>
+                        <!-- Options populated by JS -->
+                      </div>
+                    </div>
+                  </div>
+                  <input type="hidden" name="properties[Flag]" data-flag-input>
+                </div>
+              {%- endif -%}
             </div>
+            <style>
+              .select-items div.item { padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: background 0.2s; }
+              .select-items div.item:hover { background: rgba(var(--color-foreground), 0.05); }
+              .select-hide { display: none !important; }
+              .item-flag { width: 24px; height: auto; border-radius: 2px; }
+            </style>
             <button type="button" class="button button--secondary button--full-width" data-toggle style="margin-bottom: 1rem;">
               Customize
             </button>
@@ -94,20 +120,94 @@
                   this.nameInput = this.querySelector('[data-name-input]');
                   this.numberInput = this.querySelector('[data-number-input]');
                   
+                  this.flagSelected = this.querySelector('.select-selected');
+                  this.flagItems = this.querySelector('.select-items');
+                  this.flagSearch = this.querySelector('[data-flag-search]');
+                  this.flagList = this.querySelector('[data-flag-list]');
+                  this.flagInput = this.querySelector('[data-flag-input]');
+                  this.selectedName = this.querySelector('[data-selected-name]');
+
+                  this.countries = [
+                    { name: "Albania", code: "al" }, { name: "Argentina", code: "ar" }, { name: "Australia", code: "au" },
+                    { name: "Austria", code: "at" }, { name: "Belgium", code: "be" }, { name: "Brazil", code: "br" },
+                    { name: "Canada", code: "ca" }, { name: "Chile", code: "cl" }, { name: "China", code: "cn" },
+                    { name: "Colombia", code: "co" }, { name: "Croatia", code: "hr" }, { name: "Denmark", code: "dk" },
+                    { name: "Egypt", code: "eg" }, { name: "England", code: "gb-eng" }, { name: "France", code: "fr" },
+                    { name: "Germany", code: "de" }, { name: "Greece", code: "gr" }, { name: "India", code: "in" },
+                    { name: "Indonesia", code: "id" }, { name: "Ireland", code: "ie" }, { name: "Italy", code: "it" },
+                    { name: "Japan", code: "jp" }, { name: "Korea, South", code: "kr" }, { name: "Mexico", code: "mx" },
+                    { name: "Morocco", code: "ma" }, { name: "Netherlands", code: "nl" }, { name: "New Zealand", code: "nz" },
+                    { name: "Nigeria", code: "ng" }, { name: "Norway", code: "no" }, { name: "Pakistan", code: "pk" },
+                    { name: "Peru", code: "pe" }, { name: "Poland", code: "pl" }, { name: "Portugal", code: "pt" },
+                    { name: "Saudi Arabia", code: "sa" }, { name: "Scotland", code: "gb-sct" }, { name: "South Africa", code: "za" },
+                    { name: "Spain", code: "es" }, { name: "Sweden", code: "se" }, { name: "Switzerland", code: "ch" },
+                    { name: "Turkey", code: "tr" }, { name: "Ukraine", code: "ua" }, { name: "United Arab Emirates", code: "ae" },
+                    { name: "United Kingdom", code: "gb" }, { name: "USA", code: "us" }, { name: "Uruguay", code: "uy" }
+                  ];
+
                   if (this.toggleBtn) this.toggleBtn.addEventListener('click', this.toggleDrawer.bind(this));
                   if (this.nameInput) this.nameInput.addEventListener('input', this.updatePreview.bind(this));
                   if (this.numberInput) this.numberInput.addEventListener('input', this.updatePreview.bind(this));
+                  
+                  if (this.flagSelected) this.flagSelected.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.flagItems.classList.toggle('select-hide');
+                  });
+
+                  if (this.flagItems) this.flagItems.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                  });
+
+                  if (this.flagSearch) this.flagSearch.addEventListener('input', () => this.populateFlags(this.flagSearch.value));
+
+                  window.addEventListener('click', () => {
+                    if (this.flagItems) this.flagItems.classList.add('select-hide');
+                  });
+
+                  this.populateFlags();
+                }
+
+                populateFlags(search = "") {
+                  if (!this.flagList) return;
+                  this.flagList.innerHTML = "";
+                  const filtered = this.countries.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+                  filtered.forEach(country => {
+                    const div = document.createElement('div');
+                    div.className = "item";
+                    div.innerHTML = `<img src="https://flagcdn.com/w40/${country.code}.png" class="item-flag" alt="${country.name}"> ${country.name}`;
+                    div.addEventListener('click', () => this.selectFlag(country));
+                    this.flagList.appendChild(div);
+                  });
+                }
+
+                selectFlag(country) {
+                  this.flagInput.value = country.name;
+                  this.selectedName.innerHTML = `<img src="https://flagcdn.com/w40/${country.code}.png" class="item-flag" alt="${country.name}"> ${country.name}`;
+                  this.flagItems.classList.add('select-hide');
+                  this.updateFlagPreview(country.code);
+                }
+
+                updateFlagPreview(code) {
+                  const frontFlag = document.getElementById('PreviewFlagFront');
+                  const backFlag = document.getElementById('PreviewFlagBack');
+                  const frontContainer = document.getElementById('PreviewFlagFrontContainer');
+                  const backContainer = document.getElementById('PreviewFlagBackContainer');
+
+                  if (frontFlag && code) {
+                    frontFlag.src = `https://flagcdn.com/w80/${code}.png`;
+                    if (frontContainer) frontContainer.style.display = 'block';
+                  }
+                  if (backFlag && code) {
+                    backFlag.src = `https://flagcdn.com/w80/${code}.png`;
+                    if (backContainer) backContainer.style.display = 'block';
+                  }
                 }
 
                 toggleDrawer() {
                   const isHidden = this.drawer.style.display === 'none';
                   this.drawer.style.display = isHidden ? 'block' : 'none';
-                  
                   const variantPicker = document.querySelector('variant-selects') || document.querySelector('variant-radios');
-                  if (variantPicker) {
-                    variantPicker.style.display = isHidden ? 'none' : '';
-                  }
-                  
+                  if (variantPicker) variantPicker.style.display = isHidden ? 'none' : '';
                   if (isHidden) {
                     const backBtn = document.querySelector('.custom-media-controls button:last-child');
                     if (backBtn) backBtn.click();
@@ -117,12 +217,9 @@
                 updatePreview() {
                   const previewName = document.getElementById('PreviewName');
                   const previewNumber = document.getElementById('PreviewNumber');
-                  
                   if (previewName) {
                     const name = this.nameInput.value;
                     previewName.innerText = name;
-                    
-                    // Dynamic font size for name
                     if (name.length > 6) {
                       previewName.style.fontSize = '1.5rem';
                     } else if (name.length > 4) {
@@ -131,9 +228,10 @@
                       previewName.style.fontSize = '3rem';
                     }
                   }
-                  
                   if (previewNumber) {
-                    previewNumber.innerText = this.numberInput.value;
+                    const num = this.numberInput.value;
+                    previewNumber.innerText = num;
+                    previewNumber.setAttribute('data-char-count', num.length);
                   }
                 }
               });
