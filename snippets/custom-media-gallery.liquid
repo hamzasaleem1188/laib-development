@@ -5,34 +5,65 @@
 {% endcomment %}
 
 <div class="product__media-gallery custom-media-gallery{% if section.settings.enable_sticky_info %} product__column-sticky{% endif %}">
-  <div class="custom-media-images" style="width: 100%; max-width: 650px; margin: 0 auto; display: flex; justify-content: center;">
-    {%- if product.media[0] != blank -%}
-      <div id="custom-media-front" style="display: block; width: 100%;">
-        <div class="global-media-settings" style="width: 100%;">
-          {{ product.media[0].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: auto; max-height: 80vh; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'eager', alt: product.media[0].alt }}
-        </div>
-      </div>
-    {%- endif -%}
-    {%- if product.media[1] != blank -%}
-      <div id="custom-media-back" style="display: none; width: 100%; position: relative;">
-        <div class="global-media-settings" style="width: 100%;">
-          {{ product.media[1].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: auto; max-height: 80vh; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'lazy', alt: product.media[1].alt }}
-        </div>
-        {%- if product.tags contains 'custom-inputs' -%}
-          <div style="position: absolute; top: 45%; left: 0; right: 0; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
-            <span id="PreviewName" style="font-size: 3rem; font-weight: bold; font-family: 'Bebas Neue', Impact, sans-serif; text-transform: uppercase; color: #000; letter-spacing: 2px; line-height: 1; margin-bottom: 0.5rem; text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;"></span>
-            <span id="PreviewNumber" style="font-size: 8rem; font-weight: bold; font-family: 'Bebas Neue', Impact, sans-serif; color: #000; line-height: 1; text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff;"></span>
+  <style>
+    .custom-media-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+  </style>
+
+  <div class="custom-media-images" style="width: 100%; max-width: 650px; margin: 0 auto; overflow: hidden;">
+    <div id="media-slider-wrapper" style="display: flex; transition: transform 0.4s ease-in-out; width: {% if product.media[1] != blank %}200%{% else %}100%{% endif %};">
+      {%- if product.media[0] != blank -%}
+        <div id="custom-media-front" style="width: {% if product.media[1] != blank %}50%{% else %}100%{% endif %}; flex-shrink: 0;">
+          <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
+            {{ product.media[0].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'eager', alt: product.media[0].alt }}
           </div>
-        {%- endif -%}
-      </div>
-    {%- endif -%}
+        </div>
+      {%- endif -%}
+      {%- if product.media[1] != blank -%}
+        <div id="custom-media-back" style="width: 50%; flex-shrink: 0; position: relative;">
+          <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
+            {{ product.media[1].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'lazy', alt: product.media[1].alt }}
+          </div>
+          {%- if product.tags contains 'custom-inputs' -%}
+            <div style="position: absolute; top: 45%; left: 0; right: 0; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+              <span id="PreviewName" style="font-size: 3rem; font-weight: bold; font-family: 'Bebas Neue', Impact, sans-serif; text-transform: uppercase; color: #000; letter-spacing: 2px; line-height: 1; margin-bottom: 0.5rem; text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;"></span>
+              <span id="PreviewNumber" style="font-size: 8rem; font-weight: bold; font-family: 'Bebas Neue', Impact, sans-serif; color: #000; line-height: 1; text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff;"></span>
+            </div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
   </div>
+
   <div class="custom-media-controls" style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem;">
     {%- if product.media[0] != blank -%}
-      <button type="button" class="button button--secondary" style="min-width: 120px;" onclick="document.getElementById('custom-media-front').style.display='block'; if(document.getElementById('custom-media-back')) document.getElementById('custom-media-back').style.display='none';">Front</button>
+      <button id="btn-front" type="button" class="button button--secondary" style="min-width: 120px;" onclick="switchMedia('front')" disabled>Front</button>
     {%- endif -%}
     {%- if product.media[1] != blank -%}
-      <button type="button" class="button button--secondary" style="min-width: 120px;" onclick="if(document.getElementById('custom-media-front')) document.getElementById('custom-media-front').style.display='none'; document.getElementById('custom-media-back').style.display='block';">Back</button>
+      <button id="btn-back" type="button" class="button button--secondary" style="min-width: 120px;" onclick="switchMedia('back')">Back</button>
     {%- endif -%}
   </div>
+
+  <script>
+    function switchMedia(type) {
+      const wrapper = document.getElementById('media-slider-wrapper');
+      const btnFront = document.getElementById('btn-front');
+      const btnBack = document.getElementById('btn-back');
+
+      if (!wrapper) return;
+
+      if (type === 'front') {
+        wrapper.style.transform = 'translateX(0)';
+        if (btnFront) btnFront.disabled = true;
+        if (btnBack) btnBack.disabled = false;
+      } else {
+        wrapper.style.transform = 'translateX(-50%)';
+        if (btnFront) btnFront.disabled = false;
+        if (btnBack) btnBack.disabled = true;
+      }
+    }
+  </script>
 </div>
