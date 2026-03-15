@@ -16,13 +16,29 @@ if (!customElements.get("custom-shirt-customizer")) {
         this.numberCounter = this.querySelector("[data-number-counter]");
         this.numberCounter = this.querySelector("[data-number-counter]");
 
-        this.flagSelected = this.querySelector(".select-selected");
-        this.flagItems = this.querySelector(".select-items");
-        this.flagSearch = this.querySelector("[data-flag-search]");
-        this.flagList = this.querySelector("[data-flag-list]");
-        this.flagInput = this.querySelector("[data-flag-input]");
-        this.selectedName = this.querySelector("[data-selected-name]");
-        this.dropdownClearBtn = this.querySelector("[data-dropdown-clear]");
+        this.flagSelect = this.querySelector("[data-flag-select]");
+        if (this.flagSelect) {
+          this.flagSelected = this.flagSelect.querySelector(".select-selected");
+          this.flagItems = this.flagSelect.querySelector(".select-items");
+          this.flagSearch = this.flagSelect.querySelector("[data-flag-search]");
+          this.flagList = this.flagSelect.querySelector("[data-flag-list]");
+          this.flagInput = this.querySelector("[data-flag-input]");
+          this.selectedName = this.flagSelect.querySelector("[data-selected-name]");
+          this.dropdownClearBtn = this.flagSelect.querySelector("[data-dropdown-clear]");
+        }
+
+        // Logo Selector Elements
+        this.logoSelect = this.querySelector("[data-logo-select]");
+        if (this.logoSelect) {
+          this.logoSelected = this.logoSelect.querySelector(".select-selected");
+          this.logoItems = this.logoSelect.querySelector(".select-items");
+          this.logoSearch = this.logoSelect.querySelector("[data-logo-search]");
+          this.logoList = this.logoSelect.querySelector("[data-logo-list]");
+          this.logoInput = this.querySelector("[data-logo-input]");
+          this.logoClearBtn = this.logoSelect.querySelector(
+            "[data-logo-dropdown-clear]",
+          );
+        }
 
         this.priceLabel =
           this.querySelector('[id^="CustomPriceLabel-"]') ||
@@ -306,6 +322,50 @@ if (!customElements.get("custom-shirt-customizer")) {
             this.populateFlags(this.flagSearch.value),
           );
 
+        // Logo Selector Observers
+        if (this.logoSelected) {
+          this.logoSelected.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (this.logoItems) this.logoItems.classList.toggle("select-hide");
+          });
+        }
+
+        if (this.logoItems) {
+          this.logoItems.addEventListener("click", (e) => {
+            const item = e.target.closest(".item");
+            if (!item) return;
+
+            const val = item.getAttribute("data-value");
+            const url = item.getAttribute("data-logo-url");
+            const labelUrl = item.getAttribute("data-label-url");
+            const labelText = item.getAttribute("data-label-text");
+
+            if (this.logoInput) this.logoInput.value = val;
+            if (this.logoSelect) {
+              const selectedDisplay =
+                this.logoSelect.querySelector("[data-selected-name]");
+              if (selectedDisplay) selectedDisplay.innerText = val;
+            }
+            if (this.logoItems) this.logoItems.classList.add("select-hide");
+
+            this.updateLogoPreview(url, labelUrl, labelText);
+            this.updateVariantOption();
+
+            if (window.innerWidth < 1024) this.scrollToPreview();
+          });
+        }
+
+        if (this.logoSearch) {
+          this.logoSearch.addEventListener("input", (e) => {
+            const query = e.target.value.toLowerCase();
+            const items = this.logoList.querySelectorAll(".item");
+            items.forEach((item) => {
+              const text = item.textContent.toLowerCase();
+              item.style.display = text.includes(query) ? "" : "none";
+            });
+          });
+        }
+
         this.debouncedScroll = this.debounce(() => {
           if (window.innerWidth < 1024) {
             this.scrollToPreview();
@@ -335,8 +395,24 @@ if (!customElements.get("custom-shirt-customizer")) {
             this.selectFlag({ name: "", code: "" });
           });
 
+        if (this.logoClearBtn) {
+          this.logoClearBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (this.logoInput) this.logoInput.value = "";
+            if (this.logoSelect) {
+              const selectedDisplay =
+                this.logoSelect.querySelector("[data-selected-name]");
+              if (selectedDisplay) selectedDisplay.innerText = "Select Logo";
+            }
+            if (this.logoItems) this.logoItems.classList.add("select-hide");
+            this.updateLogoPreview("", "", "");
+            this.updateVariantOption();
+          });
+        }
+
         window.addEventListener("click", () => {
           if (this.flagItems) this.flagItems.classList.add("select-hide");
+          if (this.logoItems) this.logoItems.classList.add("select-hide");
         });
 
         this.populateFlags();
@@ -440,6 +516,46 @@ if (!customElements.get("custom-shirt-customizer")) {
         }
       }
 
+      updateLogoPreview(logoUrl, labelUrl, labelText) {
+        const frontFlag = document.getElementById("PreviewFlagFront");
+        const backFlag = document.getElementById("PreviewFlagBack");
+        const frontContainer = document.getElementById(
+          "PreviewFlagFrontContainer",
+        );
+        const backContainer = document.getElementById(
+          "PreviewFlagBackContainer",
+        );
+        const frontLogoLabel = document.getElementById("PreviewLogoLabel");
+        const frontLogoLabelContainer = document.getElementById(
+          "PreviewLogoLabelContainer",
+        );
+
+        // Update Flag/Logo Icons
+        if (frontFlag && logoUrl) {
+          frontFlag.src = logoUrl;
+          if (frontContainer) frontContainer.style.display = "block";
+        } else if (frontFlag && !this.flagInput?.value) {
+          if (frontContainer) frontContainer.style.display = "none";
+        }
+
+        if (backFlag && logoUrl) {
+          backFlag.src = logoUrl;
+          if (backContainer) backContainer.style.display = "block";
+        } else if (backFlag && !this.flagInput?.value) {
+          if (backContainer) backContainer.style.display = "none";
+        }
+
+        // Update Label Image
+        if (frontLogoLabel && labelUrl) {
+          frontLogoLabel.src = labelUrl;
+          if (frontLogoLabelContainer)
+            frontLogoLabelContainer.style.display = "block";
+        } else if (frontLogoLabel) {
+          if (frontLogoLabelContainer)
+            frontLogoLabelContainer.style.display = "none";
+        }
+      }
+
       toggleDrawer() {
         if (!this.drawer) return;
         const isHidden = this.drawer.style.display === "none";
@@ -469,6 +585,15 @@ if (!customElements.get("custom-shirt-customizer")) {
           if (this.selectedName)
             this.selectedName.innerText = "Select Nationality";
           this.updateFlagPreview("");
+        }
+        if (this.logoInput) {
+          this.logoInput.value = "";
+          if (this.logoSelect) {
+            const selectedDisplay =
+              this.logoSelect.querySelector("[data-selected-name]");
+            if (selectedDisplay) selectedDisplay.innerText = "Select Logo";
+          }
+          this.updateLogoPreview("", "", "");
         }
         this.updatePreview();
         this.updateVariantOption();
@@ -502,7 +627,8 @@ if (!customElements.get("custom-shirt-customizer")) {
         const hasCustomization =
           (this.nameInput && this.nameInput.value.trim() !== "") ||
           (this.numberInput && this.numberInput.value.trim() !== "") ||
-          (this.flagInput && this.flagInput.value.trim() !== "");
+          (this.flagInput && this.flagInput.value.trim() !== "") ||
+          (this.logoInput && this.logoInput.value.trim() !== "");
 
         const newValue = hasCustomization ? "YES" : "NO";
 

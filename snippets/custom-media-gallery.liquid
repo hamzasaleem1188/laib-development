@@ -55,11 +55,12 @@
         <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
           {{ product.media[0].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'eager', alt: product.media[0].alt }}
         </div>
-        {%- if product.tags contains 'custom-flags' -%}
-          <div id="PreviewFlagFrontContainer" style="position: absolute; top: 43%; right: 37%; width: 9%; border: 1px solid rgba(0,0,0,0.1); border-radius: 2px; overflow: hidden; display: none;">
-            <img id="PreviewFlagFront" src="{{ 'transparent.png' | asset_url }}" width="100%" height="auto" style="display: block;">
-          </div>
-        {%- endif -%}
+        <div id="PreviewFlagFrontContainer" style="position: absolute; top: 43%; right: 37%; width: 9%; aspect-ratio: 3 / 2; display: none; align-items: center; justify-content: center;">
+          <img id="PreviewFlagFront" src="{{ 'transparent.png' | asset_url }}" width="100" height="66" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;">
+        </div>
+        <div id="PreviewLogoLabelContainer" style="position: absolute; top: 55%; left: 50%; transform: translateX(-50%); width: 27%; aspect-ratio: 5 / 2; pointer-events: none; display: none; align-items: center; justify-content: center;">
+          <img id="PreviewLogoLabel" src="{{ 'transparent.png' | asset_url }}" width="200" height="80" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;">
+        </div>
       </div>
     {%- endif -%}
     {%- if product.media[1] != blank -%}
@@ -67,11 +68,9 @@
         <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
           {{ product.media[1].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'lazy', alt: product.media[1].alt }}
         </div>
-        {%- if product.tags contains 'custom-flags' -%}
-          <div id="PreviewFlagBackContainer" style="position: absolute; top: 36%; left: 50%; transform: translateX(-50%); width: 9%; border: 1px solid rgba(0,0,0,0.1); border-radius: 2px; overflow: hidden; display: none;">
-            <img id="PreviewFlagBack" src="{{ 'transparent.png' | asset_url }}" width="100%" height="auto" style="display: block;">
-          </div>
-        {%- endif -%}
+        <div id="PreviewFlagBackContainer" style="position: absolute; top: 35%; left: 50%; transform: translateX(-50%); width: 9%; aspect-ratio: 3 / 2; display: none; align-items: center; justify-content: center;">
+          <img id="PreviewFlagBack" src="{{ 'transparent.png' | asset_url }}" width="100" height="66" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;">
+        </div>
         {%- if product.tags contains 'custom-inputs' -%}
             <style>
               @font-face {

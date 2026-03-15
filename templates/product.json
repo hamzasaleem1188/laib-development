@@ -17,6 +17,10 @@
           "settings": { "picker_type": "dropdown", "swatch_shape": "circle" }
         },
         "quantity_selector": { "type": "quantity_selector", "settings": {} },
+        "custom_logo_selector": {
+          "type": "custom_logo_selector",
+          "settings": { "heading": "Custom Logo" }
+        },
         "buy_buttons": {
           "type": "buy_buttons",
           "settings": {
@@ -33,6 +37,7 @@
         "price",
         "variant_picker",
         "quantity_selector",
+        "custom_logo_selector",
         "buy_buttons",
         "description",
         "share"

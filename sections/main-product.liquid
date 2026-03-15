@@ -70,7 +70,7 @@
       .select-items div.item { padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: background 0.2s; }
       .select-items div.item:hover { background: rgba(var(--color-foreground), 0.05); }
       .select-hide { display: none !important; }
-      .item-flag { width: 24px; height: auto; border-radius: 2px; }
+      .item-flag { width: 24px; height: 16px; object-fit: contain; border-radius: 2px; }
       .custom-select .field__input::placeholder { opacity: 0.6; color: rgba(var(--color-foreground), 0.6); }
       .custom-select .field__input { -webkit-appearance: none; appearance: none; }
     </style>
@@ -273,7 +273,7 @@
                 {%- if product.tags contains 'custom-flags' -%}
                   <div class="product-form__input" style="margin-bottom: 2rem;">
                     <label class="form__label" style="display: block; margin-bottom: 0.5rem;">Nationality</label>
-                    <div id="FlagSelector-{{ section.id }}" class="custom-select">
+                    <div id="FlagSelector-{{ section.id }}" class="custom-select" data-flag-select>
                       <div class="select-selected">
                         <span data-selected-name>Select Nationality</span>
                         <span style="font-size: 0.8em;">▼</span>
@@ -524,6 +524,50 @@
 
               {%- when 'variant_picker' -%}
                 {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
+              {%- when 'custom_logo_selector' -%}
+                {%- if product.metafields.custom.logo_list != blank -%}
+                  {%- assign logos = product.metafields.custom.logo_list.value -%}
+                  <div class="product-form__input" style="margin-bottom: 2rem;">
+                    <label class="form__label" style="display: block; margin-bottom: 0.5rem;">{{ block.settings.heading | default: 'Custom Logo' }}</label>
+                    <div id="LogoSelector-{{ section.id }}" class="custom-select logo-select-component" data-logo-select>
+                      <div class="select-selected">
+                        <span data-selected-name>Select Logo</span>
+                        <span style="font-size: 0.8em;">▼</span>
+                      </div>
+                      <div class="select-items select-hide">
+                        <div style="padding: 0.5rem; position: sticky; top: 0; background: rgb(var(--color-background)); border-bottom: 1px solid rgba(var(--color-foreground), 0.1); z-index: 1;">
+                          <input type="text" class="field__input" placeholder="Search..." data-logo-search style="height: 3.5rem; padding: 0 1rem; width: 100%;">
+                          <div data-logo-dropdown-clear style="padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 1rem; color: rgba(var(--color-foreground), 0.6); font-size: 0.9em; border-top: 1px solid rgba(var(--color-foreground), 0.05); background: rgba(var(--color-foreground), 0.02); transition: all 0.2s;" onmouseover="this.style.background='rgba(var(--color-foreground), 0.05)'; this.style.color='rgba(var(--color-foreground), 0.8)'" onmouseout="this.style.background='rgba(var(--color-foreground), 0.02)'; this.style.color='rgba(var(--color-foreground), 0.6)'">
+                            <span style="width: 24px; display: flex; justify-content: center;">✕</span> Clear Selection
+                          </div>
+                        </div>
+                        <div data-logo-list>
+                          {%- for logo_item in logos -%}
+                            {%- if logo_item.active -%}
+                              <div class="item" 
+                                   data-value="{{ logo_item.label | escape }}" 
+                                   data-logo-url="{{ logo_item.logo_image }}"
+                                   data-label-url="{{ logo_item.label_image }}"
+                                   data-label-text="{{ logo_item.label | escape }}">
+                                {%- if logo_item.logo_image != blank -%}
+                                  <img src="{{ logo_item.logo_image }}" class="item-flag" alt="{{ logo_item.label }}" width="50" height="30">
+                                {%- endif -%}
+                                <span>{{ logo_item.label }}</span>
+                              </div>
+                            {%- endif -%}
+                          {%- endfor -%}
+                        </div>
+                      </div>
+                    </div>
+                    <input type="hidden" name="properties[Logo Label]" data-logo-input form="{{ product_form_id }}">
+                  </div>
+                {%- elsif request.design_mode -%}
+                  <div class="product-form__input" style="margin-bottom: 2rem;" {{ block.shopify_attributes }}>
+                    <p style="font-size: 1.2rem; opacity: 0.7; color: rgba(var(--color-foreground), 0.5); border: 1px dashed rgba(var(--color-foreground), 0.2); padding: 1rem; border-radius: 4px;">
+                      (Logos will appear here once added to the <code>custom.logo_list</code> metafield)
+                    </p>
+                  </div>
+                {%- endif -%}
               {%- when 'buy_buttons' -%}
                 {%- render 'buy-buttons',
                   block: block,
@@ -951,6 +995,19 @@
             }
           ],
           "default": "circle"
+        }
+      ]
+    },
+    {
+      "type": "custom_logo_selector",
+      "name": "Custom Logo Selector",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "heading",
+          "default": "Custom Logo",
+          "label": "Heading"
         }
       ]
     },
