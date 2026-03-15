@@ -698,7 +698,8 @@ if (!customElements.get("custom-shirt-customizer")) {
           const hasCustomization =
             (this.nameInput && this.nameInput.value.trim() !== "") ||
             (this.numberInput && this.numberInput.value.trim() !== "") ||
-            (this.flagInput && this.flagInput.value.trim() !== "");
+            (this.flagInput && this.flagInput.value.trim() !== "") ||
+            (this.logoInput && this.logoInput.value.trim() !== "");
 
           // Use a slight delay to ensure Dawn finished its DOM replacement
           setTimeout(() => this.updatePriceBreakdown(hasCustomization), 50);
