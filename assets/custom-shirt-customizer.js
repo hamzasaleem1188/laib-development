@@ -14,7 +14,7 @@ if (!customElements.get("custom-shirt-customizer")) {
         this.numberInput = this.querySelector("[data-number-input]");
         this.nameCounter = this.querySelector("[data-name-counter]");
         this.numberCounter = this.querySelector("[data-number-counter]");
-        this.clearBtn = this.querySelector("[data-clear-button]");
+        this.numberCounter = this.querySelector("[data-number-counter]");
 
         this.flagSelected = this.querySelector(".select-selected");
         this.flagItems = this.querySelector(".select-items");
