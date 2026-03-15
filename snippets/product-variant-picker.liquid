@@ -13,6 +13,7 @@
     id="variant-selects-{{ section.id }}"
     data-section="{{ section.id }}"
     {{ block.shopify_attributes }}
+    style="margin-top: 2rem; display: block;"
   >
     {%- for option in product.options_with_values -%}
       {%- liquid
@@ -27,8 +28,16 @@
           endif
         endif
       -%}
+      {%- liquid
+        assign hide_option = false
+        if option.name == 'Flag' and product.tags contains 'custom-flags'
+          assign hide_option = true
+        elsif option.name == 'NameAndNumber' and product.tags contains 'custom-inputs'
+          assign hide_option = true
+        endif
+      -%}
       {%- if picker_type == 'swatch' -%}
-        <fieldset class="js product-form__input product-form__input--swatch">
+        <fieldset class="js product-form__input product-form__input--swatch" {% if hide_option %}style="display: none;"{% endif %}>
           <legend class="form__label">
             {{ option.name }}:
             <span data-selected-value>
@@ -43,7 +52,7 @@
           %}
         </fieldset>
       {%- elsif picker_type == 'button' -%}
-        <fieldset class="js product-form__input product-form__input--pill">
+        <fieldset class="js product-form__input product-form__input--pill" {% if hide_option %}style="display: none;"{% endif %}>
           <legend class="form__label">{{ option.name }}</legend>
           {% render 'product-variant-options',
             product: product,
@@ -53,7 +62,7 @@
           %}
         </fieldset>
       {%- else -%}
-        <div class="product-form__input product-form__input--dropdown">
+        <div class="product-form__input product-form__input--dropdown" {% if hide_option %}style="display: none;"{% endif %}>
           <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
             {{ option.name }}
           </label>

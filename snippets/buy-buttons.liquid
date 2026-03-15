@@ -68,6 +68,31 @@
           {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
         {%- endif -%}
 
+        {%- if product.tags contains 'custom-inputs' -%}
+          <div data-drawer style="display: none; position: relative; padding: 1.5rem; margin-bottom: 1rem; background: rgba(var(--color-foreground), 0.03); border-radius: 8px; border: 1px solid rgba(var(--color-foreground), 0.1);">
+            <button type="button" data-close-drawer style="position: absolute; top: -12px; right: -12px; background: #fff; border: 1px solid rgba(var(--color-foreground), 0.1); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; color: rgba(var(--color-foreground), 0.7); box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10;" aria-label="Close Customization" onmouseover="this.style.background='#f4f4f4'" onmouseout="this.style.background='#fff'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <div class="field" style="margin-bottom: 0.2rem; margin-top: 0.5rem;">
+              <input class="field__input" type="text" id="CustomNameInput-{{ section.id }}" name="properties[Name]" placeholder="Enter Name" maxlength="10" data-name-input>
+              <label class="field__label" for="CustomNameInput-{{ section.id }}">Name (Max 10)</label>
+            </div>
+            <small class="field__counter" data-name-counter style="display: block; text-align: right; margin-bottom: 1rem; font-size: 1rem; opacity: 0.6;">0/10</small>
+            
+            <div class="field" style="margin-bottom: 0.2rem;">
+              <input class="field__input" type="text" id="CustomNumberInput-{{ section.id }}" name="properties[Number]" placeholder="Enter Number" maxlength="2" data-number-input oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+              <label class="field__label" for="CustomNumberInput-{{ section.id }}">Number (Max 2)</label>
+            </div>
+            <small class="field__counter" data-number-counter style="display: block; text-align: right; margin-bottom: 1rem; font-size: 1rem; opacity: 0.6;">0/2</small>
+          </div>
+          <button type="button" class="button button--secondary button--full-width" data-toggle style="margin-bottom: 1rem;">
+            Customize
+          </button>
+        {%- endif -%}
+
         <div class="product-form__buttons">
           {%- liquid
             assign check_against_inventory = true
