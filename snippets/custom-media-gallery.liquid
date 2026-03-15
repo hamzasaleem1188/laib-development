@@ -6,10 +6,45 @@
 
 <div class="product__media-gallery custom-media-gallery{% if section.settings.enable_sticky_info %} product__column-sticky{% endif %}">
   <style>
+    .custom-media-controls {
+      display: inline-flex;
+      background: rgba(var(--color-foreground), 0.04);
+      padding: 4px;
+      border-radius: 12px;
+      gap: 4px;
+      border: 1px solid rgba(var(--color-foreground), 0.08);
+      backdrop-filter: blur(8px);
+    }
+    .custom-media-controls button {
+      border: none;
+      background: transparent;
+      padding: 10px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1.3rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: rgba(var(--color-foreground), 0.6);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      min-width: 100px;
+    }
+    .custom-media-controls button:hover:not(:disabled) {
+      color: rgb(var(--color-foreground));
+      background: rgba(var(--color-foreground), 0.05);
+    }
     .custom-media-controls button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      pointer-events: none;
+      background: #fff;
+      color: #000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      cursor: default;
+    }
+    /* Dark mode adjustment if needed */
+    [data-scheme="dark"] .custom-media-controls button:disabled {
+      background: rgb(var(--color-foreground));
+      color: rgb(var(--color-background));
     }
   </style>
 
@@ -104,13 +139,15 @@
     </div>
   </div>
 
-  <div class="custom-media-controls" style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem;">
-    {%- if product.media[0] != blank -%}
-      <button id="btn-front" type="button" class="button button--secondary" style="min-width: 120px;" onclick="switchMedia('front')" disabled>Front</button>
-    {%- endif -%}
-    {%- if product.media[1] != blank -%}
-      <button id="btn-back" type="button" class="button button--secondary" style="min-width: 120px;" onclick="switchMedia('back')">Back</button>
-    {%- endif -%}
+  <div style="display: flex; justify-content: center; margin-top: 2rem;">
+    <div class="custom-media-controls">
+      {%- if product.media[0] != blank -%}
+        <button id="btn-front" type="button" onclick="switchMedia('front')" disabled>Front</button>
+      {%- endif -%}
+      {%- if product.media[1] != blank -%}
+        <button id="btn-back" type="button" onclick="switchMedia('back')">Back</button>
+      {%- endif -%}
+    </div>
   </div>
 
   <script>
