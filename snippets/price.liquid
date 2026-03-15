@@ -123,6 +123,9 @@
         </span>
       </small>
     </div>
+    <div id="CustomPriceLabel-{{ section_id | default: id | default: product.id }}" class="custom-price-breakdown product__tax caption rte" style="display: none;">
+      <!-- Breakdown populated by JS -->
+    </div>
     {%- if show_badges -%}
       <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
         {{ 'products.product.on_sale' | t }}

@@ -41,6 +41,38 @@
 
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+  {%- if product.tags contains 'custom-inputs' -%}
+    <script src="{{ 'custom-shirt-customizer.js' | asset_url }}" defer="defer"></script>
+    <script id="ProductJSON-{{ section.id }}" type="application/json">
+      {{ product | json }}
+    </script>
+    <style>
+      .custom-price-breakdown {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: rgba(var(--color-foreground), 0.7);
+        font-weight: bold;
+        font-size: 1.5rem;
+        display: block;
+      }
+      @media screen and (max-width: 749px) {
+        .custom-price-breakdown {
+          font-size: 1.2rem;
+        }
+      }
+      /* Prevent overlapping by ensuring price container has space for badges */
+      .price.price--show-badge {
+        margin-bottom: 2rem;
+      }
+      .custom-select { position: relative; width: 100%; }
+      .select-selected { padding: 1rem; border: 1px solid rgba(var(--color-foreground), 0.2); border-radius: var(--inputs-radius); cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: rgb(var(--color-background)); height: 4.5rem; }
+      .select-items { position: absolute; top: 100%; left: 0; right: 0; z-index: 99; border: 1px solid rgba(var(--color-foreground), 0.2); border-top: none; max-height: 250px; overflow-y: auto; background: rgb(var(--color-background)); box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 0 0 var(--inputs-radius) var(--inputs-radius); }
+      .select-items div.item { padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: background 0.2s; }
+      .select-items div.item:hover { background: rgba(var(--color-foreground), 0.05); }
+      .select-hide { display: none !important; }
+      .item-flag { width: 24px; height: auto; border-radius: 2px; }
+    </style>
+  {%- endif -%}
   {%- if product.quantity_price_breaks_configured? -%}
     <script src="{{ 'show-more.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'price-per-item.js' | asset_url }}" defer="defer"></script>
@@ -85,6 +117,9 @@
         >
           {%- assign product_form_id = 'product-form-' | append: section.id -%}
 
+          {%- if product.tags contains 'custom-inputs' -%}
+            <custom-shirt-customizer class="customization-section" style="display: block;">
+          {%- endif -%}
           {%- for block in section.blocks -%}
             {%- case block.type -%}
               {%- when '@app' -%}
@@ -111,7 +146,8 @@
                     product: product,
                     use_variant: true,
                     show_badges: true,
-                    price_class: 'price--large'
+                    price_class: 'price--large',
+                    section_id: section.id
                   -%}
                 </div>
                 {%- if product.quantity_price_breaks_configured? -%}
@@ -232,6 +268,26 @@
                   </details>
                 </div>
               {%- when 'quantity_selector' -%}
+                {%- if product.tags contains 'custom-flags' -%}
+                  <div class="product-form__input" style="margin-bottom: 2rem;">
+                    <label class="form__label" style="display: block; margin-bottom: 0.5rem;">Nationality</label>
+                    <div id="FlagSelector-{{ section.id }}" class="custom-select">
+                      <div class="select-selected">
+                        <span data-selected-name>Select Nationality</span>
+                        <span style="font-size: 0.8em;">▼</span>
+                      </div>
+                      <div class="select-items select-hide">
+                        <div style="padding: 0.5rem; position: sticky; top: 0; background: rgb(var(--color-background)); border-bottom: 1px solid rgba(var(--color-foreground), 0.1);">
+                          <input type="text" class="field__input" placeholder="Search nationality..." data-flag-search style="height: 3.5rem; padding: 0 1rem; width: 100%;">
+                        </div>
+                        <div data-flag-list>
+                          <!-- Options populated by JS -->
+                        </div>
+                      </div>
+                    </div>
+                    <input type="hidden" name="properties[Country Name]" data-flag-input form="{{ product_form_id }}">
+                  </div>
+                {%- endif -%}
                 <div
                   id="Quantity-Form-{{ section.id }}"
                   class="product-form__input product-form__quantity{% if settings.inputs_shadow_vertical_offset != 0 and settings.inputs_shadow_vertical_offset < 0 %} product-form__quantity-top{% endif %}"
@@ -658,6 +714,9 @@
                 {% render 'icon-with-text', block: block %}
             {%- endcase -%}
           {%- endfor -%}
+          {%- if product.tags contains 'custom-inputs' -%}
+            </custom-shirt-customizer>
+          {%- endif -%}
           <a href="{{ product.url }}" class="link product__view-details animate-arrow">
             {{ 'products.product.view_full_details' | t }}
             {% render 'icon-arrow' %}
