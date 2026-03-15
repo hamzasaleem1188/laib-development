@@ -21,7 +21,7 @@
           {{ product.media[0].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'eager', alt: product.media[0].alt }}
         </div>
         {%- if product.tags contains 'custom-flags' -%}
-          <div id="PreviewFlagFrontContainer" style="position: absolute; top: 47.5%; right: 43%; width: 9%; border: 1px solid rgba(0,0,0,0.1); border-radius: 2px; overflow: hidden; display: none;">
+          <div id="PreviewFlagFrontContainer" style="position: absolute; top: 43%; right: 37%; width: 9%; border: 1px solid rgba(0,0,0,0.1); border-radius: 2px; overflow: hidden; display: none;">
             <img id="PreviewFlagFront" src="{{ 'transparent.png' | asset_url }}" width="100%" height="auto" style="display: block;">
           </div>
         {%- endif -%}

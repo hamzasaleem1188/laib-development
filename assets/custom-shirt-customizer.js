@@ -14,6 +14,7 @@ if (!customElements.get("custom-shirt-customizer")) {
         this.numberInput = this.querySelector("[data-number-input]");
         this.nameCounter = this.querySelector("[data-name-counter]");
         this.numberCounter = this.querySelector("[data-number-counter]");
+        this.clearBtn = this.querySelector("[data-clear-button]");
 
         this.flagSelected = this.querySelector(".select-selected");
         this.flagItems = this.querySelector(".select-items");
@@ -21,6 +22,7 @@ if (!customElements.get("custom-shirt-customizer")) {
         this.flagList = this.querySelector("[data-flag-list]");
         this.flagInput = this.querySelector("[data-flag-input]");
         this.selectedName = this.querySelector("[data-selected-name]");
+        this.dropdownClearBtn = this.querySelector("[data-dropdown-clear]");
 
         this.priceLabel =
           this.querySelector('[id^="CustomPriceLabel-"]') ||
@@ -321,6 +323,18 @@ if (!customElements.get("custom-shirt-customizer")) {
             this.debouncedScroll();
           });
 
+        if (this.clearBtn)
+          this.clearBtn.addEventListener(
+            "click",
+            this.clearCustomization.bind(this),
+          );
+
+        if (this.dropdownClearBtn)
+          this.dropdownClearBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.selectFlag({ name: "", code: "" });
+          });
+
         window.addEventListener("click", () => {
           if (this.flagItems) this.flagItems.classList.add("select-hide");
         });
@@ -345,6 +359,7 @@ if (!customElements.get("custom-shirt-customizer")) {
       populateFlags(search = "") {
         if (!this.flagList) return;
         this.flagList.innerHTML = "";
+
         const filtered = this.countries.filter((c) =>
           c.name.toLowerCase().includes(search.toLowerCase()),
         );
@@ -359,8 +374,13 @@ if (!customElements.get("custom-shirt-customizer")) {
 
       selectFlag(country) {
         if (this.flagInput) this.flagInput.value = country.name;
-        if (this.selectedName)
-          this.selectedName.innerHTML = `<img src="https://flagcdn.com/w40/${country.code}.png" class="item-flag" alt="${country.name}"> ${country.name}`;
+        if (this.selectedName) {
+          if (country.code) {
+            this.selectedName.innerHTML = `<img src="https://flagcdn.com/w40/${country.code}.png" class="item-flag" alt="${country.name}"> ${country.name}`;
+          } else {
+            this.selectedName.innerText = "Select Nationality";
+          }
+        }
         if (this.flagItems) this.flagItems.classList.add("select-hide");
         this.updateFlagPreview(country.code);
         this.updateVariantOption();
@@ -424,6 +444,11 @@ if (!customElements.get("custom-shirt-customizer")) {
         if (!this.drawer) return;
         const isHidden = this.drawer.style.display === "none";
         this.drawer.style.display = isHidden ? "block" : "none";
+
+        if (this.toggleBtn) {
+          this.toggleBtn.innerText = isHidden ? "Done" : "Customize";
+        }
+
         const variantPicker =
           document.querySelector("variant-selects") ||
           document.querySelector("variant-radios");
@@ -434,6 +459,19 @@ if (!customElements.get("custom-shirt-customizer")) {
           );
           if (backBtn) backBtn.click();
         }
+      }
+
+      clearCustomization() {
+        if (this.nameInput) this.nameInput.value = "";
+        if (this.numberInput) this.numberInput.value = "";
+        if (this.flagInput) {
+          this.flagInput.value = "";
+          if (this.selectedName)
+            this.selectedName.innerText = "Select Nationality";
+          this.updateFlagPreview("");
+        }
+        this.updatePreview();
+        this.updateVariantOption();
       }
 
       updatePreview() {
