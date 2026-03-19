@@ -172,6 +172,7 @@ if (!customElements.get("custom-shirt-customizer")) {
 
         if (this.logoItems) {
           this.logoItems.addEventListener("click", (e) => {
+            e.stopPropagation();
             const item = e.target.closest(".item");
             if (!item) return;
 

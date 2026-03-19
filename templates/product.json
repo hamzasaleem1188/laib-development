@@ -36,8 +36,8 @@
         "title",
         "price",
         "variant_picker",
-        "quantity_selector",
         "custom_logo_selector",
+        "quantity_selector",
         "buy_buttons",
         "description",
         "share"
