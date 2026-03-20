@@ -44,6 +44,8 @@ if (!customElements.get("custom-shirt-customizer")) {
           );
         }
 
+        this.updateClearButtons();
+
         this.priceLabel =
           this.querySelector('[id^="CustomPriceLabel-"]') ||
           document.querySelector('[id^="CustomPriceLabel-"]');
@@ -149,7 +151,11 @@ if (!customElements.get("custom-shirt-customizer")) {
         if (this.flagSelected)
           this.flagSelected.addEventListener("click", (e) => {
             e.stopPropagation();
-            this.flagItems.classList.toggle("select-hide");
+            if (this.flagItems.classList.contains("select-hide")) {
+              this.flagItems.classList.remove("select-hide");
+            } else {
+              this.closeFlagDropdown();
+            }
           });
 
         if (this.flagItems)
@@ -166,7 +172,13 @@ if (!customElements.get("custom-shirt-customizer")) {
         if (this.logoSelected) {
           this.logoSelected.addEventListener("click", (e) => {
             e.stopPropagation();
-            if (this.logoItems) this.logoItems.classList.toggle("select-hide");
+            if (this.logoItems) {
+              if (this.logoItems.classList.contains("select-hide")) {
+                this.logoItems.classList.remove("select-hide");
+              } else {
+                this.closeLogoDropdown();
+              }
+            }
           });
         }
 
@@ -188,10 +200,11 @@ if (!customElements.get("custom-shirt-customizer")) {
               );
               if (selectedDisplay) selectedDisplay.innerText = val;
             }
-            if (this.logoItems) this.logoItems.classList.add("select-hide");
+            if (this.logoItems) this.closeLogoDropdown();
 
             this.updateLogoPreview(url, labelUrl, labelText);
             this.updateVariantOption();
+            this.updateClearButtons();
 
             if (window.innerWidth < 1024) this.scrollToPreview();
           });
@@ -226,20 +239,28 @@ if (!customElements.get("custom-shirt-customizer")) {
           });
 
         if (this.clearBtn)
-          this.clearBtn.addEventListener(
-            "click",
-            this.clearCustomization.bind(this),
-          );
+          this.clearBtn.addEventListener("click", () => {
+            this.clearCustomization();
+            this.updateClearButtons();
+          });
 
         if (this.dropdownClearBtn)
           this.dropdownClearBtn.addEventListener("click", (e) => {
             e.stopPropagation();
+            if (this.flagSearch) this.flagSearch.value = "";
+            this.populateFlags();
             this.selectFlag({ name: "", code: "" });
+            this.updateClearButtons();
           });
 
         if (this.logoClearBtn) {
           this.logoClearBtn.addEventListener("click", (e) => {
             e.stopPropagation();
+            if (this.logoSearch) this.logoSearch.value = "";
+            if (this.logoList) {
+              const items = this.logoList.querySelectorAll(".item");
+              items.forEach((item) => (item.style.display = ""));
+            }
             if (this.logoInput) this.logoInput.value = "";
             if (this.logoSelect) {
               const selectedDisplay = this.logoSelect.querySelector(
@@ -250,12 +271,13 @@ if (!customElements.get("custom-shirt-customizer")) {
             if (this.logoItems) this.logoItems.classList.add("select-hide");
             this.updateLogoPreview("", "", "");
             this.updateVariantOption();
+            this.updateClearButtons();
           });
         }
 
         window.addEventListener("click", () => {
-          if (this.flagItems) this.flagItems.classList.add("select-hide");
-          if (this.logoItems) this.logoItems.classList.add("select-hide");
+          this.closeFlagDropdown();
+          this.closeLogoDropdown();
         });
 
         this.populateFlags();
@@ -300,7 +322,8 @@ if (!customElements.get("custom-shirt-customizer")) {
             this.selectedName.innerText = "Select Nationality";
           }
         }
-        if (this.flagItems) this.flagItems.classList.add("select-hide");
+        this.closeFlagDropdown();
+        this.updateClearButtons();
         this.updateFlagPreview(country.code, country.name);
         this.updateVariantOption();
 
@@ -456,6 +479,7 @@ if (!customElements.get("custom-shirt-customizer")) {
         }
         this.updatePreview();
         this.updateVariantOption();
+        this.updateClearButtons();
       }
 
       updatePreview() {
@@ -654,6 +678,34 @@ if (!customElements.get("custom-shirt-customizer")) {
             fn.apply(this, args);
           }, delay);
         };
+      }
+
+      updateClearButtons() {
+        if (this.dropdownClearBtn) {
+          this.dropdownClearBtn.style.display =
+            this.flagInput && this.flagInput.value ? "flex" : "none";
+        }
+        if (this.logoClearBtn) {
+          this.logoClearBtn.style.display =
+            this.logoInput && this.logoInput.value ? "flex" : "none";
+        }
+      }
+
+      closeFlagDropdown() {
+        if (!this.flagItems) return;
+        this.flagItems.classList.add("select-hide");
+        if (this.flagSearch) this.flagSearch.value = "";
+        this.populateFlags();
+      }
+
+      closeLogoDropdown() {
+        if (!this.logoItems) return;
+        this.logoItems.classList.add("select-hide");
+        if (this.logoSearch) this.logoSearch.value = "";
+        if (this.logoList) {
+          const items = this.logoList.querySelectorAll(".item");
+          items.forEach((item) => (item.style.display = ""));
+        }
       }
     },
   );

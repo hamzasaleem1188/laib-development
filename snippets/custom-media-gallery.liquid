@@ -69,17 +69,26 @@
     /* Country Name: Mobile (under 480px) */
     @media screen and (max-width: 480px) {
       #PreviewCountryName[data-char-count="1"], #PreviewCountryName[data-char-count="2"], #PreviewCountryName[data-char-count="3"], #PreviewCountryName[data-char-count="4"], #PreviewCountryName[data-char-count="5"] { font-size: 1.75rem; }
-      #PreviewCountryName[data-char-count="6"], #PreviewCountryName[data-char-count="7"], #PreviewCountryName[data-char-count="8"], #PreviewCountryName[data-char-count="9"] { font-size: 1.55rem; }
-      #PreviewCountryName[data-char-count="10"], #PreviewCountryName[data-char-count="11"], #PreviewCountryName[data-char-count="12"], #PreviewCountryName[data-char-count="13"] { font-size: 1.4rem; }
-      #PreviewCountryName[data-char-count="14"], #PreviewCountryName[data-char-count="15"], #PreviewCountryName[data-char-count="16"], #PreviewCountryName[data-char-count="17"] { font-size: 1.2rem; }
+      #PreviewCountryName[data-char-count="6"], #PreviewCountryName[data-char-count="7"], #PreviewCountryName[data-char-count="8"], #PreviewCountryName[data-char-count="9"] { font-size: 2.1rem; }
+      #PreviewCountryName[data-char-count="10"], #PreviewCountryName[data-char-count="11"], #PreviewCountryName[data-char-count="12"], #PreviewCountryName[data-char-count="13"] { font-size: 1.7rem; }
+      #PreviewCountryName[data-char-count="14"], #PreviewCountryName[data-char-count="15"], #PreviewCountryName[data-char-count="16"], #PreviewCountryName[data-char-count="17"] { font-size: 1.3rem; }
       #PreviewCountryName[data-char-count="18"], #PreviewCountryName[data-char-count="19"], #PreviewCountryName[data-char-count="20"], #PreviewCountryName[data-char-count="21"] { font-size: 1.05rem; }
       #PreviewCountryName[data-char-count="22"], #PreviewCountryName[data-char-count="23"], #PreviewCountryName[data-char-count="24"], #PreviewCountryName[data-char-count="25"] { font-size: 0.9rem; }
+    }
+    
+    #PreviewFlagFrontContainer, #PreviewFlagBackContainer {
+      width: 11%;
+      aspect-ratio: 3 / 2;
     }
     
     #PreviewFlagFrontContainer {
       top: 20%;
     }
+
     @media screen and (max-width: 480px) {
+      #PreviewFlagFrontContainer, #PreviewFlagBackContainer {
+        width: 12%;
+      }
       #PreviewFlagFrontContainer {
         top: 7rem;
       }
@@ -87,13 +96,13 @@
     
     /* Logo Label: Unified Scaling */
     #PreviewLogoLabelContainer {
-      width: 32% !important;
-      height: 7% !important;
+      width: 33% !important;
+      height: 8% !important;
     }
     @media screen and (max-width: 768px) {
        #PreviewLogoLabelContainer {
          width: 35% !important;
-         height: 8% !important;
+         height: 11% !important;
        }
     }
   </style>
@@ -105,13 +114,13 @@
         <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
           {{ product.media[0].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'eager', alt: product.media[0].alt }}
         </div>
-        <div id="PreviewFlagFrontContainer" style="position: absolute; right: 30%; width: 9%; aspect-ratio: 3 / 2; display: none; align-items: center; justify-content: center;">
+        <div id="PreviewFlagFrontContainer" style="position: absolute; right: 31%; display: none; align-items: center; justify-content: center;">
           <img id="PreviewFlagFront" src="{{ 'transparent.png' | asset_url }}" width="100" height="66" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;">
         </div>
-        <div id="PreviewLogoLabelContainer" style="position: absolute; top: 34%; left: 52%; transform: translateX(-50%); pointer-events: none; display: none; align-items: center; justify-content: center;">
+        <div id="PreviewLogoLabelContainer" style="position: absolute; top: 37%; left: 52%; transform: translateX(-50%); pointer-events: none; display: none; align-items: center; justify-content: center;">
           <img id="PreviewLogoLabel" src="{{ 'transparent.png' | asset_url }}" width="200" height="80" style="max-width: 100%; max-height: 60%; object-fit: contain; display: block;">
         </div>
-        <div id="PreviewCountryNameContainer" style="position: absolute; top: 33%; left: 18%; right: 18%; pointer-events: none; display: none; text-align: center;">
+        <div id="PreviewCountryNameContainer" style="position: absolute; top: 33%; left: 19%; right: 18%; pointer-events: none; display: none; text-align: center;">
           <span id="PreviewCountryName" style="font-weight: 900; font-family: 'Cormorant Garamond', serif; text-transform: uppercase; color: #000000; white-space: nowrap;"></span>
         </div>
       </div>
@@ -121,51 +130,51 @@
         <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
           {{ product.media[1].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'lazy', alt: product.media[1].alt }}
         </div>
-        <div id="PreviewFlagBackContainer" style="position: absolute; top: 9%; left: 50%; transform: translateX(-50%); width: 11%; aspect-ratio: 3 / 2; display: none; align-items: center; justify-content: center;">
+        <div id="PreviewFlagBackContainer" style="position: absolute; top: 9%; left: 50%; transform: translateX(-50%); display: none; align-items: center; justify-content: center;">
           <img id="PreviewFlagBack" src="{{ 'transparent.png' | asset_url }}" width="100" height="66" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;">
         </div>
         {%- if product.tags contains 'custom-inputs' -%}
 
             <div style="position: absolute; top: 25%; left: 0; right: 0; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
-              <span id="PreviewName" style="font-weight: bold; font-family: 'Cormorant Garamond', serif; text-transform: uppercase; color: #000000; letter-spacing: 0.5px; line-height: 1; margin-bottom: 0.5rem;"></span>
+              <span id="PreviewName" style="font-weight: bold; font-family: 'Cormorant Garamond', serif; text-transform: uppercase; color: #000000; letter-spacing: 0.5px; line-height: 1; margin-bottom: 1rem;"></span>
               <span id="PreviewNumber" style="font-weight: bold; font-family: 'Cormorant Garamond', serif; color: #000000; line-height: 1;"></span>
             </div>
             <style>
               /* PC / Desktop Device */
               @media screen and (min-width: 1025px) {
                 #PreviewName { font-size: 4.5rem; }
-                #PreviewName[data-char-count="5"], #PreviewName[data-char-count="6"] { font-size: 4rem; }
-                #PreviewName[data-char-count="7"], #PreviewName[data-char-count="8"] { font-size: 2.9rem; }
-                #PreviewName[data-char-count="9"], #PreviewName[data-char-count="10"] { font-size: 2.6rem; }
+                #PreviewName[data-char-count="5"], #PreviewName[data-char-count="6"] { font-size: 5rem; }
+                #PreviewName[data-char-count="7"], #PreviewName[data-char-count="8"] { font-size: 4.5rem; }
+                #PreviewName[data-char-count="9"], #PreviewName[data-char-count="10"] { font-size: 4rem; }
 
-                #PreviewNumber { font-size: 16rem; }
-                #PreviewNumber[data-char-count="2"] { font-size: 14rem; }
+                #PreviewNumber { font-size: 18rem; }
+                #PreviewNumber[data-char-count="2"] { font-size: 17rem; }
               }
               
               /* Tablet Device (Portrait) */
               @media screen and (min-width: 481px) and (max-width: 1024px) {
-                #PreviewName { font-size: 3.5rem; }
+                #PreviewName { font-size: 3.3rem; }
                 #PreviewName[data-char-count="5"] { font-size: 3rem; }
-                #PreviewName[data-char-count="6"] { font-size: 2.5rem; }
-                #PreviewName[data-char-count="7"] { font-size: 2.2rem; }
-                #PreviewName[data-char-count="8"] { font-size: 2.0rem; }
-                #PreviewName[data-char-count="9"], #PreviewName[data-char-count="10"] { font-size: 1.5rem; }
+                #PreviewName[data-char-count="6"] { font-size: 3rem; }
+                #PreviewName[data-char-count="7"] { font-size: 2.8rem; }
+                #PreviewName[data-char-count="8"] { font-size: 2.5rem; }
+                #PreviewName[data-char-count="9"], #PreviewName[data-char-count="10"] { font-size: 2.2rem; }
 
-                #PreviewNumber { font-size: 9rem; }
-                #PreviewNumber[data-char-count="2"] { font-size: 8rem; }
+                #PreviewNumber { font-size: 11rem; }
+                #PreviewNumber[data-char-count="2"] { font-size: 10rem; }
               }
 
               /* Mobile Device (Small) */
               @media screen and (max-width: 480px) {
-                #PreviewNumber { font-size: 9rem; }
-                #PreviewNumber[data-char-count="2"] { font-size: 8rem; }
+                #PreviewNumber { font-size: 10rem; }
+                #PreviewNumber[data-char-count="2"] { font-size: 9rem; }
 
                 #PreviewName { font-size: 3.5rem; }
-                #PreviewName[data-char-count="4"] { font-size: 2.8rem; }
-                #PreviewName[data-char-count="5"] { font-size: 2.5rem; }
-                #PreviewName[data-char-count="6"] { font-size: 2.3rem; }
-                #PreviewName[data-char-count="7"], #PreviewName[data-char-count="8"] { font-size: 1.8rem; }
-                #PreviewName[data-char-count="9"], #PreviewName[data-char-count="10"] { font-size: 1.5rem; }
+                #PreviewName[data-char-count="4"] { font-size: 3.5rem; }
+                #PreviewName[data-char-count="5"] { font-size: 3.2rem; }
+                #PreviewName[data-char-count="6"] { font-size: 3rem; }
+                #PreviewName[data-char-count="7"], #PreviewName[data-char-count="8"] { font-size: 2.7rem; }
+                #PreviewName[data-char-count="9"], #PreviewName[data-char-count="10"] { font-size: 2.3rem; }
               }
             </style>
           {%- endif -%}
