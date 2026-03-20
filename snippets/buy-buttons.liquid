@@ -80,13 +80,19 @@
               <input class="field__input" type="text" id="CustomNameInput-{{ section.id }}" name="properties[Name]" placeholder="Enter Name" maxlength="10" data-name-input>
               <label class="field__label" for="CustomNameInput-{{ section.id }}">Name (Max 10)</label>
             </div>
-            <small class="field__counter" data-name-counter style="display: block; text-align: right; margin-bottom: 1rem; font-size: 1rem; opacity: 0.6;">0/10</small>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <div class="customizer-error" data-error-name style="display: none; color: #EB001B; font-size: 1.2rem; margin: 0;">Please enter a name</div>
+              <small class="field__counter" data-name-counter style="margin-left: auto; font-size: 1rem; opacity: 0.6;">0/10</small>
+            </div>
             
             <div class="field" style="margin-bottom: 0.2rem;">
               <input class="field__input" type="text" id="CustomNumberInput-{{ section.id }}" name="properties[Number]" placeholder="Enter Number" maxlength="2" data-number-input oninput="this.value = this.value.replace(/[^0-9]/g, '');">
               <label class="field__label" for="CustomNumberInput-{{ section.id }}">Number (Max 2)</label>
             </div>
-            <small class="field__counter" data-number-counter style="display: block; text-align: right; margin-bottom: 1rem; font-size: 1rem; opacity: 0.6;">0/2</small>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <div class="customizer-error" data-error-number style="display: none; color: #EB001B; font-size: 1.2rem; margin: 0;">Please enter a number</div>
+              <small class="field__counter" data-number-counter style="margin-left: auto; font-size: 1rem; opacity: 0.6;">0/2</small>
+            </div>
           </div>
           <button type="button" class="button button--secondary button--full-width" data-toggle style="margin-bottom: 1rem;">
             Customize

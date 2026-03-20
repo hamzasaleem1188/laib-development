@@ -14,7 +14,12 @@ if (!customElements.get("custom-shirt-customizer")) {
         this.numberInput = this.querySelector("[data-number-input]");
         this.nameCounter = this.querySelector("[data-name-counter]");
         this.numberCounter = this.querySelector("[data-number-counter]");
-        this.numberCounter = this.querySelector("[data-number-counter]");
+
+        // Validation Error Elements
+        this.errorNationality = this.querySelector("[data-error-nationality]");
+        this.errorLogo = this.querySelector("[data-error-logo]");
+        this.errorName = this.querySelector("[data-error-name]");
+        this.errorNumber = this.querySelector("[data-error-number]");
 
         this.flagSelect = this.querySelector("[data-flag-select]");
         if (this.flagSelect) {
@@ -55,6 +60,44 @@ if (!customElements.get("custom-shirt-customizer")) {
         this.productData = jsonScript
           ? JSON.parse(jsonScript.textContent)
           : null;
+
+        this.form = this.querySelector('form[data-type="add-to-cart-form"]');
+        this.submitBtn = this.form?.querySelector('[type="submit"]');
+        this.validationActive = false;
+
+        if (this.submitBtn) {
+          this.submitBtn.addEventListener(
+            "click",
+            (e) => {
+              this.validationActive = true;
+              if (!this.validateCustomization()) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+              }
+            },
+            { capture: true },
+          );
+        }
+
+        // Real-time error clearing/showing
+        if (this.nameInput) {
+          this.nameInput.addEventListener("input", () => {
+            if (this.validationActive) {
+              this.validateCustomization();
+            } else if (this.nameInput.value.trim() !== "" && this.errorName) {
+              this.errorName.style.display = "none";
+            }
+          });
+        }
+        if (this.numberInput) {
+          this.numberInput.addEventListener("input", () => {
+            if (this.validationActive) {
+              this.validateCustomization();
+            } else if (this.numberInput.value.trim() !== "" && this.errorNumber) {
+              this.errorNumber.style.display = "none";
+            }
+          });
+        }
 
         this.countries = [
           { name: "Afghanistan", code: "af" },
@@ -205,6 +248,11 @@ if (!customElements.get("custom-shirt-customizer")) {
             this.updateLogoPreview(url, labelUrl, labelText);
             this.updateVariantOption();
             this.updateClearButtons();
+            if (this.validationActive) {
+              this.validateCustomization();
+            } else if (this.errorLogo) {
+              this.errorLogo.style.display = "none";
+            }
 
             if (window.innerWidth < 1024) this.scrollToPreview();
           });
@@ -324,6 +372,11 @@ if (!customElements.get("custom-shirt-customizer")) {
         }
         this.closeFlagDropdown();
         this.updateClearButtons();
+        if (this.validationActive) {
+          this.validateCustomization();
+        } else if (this.errorNationality) {
+          this.errorNationality.style.display = "none";
+        }
         this.updateFlagPreview(country.code, country.name);
         this.updateVariantOption();
 
@@ -670,13 +723,70 @@ if (!customElements.get("custom-shirt-customizer")) {
         }
       }
 
-      debounce(fn, delay) {
-        let timeoutId;
+      // handleFormSubmit is no longer used, replaced by click listener on button
+
+      validateCustomization() {
+        // Reset errors
+        if (this.errorNationality) this.errorNationality.style.display = "none";
+        if (this.errorLogo) this.errorLogo.style.display = "none";
+        if (this.errorName) this.errorName.style.display = "none";
+        if (this.errorNumber) this.errorNumber.style.display = "none";
+
+        const fields = [];
+        if (this.flagInput)
+          fields.push({ input: this.flagInput, error: this.errorNationality });
+        if (this.logoInput)
+          fields.push({ input: this.logoInput, error: this.errorLogo });
+        if (this.nameInput)
+          fields.push({ input: this.nameInput, error: this.errorName });
+        if (this.numberInput)
+          fields.push({ input: this.numberInput, error: this.errorNumber });
+
+        const filledFields = fields.filter((f) => f.input.value.trim() !== "");
+
+        if (filledFields.length > 0 && filledFields.length < fields.length) {
+          // Show errors for empty fields
+          fields.forEach((f) => {
+            if (f.input.value.trim() === "" && f.error) {
+              f.error.style.display = "block";
+            }
+          });
+
+          // Open drawer if name/number errors are present and drawer is closed
+          if (this.drawer && this.drawer.style.display === "none") {
+            const hasDrawerError = fields.some(
+              (f) =>
+                f.input.value.trim() === "" &&
+                (f.input === this.nameInput || f.input === this.numberInput),
+            );
+            if (hasDrawerError) {
+              this.drawer.style.display = "block";
+              if (this.toggleBtn) this.toggleBtn.style.display = "none";
+            }
+          }
+
+          // Scroll to the first error
+          const firstError = fields.find(
+            (f) => f.input.value.trim() === "" && f.error,
+          );
+          if (firstError && firstError.error) {
+            firstError.error.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }
+
+          return false;
+        }
+
+        return true;
+      }
+
+      debounce(fn, wait) {
+        let t;
         return (...args) => {
-          if (timeoutId) clearTimeout(timeoutId);
-          timeoutId = setTimeout(() => {
-            fn.apply(this, args);
-          }, delay);
+          clearTimeout(t);
+          t = setTimeout(() => fn.apply(this, args), wait);
         };
       }
 
