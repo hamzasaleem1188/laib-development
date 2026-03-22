@@ -275,8 +275,8 @@ if (!customElements.get("custom-shirt-customizer")) {
           }
         }, 1000);
 
-        if (this.nameInput)
           this.nameInput.addEventListener("input", () => {
+            this.nameInput.value = this.nameInput.value.replace(/[^a-zA-Z\s]/g, "");
             this.updatePreview();
             this.debouncedScroll();
           });

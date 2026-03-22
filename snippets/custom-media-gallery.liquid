@@ -79,10 +79,24 @@
     #PreviewFlagFrontContainer, #PreviewFlagBackContainer {
       width: 11%;
       aspect-ratio: 3 / 2;
+      overflow: hidden;
+    }
+    #PreviewFlagFrontContainer img, #PreviewFlagBackContainer img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
     }
     
     #PreviewFlagFrontContainer {
-      top: 20%;
+      top: 22%;
+      left: 62%;
+      transform: translate(-50%, -50%);
+    }
+    #PreviewFlagBackContainer {
+      top: 9.3%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
 
     @media screen and (max-width: 480px) {
@@ -90,7 +104,7 @@
         width: 12%;
       }
       #PreviewFlagFrontContainer {
-        top: 7rem;
+        top: 22%;
       }
     }
     
@@ -101,7 +115,7 @@
     }
     @media screen and (max-width: 768px) {
        #PreviewLogoLabelContainer {
-         width: 35% !important;
+         width: 34% !important;
          height: 11% !important;
        }
     }
@@ -114,14 +128,14 @@
         <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
           {{ product.media[0].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'eager', alt: product.media[0].alt }}
         </div>
-        <div id="PreviewFlagFrontContainer" style="position: absolute; right: 31%; display: none; align-items: center; justify-content: center;">
-          <img id="PreviewFlagFront" src="{{ 'transparent.png' | asset_url }}" width="100" height="66" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;">
+        <div id="PreviewFlagFrontContainer" style="position: absolute; display: none;">
+          <img id="PreviewFlagFront" src="{{ 'transparent.png' | asset_url }}" width="100" height="66" loading="lazy">
         </div>
         <div id="PreviewLogoLabelContainer" style="position: absolute; top: 37%; left: 52%; transform: translateX(-50%); pointer-events: none; display: none; align-items: center; justify-content: center;">
           <img id="PreviewLogoLabel" src="{{ 'transparent.png' | asset_url }}" width="200" height="80" style="max-width: 100%; max-height: 60%; object-fit: contain; display: block;">
         </div>
-        <div id="PreviewCountryNameContainer" style="position: absolute; top: 33%; left: 19%; right: 18%; pointer-events: none; display: none; text-align: center;">
-          <span id="PreviewCountryName" style="font-weight: 900; font-family: 'Cormorant Garamond', serif; text-transform: uppercase; color: #000000; white-space: nowrap;"></span>
+        <div id="PreviewCountryNameContainer" style="position: absolute; top: 33%; left: 19%; right: 16%; pointer-events: none; display: none; text-align: center;">
+          <span id="PreviewCountryName" style="font-weight: 900; font-family: 'Cormorant Garamond', serif; text-transform: uppercase; color: #000000; white-space: nowrap; display: inline-block; transform: scaleY(1.8); transform-origin: center;"></span>
         </div>
       </div>
     {%- endif -%}
@@ -130,14 +144,14 @@
         <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
           {{ product.media[1].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'lazy', alt: product.media[1].alt }}
         </div>
-        <div id="PreviewFlagBackContainer" style="position: absolute; top: 9%; left: 48%; transform: translateX(-50%); display: none; align-items: center; justify-content: center;">
-          <img id="PreviewFlagBack" src="{{ 'transparent.png' | asset_url }}" width="100" height="66" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;">
+        <div id="PreviewFlagBackContainer" style="position: absolute; display: none;">
+          <img id="PreviewFlagBack" src="{{ 'transparent.png' | asset_url }}" width="100" height="66" loading="lazy">
         </div>
         {%- if product.tags contains 'custom-inputs' -%}
 
-            <div style="position: absolute; top: 25%; left: 0; right: 2rem; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
-              <span id="PreviewName" style="font-weight: bold; font-family: 'Cormorant Garamond', serif; text-transform: uppercase; color: #000000; letter-spacing: 0.5px; line-height: 1; margin-bottom: 1rem;"></span>
-              <span id="PreviewNumber" style="font-weight: bold; font-family: 'Cormorant Garamond', serif; color: #000000; line-height: 1;"></span>
+            <div style="position: absolute; top: 18%; left: 0; right: 0; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+              <span id="PreviewName" style="font-weight: bold; font-family: 'Cormorant Garamond', serif; text-transform: uppercase; color: #000000; letter-spacing: 0.5px; line-height: 1; margin-bottom: 3rem;"></span>
+              <span id="PreviewNumber" style="font-weight: bold; font-family: 'Cormorant Garamond', serif; color: #000000; line-height: 1; display: inline-block; transform: scaleY(1.5); transform-origin: center;"></span>
             </div>
             <style>
               /* PC / Desktop Device */
