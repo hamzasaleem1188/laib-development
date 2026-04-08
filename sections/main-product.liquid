@@ -291,7 +291,8 @@
                         </div>
                       </div>
                     </div>
-                    <input type="hidden" name="properties[Country Name]" data-flag-input form="{{ product_form_id }}">
+                    <input type="hidden" name="properties[_Country Name]" data-flag-input form="{{ product_form_id }}">
+                    <input type="hidden" name="properties[_Country Flag URL]" data-flag-url-input form="{{ product_form_id }}">
                     <div class="customizer-error" data-error-nationality style="display: none; color: #EB001B; margin-top: 0.5rem; font-size: 1.2rem;">Please select a nationality</div>
                   </div>
                 {%- endif -%}
@@ -561,7 +562,9 @@
                         </div>
                       </div>
                     </div>
-                    <input type="hidden" name="properties[Logo Label]" data-logo-input form="{{ product_form_id }}">
+                    <input type="hidden" name="properties[_Logo Label]" data-logo-input form="{{ product_form_id }}">
+                    <input type="hidden" name="properties[_Logo URL]" data-logo-url-input form="{{ product_form_id }}">
+                    <input type="hidden" name="properties[_Logo Text URL]" data-logo-text-url-input form="{{ product_form_id }}">
                     <div class="customizer-error" data-error-logo style="display: none; color: #EB001B; margin-top: 0.5rem; font-size: 1.2rem;">Please select a logo</div>
                   </div>
                 {%- elsif request.design_mode -%}

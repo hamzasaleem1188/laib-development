@@ -34,6 +34,7 @@ if (!customElements.get("custom-shirt-customizer")) {
           this.dropdownClearBtn = this.flagSelect.querySelector(
             "[data-dropdown-clear]",
           );
+          this.flagUrlInput = this.querySelector("[data-flag-url-input]");
         }
 
         // Logo Selector Elements
@@ -47,6 +48,8 @@ if (!customElements.get("custom-shirt-customizer")) {
           this.logoClearBtn = this.logoSelect.querySelector(
             "[data-logo-dropdown-clear]",
           );
+          this.logoUrlInput = this.querySelector("[data-logo-url-input]");
+          this.logoTextUrlInput = this.querySelector("[data-logo-text-url-input]");
         }
 
         this.updateClearButtons();
@@ -237,6 +240,8 @@ if (!customElements.get("custom-shirt-customizer")) {
             const labelText = item.getAttribute("data-label-text");
 
             if (this.logoInput) this.logoInput.value = val;
+            if (this.logoUrlInput) this.logoUrlInput.value = url;
+            if (this.logoTextUrlInput) this.logoTextUrlInput.value = labelUrl;
             if (this.logoSelect) {
               const selectedDisplay = this.logoSelect.querySelector(
                 "[data-selected-name]",
@@ -310,6 +315,8 @@ if (!customElements.get("custom-shirt-customizer")) {
               items.forEach((item) => (item.style.display = ""));
             }
             if (this.logoInput) this.logoInput.value = "";
+            if (this.logoUrlInput) this.logoUrlInput.value = "";
+            if (this.logoTextUrlInput) this.logoTextUrlInput.value = "";
             if (this.logoSelect) {
               const selectedDisplay = this.logoSelect.querySelector(
                 "[data-selected-name]",
@@ -363,6 +370,9 @@ if (!customElements.get("custom-shirt-customizer")) {
 
       selectFlag(country) {
         if (this.flagInput) this.flagInput.value = country.name;
+        if (this.flagUrlInput) {
+          this.flagUrlInput.value = country.code ? `https://flagcdn.com/w80/${country.code}.png` : "";
+        }
         if (this.selectedName) {
           if (country.code) {
             this.selectedName.innerHTML = `<img src="https://flagcdn.com/w40/${country.code}.png" class="item-flag" alt="${country.name}"> ${country.name}`;
@@ -522,6 +532,8 @@ if (!customElements.get("custom-shirt-customizer")) {
         }
         if (this.logoInput) {
           this.logoInput.value = "";
+          if (this.logoUrlInput) this.logoUrlInput.value = "";
+          if (this.logoTextUrlInput) this.logoTextUrlInput.value = "";
           if (this.logoSelect) {
             const selectedDisplay = this.logoSelect.querySelector(
               "[data-selected-name]",
