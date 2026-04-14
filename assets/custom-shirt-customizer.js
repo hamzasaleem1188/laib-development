@@ -744,45 +744,34 @@ if (!customElements.get("custom-shirt-customizer")) {
         if (this.errorName) this.errorName.style.display = "none";
         if (this.errorNumber) this.errorNumber.style.display = "none";
 
-        const fields = [];
-        if (this.flagInput)
-          fields.push({ input: this.flagInput, error: this.errorNationality });
-        if (this.logoInput)
-          fields.push({ input: this.logoInput, error: this.errorLogo });
-        if (this.nameInput)
-          fields.push({ input: this.nameInput, error: this.errorName });
-        if (this.numberInput)
-          fields.push({ input: this.numberInput, error: this.errorNumber });
+        let hasError = false;
 
-        const filledFields = fields.filter((f) => f.input.value.trim() !== "");
+        // Name and Number must be provided together
+        const nameValue = this.nameInput ? this.nameInput.value.trim() : "";
+        const numberValue = this.numberInput ? this.numberInput.value.trim() : "";
 
-        if (filledFields.length > 0 && filledFields.length < fields.length) {
-          // Show errors for empty fields
-          fields.forEach((f) => {
-            if (f.input.value.trim() === "" && f.error) {
-              f.error.style.display = "block";
-            }
-          });
+        if (nameValue !== "" && numberValue === "") {
+          if (this.errorNumber) this.errorNumber.style.display = "block";
+          hasError = true;
+        }
+        if (numberValue !== "" && nameValue === "") {
+          if (this.errorName) this.errorName.style.display = "block";
+          hasError = true;
+        }
 
+        if (hasError) {
           // Open drawer if name/number errors are present and drawer is closed
           if (this.drawer && this.drawer.style.display === "none") {
-            const hasDrawerError = fields.some(
-              (f) =>
-                f.input.value.trim() === "" &&
-                (f.input === this.nameInput || f.input === this.numberInput),
-            );
-            if (hasDrawerError) {
-              this.drawer.style.display = "block";
-              if (this.toggleBtn) this.toggleBtn.style.display = "none";
-            }
+            this.drawer.style.display = "block";
+            if (this.toggleBtn) this.toggleBtn.style.display = "none";
           }
 
           // Scroll to the first error
-          const firstError = fields.find(
-            (f) => f.input.value.trim() === "" && f.error,
+          const firstError = [this.errorName, this.errorNumber].find(
+            (err) => err && err.style.display === "block"
           );
-          if (firstError && firstError.error) {
-            firstError.error.scrollIntoView({
+          if (firstError) {
+            firstError.scrollIntoView({
               behavior: "smooth",
               block: "center",
             });
