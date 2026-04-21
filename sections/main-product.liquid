@@ -120,8 +120,20 @@
         >
           {%- assign product_form_id = 'product-form-' | append: section.id -%}
 
+          {%- liquid
+            assign only_custom_inputs = false
+            if product.tags contains 'custom-inputs'
+              assign has_forbidden_tags = false
+              if product.tags contains 'custom' or product.tags contains 'custom-flags'
+                assign has_forbidden_tags = true
+              endif
+              unless has_forbidden_tags
+                assign only_custom_inputs = true
+              endunless
+            endif
+          -%}
           {%- if product.tags contains 'custom-inputs' -%}
-            <custom-shirt-customizer class="customization-section" style="display: block;">
+            <custom-shirt-customizer class="customization-section" style="display: block;" data-only-custom-inputs="{{ only_custom_inputs }}">
           {%- endif -%}
           {%- for block in section.blocks -%}
             {%- case block.type -%}
@@ -531,10 +543,10 @@
                 {%- if product.metafields.custom.logo_list != blank -%}
                   {%- assign logos = product.metafields.custom.logo_list.value -%}
                   <div class="product-form__input" style="margin-bottom: 2rem;">
-                    <label class="form__label" style="display: block; margin-bottom: 0.5rem;">{{ block.settings.heading | default: 'Custom Logo' }}</label>
+                    <label class="form__label" style="display: block; margin-bottom: 0.5rem;">{{ block.settings.heading | default: 'Nationality' }}</label>
                     <div id="LogoSelector-{{ section.id }}" class="custom-select logo-select-component" data-logo-select>
                       <div class="select-selected">
-                        <span data-selected-name>Select Logo</span>
+                        <span data-selected-name>select nationality</span>
                         <span style="font-size: 0.8em;">▼</span>
                       </div>
                       <div class="select-items select-hide">
@@ -564,14 +576,58 @@
                     </div>
                     <input type="hidden" name="properties[_Logo Label]" data-logo-input form="{{ product_form_id }}">
                     <input type="hidden" name="properties[_Logo URL]" data-logo-url-input form="{{ product_form_id }}">
-                    <input type="hidden" name="properties[_Logo Text URL]" data-logo-text-url-input form="{{ product_form_id }}">
-                    <div class="customizer-error" data-error-logo style="display: none; color: #EB001B; margin-top: 0.5rem; font-size: 1.2rem;">Please select a logo</div>
+                    <div class="field" style="margin-bottom: 0.2rem; margin-top: 3rem;">
+                      <input class="field__input" type="text" id="CustomNationalityInput-{{ section.id }}" name="properties[Nationality]" placeholder="Enter Nationality/City/Country" data-logo-text-url-input form="{{ product_form_id }}" maxlength="15">
+                      <label class="field__label" for="CustomNationalityInput-{{ section.id }}">Nationality/City</label>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
+                      <small class="field__counter" data-nationality-counter style="font-size: 1rem; opacity: 0.6;">0/15</small>
+                    </div>
+                    <div class="customizer-error" data-error-logo style="display: none; color: #EB001B; margin-top: 0.5rem; font-size: 1.2rem;">Please select a nationality</div>
                   </div>
                 {%- elsif request.design_mode -%}
                   <div class="product-form__input" style="margin-bottom: 2rem;" {{ block.shopify_attributes }}>
                     <p style="font-size: 1.2rem; opacity: 0.7; color: rgba(var(--color-foreground), 0.5); border: 1px dashed rgba(var(--color-foreground), 0.2); padding: 1rem; border-radius: 4px;">
                       (Logos will appear here once added to the <code>custom.logo_list</code> metafield)
                     </p>
+                  </div>
+                {%- endif -%}
+              {%- when 'custom_name_num' -%}
+                {%- if product.tags contains 'custom-inputs' -%}
+                  <div class="product-form__input" style="margin-bottom: 2rem;">
+                    <div data-drawer style="display: none; position: relative; padding: 1.5rem; margin-bottom: 1rem; background: rgba(var(--color-foreground), 0.03); border-radius: 8px; border: 1px solid rgba(var(--color-foreground), 0.1);">
+                      <button type="button" data-close-drawer style="position: absolute; top: -12px; right: -12px; background: #fff; border: 1px solid rgba(var(--color-foreground), 0.1); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; color: rgba(var(--color-foreground), 0.7); box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10;" aria-label="Close Customization" onmouseover="this.style.background='#f4f4f4'" onmouseout="this.style.background='#fff'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                      {%- if only_custom_inputs -%}
+                        <p style="font-size: 1.3rem; line-height: 1.4; font-style: italic; opacity: 0.8; margin: 0.5rem 0 1.5rem; color: rgba(var(--color-foreground), 0.7);">
+                          Note: When you add a custom name and number, your ordered shirt will appear as shown in this sample image.
+                        </p>
+                      {%- endif -%}
+                      <div class="field" style="margin-bottom: 0.2rem; margin-top: 0.5rem;">
+                        <input class="field__input" type="text" id="CustomNameInput-{{ section.id }}" name="properties[Name]" placeholder="Enter Name" maxlength="10" data-name-input form="{{ product_form_id }}">
+                        <label class="field__label" for="CustomNameInput-{{ section.id }}">Name (Max 10)</label>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <div class="customizer-error" data-error-name style="display: none; color: #EB001B; font-size: 1.2rem; margin: 0;">Please enter a name</div>
+                        <small class="field__counter" data-name-counter style="margin-left: auto; font-size: 1rem; opacity: 0.6;">0/10</small>
+                      </div>
+                      
+                      <div class="field" style="margin-bottom: 0.2rem;">
+                        <input class="field__input" type="text" id="CustomNumberInput-{{ section.id }}" name="properties[Number]" placeholder="Enter Number" maxlength="2" data-number-input form="{{ product_form_id }}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                        <label class="field__label" for="CustomNumberInput-{{ section.id }}">Number (Max 2)</label>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <div class="customizer-error" data-error-number style="display: none; color: #EB001B; font-size: 1.2rem; margin: 0;">Please enter a number</div>
+                        <small class="field__counter" data-number-counter style="margin-left: auto; font-size: 1rem; opacity: 0.6;">0/2</small>
+                      </div>
+                    </div>
+                    <button type="button" class="button button--secondary button--full-width" data-toggle style="margin-bottom: 1rem;">
+                      Customize
+                    </button>
                   </div>
                 {%- endif -%}
               {%- when 'buy_buttons' -%}
@@ -1012,10 +1068,16 @@
         {
           "type": "inline_richtext",
           "id": "heading",
-          "default": "Custom Logo",
+          "default": "Select Nationality",
           "label": "Heading"
         }
       ]
+    },
+    {
+      "type": "custom_name_num",
+      "name": "Custom Name Number",
+      "limit": 1,
+      "settings": []
     },
     {
       "type": "buy_buttons",

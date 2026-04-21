@@ -37,8 +37,12 @@
         "custom_logo_selector": {
           "type": "custom_logo_selector",
           "settings": {
-            "heading": "Custom Logo"
+            "heading": "Nationality"
           }
+        },
+        "custom_name_num": {
+          "type": "custom_name_num",
+          "settings": {}
         },
         "quantity_selector": {
           "type": "quantity_selector",
@@ -68,6 +72,7 @@
         "price",
         "variant_picker",
         "custom_logo_selector",
+        "custom_name_num",
         "quantity_selector",
         "buy_buttons",
         "description",

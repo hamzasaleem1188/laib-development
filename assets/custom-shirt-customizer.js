@@ -50,6 +50,7 @@ if (!customElements.get("custom-shirt-customizer")) {
           );
           this.logoUrlInput = this.querySelector("[data-logo-url-input]");
           this.logoTextUrlInput = this.querySelector("[data-logo-text-url-input]");
+          this.logoTextCounter = this.querySelector("[data-nationality-counter]");
         }
 
         this.updateClearButtons();
@@ -237,11 +238,18 @@ if (!customElements.get("custom-shirt-customizer")) {
             const val = item.getAttribute("data-value");
             const url = item.getAttribute("data-logo-url");
             const labelUrl = item.getAttribute("data-label-url");
-            const labelText = item.getAttribute("data-label-text");
+            const span = item.querySelector("span");
+            const labelText = span ? span.innerText.trim() : val;
 
             if (this.logoInput) this.logoInput.value = val;
             if (this.logoUrlInput) this.logoUrlInput.value = url;
-            if (this.logoTextUrlInput) this.logoTextUrlInput.value = labelUrl;
+            if (this.logoTextUrlInput) {
+              this.logoTextUrlInput.value = labelText;
+              if (this.logoTextCounter) {
+                this.logoTextCounter.innerText = `${labelText.length}/15`;
+              }
+              this.logoTextUrlInput.dispatchEvent(new Event("input"));
+            }
             if (this.logoSelect) {
               const selectedDisplay = this.logoSelect.querySelector(
                 "[data-selected-name]",
@@ -250,7 +258,7 @@ if (!customElements.get("custom-shirt-customizer")) {
             }
             if (this.logoItems) this.closeLogoDropdown();
 
-            this.updateLogoPreview(url, labelUrl, labelText);
+            this.updateLogoPreview(url, labelText);
             this.updateVariantOption();
             this.updateClearButtons();
             if (this.validationActive) {
@@ -259,7 +267,21 @@ if (!customElements.get("custom-shirt-customizer")) {
               this.errorLogo.style.display = "none";
             }
 
-            if (window.innerWidth < 1024) this.scrollToPreview();
+            if (window.innerWidth < 1024 && this.dataset.onlyCustomInputs !== "true") {
+              this.scrollToPreview();
+            }
+          });
+        }
+
+        if (this.logoTextUrlInput) {
+          this.logoTextUrlInput.addEventListener("input", () => {
+            this.logoTextUrlInput.value = this.logoTextUrlInput.value.replace(/[^a-zA-Z\s]/g, "");
+            if (this.logoTextCounter) {
+              this.logoTextCounter.innerText = `${this.logoTextUrlInput.value.length}/15`;
+            }
+            this.updateLogoPreview(this.logoUrlInput?.value, this.logoTextUrlInput.value);
+            this.updateVariantOption();
+            this.debouncedScroll();
           });
         }
 
@@ -275,6 +297,7 @@ if (!customElements.get("custom-shirt-customizer")) {
         }
 
         this.debouncedScroll = this.debounce(() => {
+          if (this.dataset.onlyCustomInputs === "true") return;
           if (window.innerWidth < 1024) {
             this.scrollToPreview();
           }
@@ -316,12 +339,15 @@ if (!customElements.get("custom-shirt-customizer")) {
             }
             if (this.logoInput) this.logoInput.value = "";
             if (this.logoUrlInput) this.logoUrlInput.value = "";
-            if (this.logoTextUrlInput) this.logoTextUrlInput.value = "";
+            if (this.logoTextUrlInput) {
+             this.logoTextUrlInput.value = "";
+             if (this.logoTextCounter) this.logoTextCounter.innerText = "0/15";
+           }
             if (this.logoSelect) {
               const selectedDisplay = this.logoSelect.querySelector(
                 "[data-selected-name]",
               );
-              if (selectedDisplay) selectedDisplay.innerText = "Select Logo";
+              if (selectedDisplay) selectedDisplay.innerText = "select nationality";
             }
             if (this.logoItems) this.logoItems.classList.add("select-hide");
             this.updateLogoPreview("", "", "");
@@ -350,6 +376,25 @@ if (!customElements.get("custom-shirt-customizer")) {
           this.updatePreview();
           this.updateVariantOption();
         }, 100);
+
+        // Reset customizer after successful add to cart
+        if (typeof subscribe === 'function' && typeof PUB_SUB_EVENTS !== 'undefined' && PUB_SUB_EVENTS.cartUpdate) {
+          subscribe(PUB_SUB_EVENTS.cartUpdate, () => {
+            this.clearCustomization();
+            this.validationActive = false;
+            
+            // Hide all errors
+            if (this.errorNationality) this.errorNationality.style.display = "none";
+            if (this.errorLogo) this.errorLogo.style.display = "none";
+            if (this.errorName) this.errorName.style.display = "none";
+            if (this.errorNumber) this.errorNumber.style.display = "none";
+            
+            // If drawer is open, close it (reset to "Customize" button state)
+            if (this.drawer && this.drawer.style.display !== 'none') {
+              this.toggleDrawer();
+            }
+          });
+        }
       }
 
       populateFlags(search = "") {
@@ -460,7 +505,7 @@ if (!customElements.get("custom-shirt-customizer")) {
         }
       }
 
-      updateLogoPreview(logoUrl, labelUrl, labelText) {
+      updateLogoPreview(logoUrl, labelText) {
         const frontFlag = document.getElementById("PreviewFlagFront");
         const backFlag = document.getElementById("PreviewFlagBack");
         const frontContainer = document.getElementById(
@@ -489,9 +534,10 @@ if (!customElements.get("custom-shirt-customizer")) {
           if (backContainer) backContainer.style.display = "none";
         }
 
-        // Update Label Image
-        if (frontLogoLabel && labelUrl) {
-          frontLogoLabel.src = labelUrl;
+        // Update Label Text (formerly Image)
+        if (frontLogoLabel && labelText) {
+          frontLogoLabel.innerText = labelText;
+          frontLogoLabel.setAttribute("data-char-count", labelText.length);
           if (frontLogoLabelContainer)
             frontLogoLabelContainer.style.display = "block";
         } else if (frontLogoLabel) {
@@ -505,14 +551,47 @@ if (!customElements.get("custom-shirt-customizer")) {
         const isHidden = this.drawer.style.display === "none";
         this.drawer.style.display = isHidden ? "block" : "none";
 
+        if (this.dataset.onlyCustomInputs === "true" && isHidden) {
+          const customizedImg =
+            document.querySelector('media-gallery img[alt="customized_shirt"]') ||
+            document.querySelector('media-gallery img[alt="customized shirt"]');
+
+          if (customizedImg) {
+            const mediaItem = customizedImg.closest("[data-media-id]");
+            if (mediaItem) {
+              const mediaId = mediaItem.dataset.mediaId;
+              const mediaGallery = document.querySelector("media-gallery");
+              if (mediaGallery && mediaGallery.setActiveMedia) {
+                mediaGallery.setActiveMedia(mediaId, false);
+
+                // Add smooth horizontal slide effect
+                setTimeout(() => {
+                  const container = mediaItem.parentElement;
+                  if (container) {
+                    container.scrollTo({
+                      left: mediaItem.offsetLeft,
+                      behavior: "smooth",
+                    });
+                  }
+                }, 200);
+              }
+            }
+          }
+          if (window.innerWidth < 768) {
+            this.scrollToPreview();
+          }
+        }
+
         if (this.toggleBtn) {
           this.toggleBtn.innerText = isHidden ? "Done" : "Customize";
         }
 
+        /*
         const variantPicker =
           document.querySelector("variant-selects") ||
           document.querySelector("variant-radios");
         if (variantPicker) variantPicker.style.display = isHidden ? "none" : "";
+        */
         if (isHidden) {
           const backBtn = document.querySelector(
             ".custom-media-controls button:last-child",
@@ -533,12 +612,15 @@ if (!customElements.get("custom-shirt-customizer")) {
         if (this.logoInput) {
           this.logoInput.value = "";
           if (this.logoUrlInput) this.logoUrlInput.value = "";
-          if (this.logoTextUrlInput) this.logoTextUrlInput.value = "";
+          if (this.logoTextUrlInput) {
+             this.logoTextUrlInput.value = "";
+             if (this.logoTextCounter) this.logoTextCounter.innerText = "0/15";
+           }
           if (this.logoSelect) {
             const selectedDisplay = this.logoSelect.querySelector(
               "[data-selected-name]",
             );
-            if (selectedDisplay) selectedDisplay.innerText = "Select Logo";
+            if (selectedDisplay) selectedDisplay.innerText = "select nationality";
           }
           this.updateLogoPreview("", "", "");
         }
