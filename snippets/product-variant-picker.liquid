@@ -32,17 +32,27 @@
         assign hide_option = false
         if option.name == 'Flag' and product.tags contains 'custom-flags'
           assign hide_option = true
-        elsif option.name == 'NameAndNumber' and product.tags contains 'custom-inputs'
-          assign hide_option = true
+        elsif option.name == 'Personalization'
+          if product.tags contains 'custom-inputs'
+            assign hide_option = true
+          endif
         endif
       -%}
       {%- if picker_type == 'swatch' -%}
         <fieldset class="js product-form__input product-form__input--swatch" {% if hide_option %}style="display: none;"{% endif %}>
-          <legend class="form__label">
-            {{ option.name }}:
-            <span data-selected-value>
-              {{- option.selected_value -}}
+          <legend class="form__label" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <span>
+              {{ option.name }}:
+              <span data-selected-value>
+                {{- option.selected_value -}}
+              </span>
             </span>
+            {%- assign opt_name_lower = option.name | downcase -%}
+            {%- if opt_name_lower == 'size' and product.metafields.custom.size_chart != blank -%}
+              <button type="button" class="size-chart-trigger" data-modal-trigger="SizeChartModal-{{ section.id }}">
+                Show Size Chart
+              </button>
+            {%- endif -%}
           </legend>
           {% render 'product-variant-options',
             product: product,
@@ -63,8 +73,14 @@
         </fieldset>
       {%- else -%}
         <div class="product-form__input product-form__input--dropdown" {% if hide_option %}style="display: none;"{% endif %}>
-          <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
-            {{ option.name }}
+          <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <span>{{ option.name }}</span>
+            {%- assign opt_name_lower = option.name | downcase -%}
+            {%- if opt_name_lower == 'size' and product.metafields.custom.size_chart != blank -%}
+              <button type="button" class="size-chart-trigger" data-modal-trigger="SizeChartModal-{{ section.id }}">
+                Show Size Chart
+              </button>
+            {%- endif -%}
           </label>
           <div class="select">
             {%- if picker_type == 'swatch_dropdown' -%}
@@ -96,4 +112,31 @@
 
     <script type="application/json" data-selected-variant>{{ product.selected_or_first_available_variant | json }}</script>
   </variant-selects>
+
+  {%- if product.metafields.custom.size_chart != blank -%}
+    <div id="SizeChartModal-{{ section.id }}" class="custom-modal" style="display: none;">
+      <div class="custom-modal__content">
+        <button type="button" class="custom-modal__close" data-modal-close>&times;</button>
+        <div class="custom-modal__body">
+          {%- liquid
+            assign chart_image = product.metafields.custom.size_chart.value
+          -%}
+          {%- if chart_image != blank -%}
+            <img src="{{ chart_image }}" 
+                 alt="Size Chart" 
+                 loading="lazy" 
+                 width="1200" 
+                 height="auto">
+          {%- else -%}
+             <img src="{{ product.metafields.custom.size_chart }}" 
+                 alt="Size Chart" 
+                 loading="lazy" 
+                 width="1200" 
+                 height="auto">
+          {%- endif -%}
+        </div>
+      </div>
+      <div class="custom-modal__overlay" data-modal-close></div>
+    </div>
+  {%- endif -%}
 {%- endunless -%}
