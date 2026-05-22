@@ -251,12 +251,6 @@ if (!customElements.get("custom-shirt-customizer")) {
             if (this.logoInput) this.logoInput.value = val;
             if (this.logoUrlInput) this.logoUrlInput.value = url;
             if (this.nationalityCityInput) {
-              if (this.nationalityCityInput.value.trim() === "") {
-                this.nationalityCityInput.value = labelText;
-                if (this.nationalityCityCounter) {
-                  this.nationalityCityCounter.innerText = `${labelText.length}/15`;
-                }
-              }
               this.nationalityCityInput.dispatchEvent(new Event("input"));
             }
             if (this.logoSelect) {
@@ -284,12 +278,9 @@ if (!customElements.get("custom-shirt-customizer")) {
         }
 
         if (this.nationalityCityInput) {
-          this.nationalityCityInput.addEventListener("input", () => {
-            this.nationalityCityInput.value = this.nationalityCityInput.value
-              .normalize("NFC")
-              .replace(/[^\p{L}\s]/gu, "");
+          this.bindSanitizedLetterField(this.nationalityCityInput, () => {
             if (this.nationalityCityCounter) {
-              this.nationalityCityCounter.innerText = `${this.nationalityCityInput.value.length}/15`;
+              this.nationalityCityCounter.innerText = `${this.nationalityCityInput.value.length}/12`;
             }
             this.updateLogoPreview(
               this.logoUrlInput?.value,
@@ -319,10 +310,7 @@ if (!customElements.get("custom-shirt-customizer")) {
           }
         }, 1000);
 
-        this.nameInput.addEventListener("input", () => {
-          this.nameInput.value = this.nameInput.value
-            .normalize("NFC")
-            .replace(/[^\p{L}\s]/gu, "");
+        this.bindSanitizedLetterField(this.nameInput, () => {
           this.updatePreview();
           if (window.switchMedia) window.switchMedia("back");
           this.debouncedScroll();
@@ -362,7 +350,7 @@ if (!customElements.get("custom-shirt-customizer")) {
             if (this.nationalityCityInput) {
               this.nationalityCityInput.value = "";
               if (this.nationalityCityCounter)
-                this.nationalityCityCounter.innerText = "0/15";
+                this.nationalityCityCounter.innerText = "0/12";
             }
             if (this.logoSelect) {
               const selectedDisplay = this.logoSelect.querySelector(
@@ -427,16 +415,16 @@ if (!customElements.get("custom-shirt-customizer")) {
 
       initSizeChart() {
         // Move modals to body to avoid transform parents
-        document.querySelectorAll('.custom-modal').forEach(modal => {
+        document.querySelectorAll(".custom-modal").forEach((modal) => {
           if (modal.parentNode !== document.body) {
             document.body.appendChild(modal);
           }
         });
 
         // Add Styles
-        if (!document.getElementById('CustomModalStyles')) {
+        if (!document.getElementById("CustomModalStyles")) {
           const style = document.createElement("style");
-          style.id = 'CustomModalStyles';
+          style.id = "CustomModalStyles";
           style.textContent = `
             .size-chart-trigger {
               background: none;
@@ -794,7 +782,7 @@ if (!customElements.get("custom-shirt-customizer")) {
           if (this.nationalityCityInput) {
             this.nationalityCityInput.value = "";
             if (this.nationalityCityCounter)
-              this.nationalityCityCounter.innerText = "0/15";
+              this.nationalityCityCounter.innerText = "0/12";
           }
           if (this.logoSelect) {
             const selectedDisplay = this.logoSelect.querySelector(
@@ -978,12 +966,14 @@ if (!customElements.get("custom-shirt-customizer")) {
         this.updatePriceBreakdown(hasCustomization);
 
         // Update Return Policy Notice highlighting
-        const returnPolicyNotice = document.querySelector('.personalization-return-policy');
+        const returnPolicyNotice = document.querySelector(
+          ".personalization-return-policy",
+        );
         if (returnPolicyNotice) {
           if (hasCustomization) {
-            returnPolicyNotice.classList.add('is-active');
+            returnPolicyNotice.classList.add("is-active");
           } else {
-            returnPolicyNotice.classList.remove('is-active');
+            returnPolicyNotice.classList.remove("is-active");
           }
         }
       }
@@ -1093,6 +1083,37 @@ if (!customElements.get("custom-shirt-customizer")) {
       }
 
       // handleFormSubmit is no longer used, replaced by click listener on button
+
+      /**
+       * Keeps personalization text to letters and spaces, but allows combining marks
+       * and spacing modifier symbols (e.g. ¨) so Swedish ä/ö/å work with dead keys and IME.
+       */
+      sanitizePersonalizationText(value) {
+        return String(value)
+          .normalize("NFC")
+          .replace(/[^\p{L}\p{M}\p{Sk}\s]/gu, "");
+      }
+
+      bindSanitizedLetterField(inputEl, onAfterChange) {
+        if (!inputEl) return;
+        let composing = false;
+        const apply = () => {
+          const next = this.sanitizePersonalizationText(inputEl.value);
+          if (next !== inputEl.value) inputEl.value = next;
+          onAfterChange();
+        };
+        inputEl.addEventListener("compositionstart", () => {
+          composing = true;
+        });
+        inputEl.addEventListener("compositionend", () => {
+          composing = false;
+          apply();
+        });
+        inputEl.addEventListener("input", (e) => {
+          if (composing || e.isComposing) return;
+          apply();
+        });
+      }
 
       validateCustomization() {
         // Reset errors
