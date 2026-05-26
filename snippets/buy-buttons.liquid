@@ -23,11 +23,18 @@
         assign show_dynamic_checkout = true
       endif
     -%}
-
+    {%- liquid
+      assign giftbox_id = product.metafields.global.add_gift_product
+      if product.metafields.global.add_gift_product.value != blank
+        assign giftbox_id = product.metafields.global.add_gift_product
+      endif
+    -%}
     <product-form
       class="product-form"
       data-hide-errors="{{ gift_card_recipient_feature_active }}"
       data-section-id="{{ section.id }}"
+      data-has-giftbox="{% if product.tags contains 'add_gift_product' %}{% if product.metafields.global.add_gift_product != blank %}true{% else %}false{% endif %}{% else %}false{% endif %}"
+      data-giftbox-id="{{ giftbox_id }}"
     >
       <div class="product-form__error-message-wrapper" role="alert" hidden>
         <svg
@@ -68,29 +75,87 @@
           {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
         {%- endif -%}
 
-        {%- if product.tags contains 'custom-inputs' -%}
-          <div data-drawer style="display: none; position: relative; padding: 1.5rem; margin-bottom: 1rem; background: rgba(var(--color-foreground), 0.03); border-radius: 8px; border: 1px solid rgba(var(--color-foreground), 0.1);">
-            <button type="button" data-close-drawer style="position: absolute; top: -12px; right: -12px; background: #fff; border: 1px solid rgba(var(--color-foreground), 0.1); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; color: rgba(var(--color-foreground), 0.7); box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10;" aria-label="Close Customization" onmouseover="this.style.background='#f4f4f4'" onmouseout="this.style.background='#fff'">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-            <div class="field" style="margin-bottom: 0.2rem; margin-top: 0.5rem;">
-              <input class="field__input" type="text" id="CustomNameInput-{{ section.id }}" name="properties[Name]" placeholder="Enter Name" maxlength="10" data-name-input>
-              <label class="field__label" for="CustomNameInput-{{ section.id }}">Name (Max 10)</label>
-            </div>
-            <small class="field__counter" data-name-counter style="display: block; text-align: right; margin-bottom: 1rem; font-size: 1rem; opacity: 0.6;">0/10</small>
+        {% comment %} Customization UI moved to separate block in main-product.liquid {% endcomment %}
+
+        {%- if product.tags contains 'add_gift_product' and product.metafields.global.add_gift_product != blank -%}
+          <style>
+            .giftbox-checkbox-wrapper {
+              margin-bottom: 2.2rem;
+              border: 1px solid rgba(var(--color-foreground), 0.08);
+              border-radius: 8px;
+              background: rgba(var(--color-foreground), 0.015);
+              padding: 14px 12px;
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              cursor: pointer;
+              transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+              box-sizing: border-box;
+            }
+            .giftbox-checkbox-wrapper:hover {
+              background: rgba(var(--color-foreground), 0.035) !important;
+              border-color: rgba(var(--color-foreground), 0.15) !important;
+              box-shadow: 0 2px 8px rgba(var(--color-foreground), 0.04);
+            }
+
+            @media screen and (max-width: 480px) {
+              .giftbox-checkbox-wrapper {
+                padding: 10px 12px;
+                gap: 12px;
+              }
+              .giftbox-checkbox-wrapper label {
+                font-size: 1.2rem !important;
+              }
+              .giftbox-checkbox-wrapper span {
+                font-size: 0.85rem !important;
+              }
+              .giftbox-checkbox-price {
+                font-size: 1.0rem !important;
+                padding: 1px 8px !important;
+              }
+            }
+          </style>
+
+          <div class="giftbox-checkbox-wrapper" onclick="const cb = this.querySelector('input[type=checkbox]'); cb.checked = !cb.checked; cb.dispatchEvent(new Event('change'));">
+            <input type="checkbox" id="GiftBoxConfirmCheckbox-{{ section_id }}" name="giftbox_confirm" style="
+              width: 2.8rem;
+              height: 2.8rem;
+              cursor: pointer;
+              margin: 0;
+              accent-color: rgb(var(--color-keyboard-focus));
+              flex-shrink: 0;
+            " onclick="event.stopPropagation();">
             
-            <div class="field" style="margin-bottom: 0.2rem;">
-              <input class="field__input" type="text" id="CustomNumberInput-{{ section.id }}" name="properties[Number]" placeholder="Enter Number" maxlength="2" data-number-input oninput="this.value = this.value.replace(/[^0-9]/g, '');">
-              <label class="field__label" for="CustomNumberInput-{{ section.id }}">Number (Max 2)</label>
+            <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
+                <label for="GiftBoxConfirmCheckbox-{{ section_id }}" style="
+                  font-size: 1.25rem;
+                  font-weight: 600;
+                  cursor: pointer;
+                  user-select: none;
+                  margin: 0;
+                  line-height: 1.3;
+                  color: rgb(var(--color-foreground));
+                " onclick="event.stopPropagation();">
+                  Add Gift Box🎁
+                </label>
+                <span class="giftbox-checkbox-price" style="
+                  display: none;
+                  background: rgba(var(--color-foreground), 0.08);
+                  padding: 2px 10px;
+                  border-radius: 20px;
+                  font-weight: 700;
+                  font-size: 1.2rem;
+                  color: rgb(var(--color-foreground));
+                  white-space: nowrap;
+                  flex-shrink: 0;
+                "></span>
+              </div>
+              <span style="font-size: 0.95rem; color: rgba(var(--color-foreground), 0.6); line-height: 1.2; display: block; white-space: nowrap;">
+                Premium gift packaging for the full LAIB experience
+              </span>
             </div>
-            <small class="field__counter" data-number-counter style="display: block; text-align: right; margin-bottom: 1rem; font-size: 1rem; opacity: 0.6;">0/2</small>
           </div>
-          <button type="button" class="button button--secondary button--full-width" data-toggle style="margin-bottom: 1rem;">
-            Customize
-          </button>
         {%- endif -%}
 
         <div class="product-form__buttons">
