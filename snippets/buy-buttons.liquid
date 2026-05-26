@@ -11,7 +11,6 @@
   {% render 'buy-buttons', block: block, product: product, product_form_id: product_form_id, section_id: section.id, show_pickup_availability: true %}
 {% endcomment %}
 <div {{ block.shopify_attributes }}>
-
   {%- if product != blank -%}
     {%- liquid
       assign gift_card_recipient_feature_active = false
@@ -24,12 +23,18 @@
         assign show_dynamic_checkout = true
       endif
     -%}
+    {%- liquid
+      assign giftbox_id = product.metafields.global.add_gift_product
+      if product.metafields.global.add_gift_product.value != blank
+        assign giftbox_id = product.metafields.global.add_gift_product
+      endif
+    -%}
     <product-form
       class="product-form"
       data-hide-errors="{{ gift_card_recipient_feature_active }}"
       data-section-id="{{ section.id }}"
       data-has-giftbox="{% if product.tags contains 'add_gift_product' %}{% if product.metafields.global.add_gift_product != blank %}true{% else %}false{% endif %}{% else %}false{% endif %}"
-      data-giftbox-id="{{ product.metafields.global.add_gift_product }}"
+      data-giftbox-id="{{ giftbox_id }}"
     >
       <div class="product-form__error-message-wrapper" role="alert" hidden>
         <svg

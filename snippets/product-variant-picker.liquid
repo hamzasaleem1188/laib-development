@@ -63,7 +63,15 @@
         </fieldset>
       {%- elsif picker_type == 'button' -%}
         <fieldset class="js product-form__input product-form__input--pill" {% if hide_option %}style="display: none;"{% endif %}>
-          <legend class="form__label">{{ option.name }}</legend>
+          <legend class="form__label" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <span>{{ option.name }}</span>
+            {%- assign opt_name_lower = option.name | downcase -%}
+            {%- if opt_name_lower == 'size' and product.metafields.custom.size_chart != blank -%}
+              <button type="button" class="size-chart-trigger" data-modal-trigger="SizeChartModal-{{ section.id }}">
+                Show Size Chart
+              </button>
+            {%- endif -%}
+          </legend>
           {% render 'product-variant-options',
             product: product,
             option: option,
@@ -138,5 +146,144 @@
       </div>
       <div class="custom-modal__overlay" data-modal-close></div>
     </div>
+
+    <style>
+      .size-chart-trigger {
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        font-size: 1.2rem;
+        text-decoration: underline;
+        cursor: pointer;
+        color: #666;
+        font-style: italic;
+        font-family: inherit;
+        transition: color 0.3s ease;
+      }
+      .size-chart-trigger:hover {
+        color: #000;
+      }
+      .custom-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 200000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 20px;
+      }
+      .custom-modal.is-open {
+        display: flex !important;
+        opacity: 1;
+        visibility: visible;
+      }
+      .custom-modal__overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .custom-modal__content {
+        position: relative;
+        background: white;
+        padding: 40px 15px 15px;
+        width: 100%;
+        max-width: 800px;
+        max-height: 90vh;
+        border-radius: 8px;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+        transform: translateY(30px) scale(0.98);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+      }
+      .custom-modal.is-open .custom-modal__content {
+        transform: translateY(0) scale(1);
+      }
+      .custom-modal__close {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        background: rgba(255,255,255,0.8);
+        border: none;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 2;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      }
+      .custom-modal__body {
+        width: 100%;
+        height: auto;
+      }
+      .custom-modal__body img {
+        display: block;
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+      }
+      @media screen and (max-width: 749px) {
+        .custom-modal {
+          padding: 10px;
+        }
+        .custom-modal__content {
+          padding: 40px 10px 10px;
+          max-height: 95vh;
+        }
+      }
+      body.modal-open {
+        overflow: hidden !important;
+      }
+    </style>
+
+    <script>
+      (function() {
+        const modal = document.getElementById("SizeChartModal-{{ section.id }}");
+        if (modal && modal.parentNode !== document.body) {
+          document.body.appendChild(modal);
+        }
+
+        if (!window.sizeChartListenersSet) {
+          document.addEventListener("click", (e) => {
+            const trigger = e.target.closest("[data-modal-trigger]");
+            if (trigger) {
+              const modalId = trigger.getAttribute("data-modal-trigger");
+              const targetModal = document.getElementById(modalId);
+              if (targetModal) {
+                targetModal.classList.add("is-open");
+                document.body.classList.add("modal-open");
+              }
+            }
+
+            if (e.target.closest("[data-modal-close]")) {
+              const targetModal = e.target.closest(".custom-modal");
+              if (targetModal) {
+                targetModal.classList.remove("is-open");
+                document.body.classList.remove("modal-open");
+              }
+            }
+          });
+          window.sizeChartListenersSet = true;
+        }
+      })();
+    </script>
   {%- endif -%}
 {%- endunless -%}
