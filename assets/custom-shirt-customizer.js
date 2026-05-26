@@ -1122,44 +1122,6 @@ if (!customElements.get("custom-shirt-customizer")) {
         if (this.errorName) this.errorName.style.display = "none";
         if (this.errorNumber) this.errorNumber.style.display = "none";
 
-        let hasError = false;
-
-        // Name and Number must be provided together
-        const nameValue = this.nameInput ? this.nameInput.value.trim() : "";
-        const numberValue = this.numberInput
-          ? this.numberInput.value.trim()
-          : "";
-
-        if (nameValue !== "" && numberValue === "") {
-          if (this.errorNumber) this.errorNumber.style.display = "block";
-          hasError = true;
-        }
-        if (numberValue !== "" && nameValue === "") {
-          if (this.errorName) this.errorName.style.display = "block";
-          hasError = true;
-        }
-
-        if (hasError) {
-          // Open drawer if name/number errors are present and drawer is closed
-          if (this.drawer && this.drawer.style.display === "none") {
-            this.drawer.style.display = "block";
-            if (this.toggleBtn) this.toggleBtn.style.display = "none";
-          }
-
-          // Scroll to the first error
-          const firstError = [this.errorName, this.errorNumber].find(
-            (err) => err && err.style.display === "block",
-          );
-          if (firstError) {
-            firstError.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
-          }
-
-          return false;
-        }
-
         return true;
       }
 
