@@ -25,6 +25,7 @@
     -%}
     {%- liquid
       assign giftbox_id = product.metafields.global.add_gift_product
+      assign gift_product_obj = product.metafields.global.add_gift_product.value
       if product.metafields.global.add_gift_product.value != blank
         assign giftbox_id = product.metafields.global.add_gift_product
       endif
@@ -33,7 +34,7 @@
       class="product-form"
       data-hide-errors="{{ gift_card_recipient_feature_active }}"
       data-section-id="{{ section.id }}"
-      data-has-giftbox="{% if product.tags contains 'add_gift_product' %}{% if product.metafields.global.add_gift_product != blank %}true{% else %}false{% endif %}{% else %}false{% endif %}"
+      data-has-giftbox="{% if product.tags contains 'add_gift_product' and product.metafields.global.add_gift_product != blank and gift_product_obj.available != false %}true{% else %}false{% endif %}"
       data-giftbox-id="{{ giftbox_id }}"
     >
       <div class="product-form__error-message-wrapper" role="alert" hidden>
@@ -77,7 +78,7 @@
 
         {% comment %} Customization UI moved to separate block in main-product.liquid {% endcomment %}
 
-        {%- if product.tags contains 'add_gift_product' and product.metafields.global.add_gift_product != blank -%}
+        {%- if product.tags contains 'add_gift_product' and product.metafields.global.add_gift_product != blank and gift_product_obj.available != false -%}
           <style>
             .giftbox-checkbox-wrapper {
               margin-bottom: 2.2rem;

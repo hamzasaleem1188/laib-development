@@ -25,6 +25,7 @@
   "title": {{ found_product.title | json }},
   "handle": {{ found_product.handle | json }},
   "url": {{ found_product.url | json }},
+  "available": {{ found_product.available | json }},
   "featured_image": {{ found_product.featured_image | image_url: width: 400 | json }},
   "price": {{ found_product.price | json }},
   "price_formatted": {{ found_product.price | money | json }},

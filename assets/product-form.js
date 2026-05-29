@@ -52,8 +52,16 @@ if (!customElements.get("product-form")) {
           .then((res) => res.json())
           .then((data) => {
             if (data && data.price_formatted) {
-              priceSpan.textContent = `+${data.price_formatted}`;
-              priceSpan.style.display = "inline-block";
+              if (data.available === false) {
+                const checkboxWrapper = this.querySelector(".giftbox-checkbox-wrapper");
+                if (checkboxWrapper) checkboxWrapper.style.display = "none";
+                this.setAttribute("data-has-giftbox", "false");
+              } else {
+                if (priceSpan) {
+                  priceSpan.textContent = `+${data.price_formatted}`;
+                  priceSpan.style.display = "inline-block";
+                }
+              }
             }
           })
           .catch((err) => {
@@ -302,8 +310,24 @@ if (!customElements.get("product-form")) {
             loadingEl.style.display = "none";
             contentEl.style.display = "block";
 
-            const giftVariant =
-              data.variants.find((v) => v.available) || data.variants[0];
+            const giftVariant = data.variants.find((v) => v.available);
+            if (!giftVariant) {
+              if (titleEl) titleEl.textContent = "Out of Stock";
+              if (productTitleEl) productTitleEl.textContent = "Sorry, the gift box has just sold out.";
+              if (priceEl) priceEl.style.display = "none";
+              if (imgEl) imgEl.style.display = "none";
+              if (addBtn) addBtn.style.display = "none";
+              if (declineBtn) {
+                 declineBtn.textContent = "Continue to cart";
+                 declineBtn.style.textDecoration = "none";
+                 declineBtn.classList.remove("button--tertiary");
+                 declineBtn.classList.add("button--primary");
+              }
+              
+              loadingEl.style.display = "none";
+              contentEl.style.display = "block";
+              return;
+            }
             const giftVariantId = giftVariant.id;
 
             addBtn.onclick = () => {

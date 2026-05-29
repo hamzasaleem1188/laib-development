@@ -953,6 +953,7 @@
             </div>
             
             <div class="giftbox-note-field" style="margin-top: 10px; border-top: 1px solid rgba(var(--color-foreground), 0.05); padding-top: 15px;">
+              {% comment %}
               <label class="form__label" for="GiftBoxNote-{{ section.id }}" style="margin-bottom: 1rem; display: block; font-size: 1.3rem;">Add a gift note (optional):</label>
               <div class="field" style="margin-bottom: 0.2rem;">
                 <input class="field__input" type="text" id="GiftBoxNote-{{ section.id }}" name="giftbox_note" placeholder="Enter note (max 30 chars)" maxlength="30">
@@ -961,6 +962,7 @@
               <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
                 <small class="field__counter" id="GiftBoxNoteCounter-{{ section.id }}" style="font-size: 1rem; opacity: 0.6;">0/30</small>
               </div>
+              {% endcomment %}
               <div>
                 <button type="button" class="button button--primary giftbox-add-btn" style="width: 100%; height: 4.5rem; font-size: 1.4rem;">Add Gift Box</button>
               </div>
