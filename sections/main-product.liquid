@@ -65,15 +65,63 @@
       .price.price--show-badge {
         margin-bottom: 2rem;
       }
-      .custom-select { position: relative; width: 100%; }
-      .select-selected { padding: 1rem; border: 1px solid rgba(var(--color-foreground), 0.2); border-radius: var(--inputs-radius); cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: rgb(var(--color-background)); height: 4.5rem; }
-      .select-items { position: absolute; top: 100%; left: 0; right: 0; z-index: 99; border: 1px solid rgba(var(--color-foreground), 0.2); border-top: none; max-height: 250px; overflow-y: auto; background: rgb(var(--color-background)); box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 0 0 var(--inputs-radius) var(--inputs-radius); }
-      .select-items div.item { padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: background 0.2s; }
-      .select-items div.item:hover { background: rgba(var(--color-foreground), 0.05); }
-      .select-hide { display: none !important; }
-      .item-flag { width: 24px; height: 16px; object-fit: contain; border-radius: 2px; }
-      .custom-select .field__input::placeholder { opacity: 0.6; color: rgba(var(--color-foreground), 0.6); }
-      .custom-select .field__input { -webkit-appearance: none; appearance: none; }
+      .custom-select {
+        position: relative;
+        width: 100%;
+      }
+      .select-selected {
+        padding: 1rem;
+        border: 1px solid rgba(var(--color-foreground), 0.2);
+        border-radius: var(--inputs-radius);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgb(var(--color-background));
+        height: 4.5rem;
+      }
+      .select-items {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 99;
+        border: 1px solid rgba(var(--color-foreground), 0.2);
+        border-top: none;
+        max-height: 250px;
+        overflow-y: auto;
+        background: rgb(var(--color-background));
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 0 0 var(--inputs-radius) var(--inputs-radius);
+      }
+      .select-items div.item {
+        padding: 0.8rem 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: background 0.2s;
+      }
+      .select-items div.item:hover {
+        background: rgba(var(--color-foreground), 0.05);
+      }
+      .select-hide {
+        display: none !important;
+      }
+      .item-flag {
+        width: 24px;
+        height: 16px;
+        object-fit: contain;
+        border-radius: 2px;
+      }
+      .custom-select .field__input::placeholder {
+        opacity: 0.6;
+        color: rgba(var(--color-foreground), 0.6);
+      }
+      .custom-select .field__input {
+        -webkit-appearance: none;
+        appearance: none;
+      }
     </style>
   {%- endif -%}
   {%- if product.quantity_price_breaks_configured? -%}
@@ -132,8 +180,12 @@
               endunless
             endif
           -%}
-          {%- if product.tags contains 'custom-inputs' -%}
-            <custom-shirt-customizer class="customization-section" style="display: block;" data-only-custom-inputs="{{ only_custom_inputs }}">
+          {%- if product.tags contains 'custom-inputs' or product.tags contains 'city_input' -%}
+            <custom-shirt-customizer
+              class="customization-section"
+              style="display: block;"
+              data-only-custom-inputs="{{ only_custom_inputs }}"
+            >
           {%- endif -%}
           {%- for block in section.blocks -%}
             {%- case block.type -%}
@@ -293,8 +345,19 @@
                       </div>
                       <div class="select-items select-hide">
                         <div style="padding: 0.5rem; position: sticky; top: 0; background: rgb(var(--color-background)); border-bottom: 1px solid rgba(var(--color-foreground), 0.1); z-index: 1;">
-                          <input type="text" class="field__input" placeholder="Search..." data-flag-search style="height: 3.5rem; padding: 0 1rem; width: 100%;">
-                          <div data-dropdown-clear style="display: none; padding: 0.8rem 1rem; cursor: pointer; align-items: center; gap: 1rem; color: rgba(var(--color-foreground), 0.6); font-size: 0.9em; border-top: 1px solid rgba(var(--color-foreground), 0.05); background: rgba(var(--color-foreground), 0.02); transition: all 0.2s;" onmouseover="this.style.background='rgba(var(--color-foreground), 0.05)'; this.style.color='rgba(var(--color-foreground), 0.8)'" onmouseout="this.style.background='rgba(var(--color-foreground), 0.02)'; this.style.color='rgba(var(--color-foreground), 0.6)'">
+                          <input
+                            type="text"
+                            class="field__input"
+                            placeholder="Search..."
+                            data-flag-search
+                            style="height: 3.5rem; padding: 0 1rem; width: 100%;"
+                          >
+                          <div
+                            data-dropdown-clear
+                            style="display: none; padding: 0.8rem 1rem; cursor: pointer; align-items: center; gap: 1rem; color: rgba(var(--color-foreground), 0.6); font-size: 0.9em; border-top: 1px solid rgba(var(--color-foreground), 0.05); background: rgba(var(--color-foreground), 0.02); transition: all 0.2s;"
+                            onmouseover="this.style.background='rgba(var(--color-foreground), 0.05)'; this.style.color='rgba(var(--color-foreground), 0.8)'"
+                            onmouseout="this.style.background='rgba(var(--color-foreground), 0.02)'; this.style.color='rgba(var(--color-foreground), 0.6)'"
+                          >
                             <span style="width: 24px; display: flex; justify-content: center;">✕</span> Clear Selection
                           </div>
                         </div>
@@ -304,8 +367,19 @@
                       </div>
                     </div>
                     <input type="hidden" name="properties[Country]" data-flag-input form="{{ product_form_id }}">
-                    <input type="hidden" name="properties[_Country Flag URL]" data-flag-url-input form="{{ product_form_id }}">
-                    <div class="customizer-error" data-error-nationality style="display: none; color: #EB001B; margin-top: 0.5rem; font-size: 1.2rem;">Please select a nationality</div>
+                    <input
+                      type="hidden"
+                      name="properties[_Country Flag URL]"
+                      data-flag-url-input
+                      form="{{ product_form_id }}"
+                    >
+                    <div
+                      class="customizer-error"
+                      data-error-nationality
+                      style="display: none; color: #EB001B; margin-top: 0.5rem; font-size: 1.2rem;"
+                    >
+                      Please select a nationality
+                    </div>
                   </div>
                 {%- endif -%}
                 <div
@@ -543,29 +617,54 @@
                 {%- if product.metafields.custom.logo_list != blank -%}
                   {%- assign logos = product.metafields.custom.logo_list.value -%}
                   <div class="product-form__input" style="margin-bottom: 2rem;">
-                    <label class="form__label" style="display: block; margin-bottom: 0.5rem;">{{ block.settings.heading | default: 'Nationality' }}</label>
-                    <div id="LogoSelector-{{ section.id }}" class="custom-select logo-select-component" data-logo-select>
+                    <label class="form__label" style="display: block; margin-bottom: 0.5rem;">
+                      {{- block.settings.heading | default: 'Nationality' -}}
+                    </label>
+                    <div
+                      id="LogoSelector-{{ section.id }}"
+                      class="custom-select logo-select-component"
+                      data-logo-select
+                    >
                       <div class="select-selected">
                         <span data-selected-name>select nationality</span>
                         <span style="font-size: 0.8em;">▼</span>
                       </div>
                       <div class="select-items select-hide">
                         <div style="padding: 0.5rem; position: sticky; top: 0; background: rgb(var(--color-background)); border-bottom: 1px solid rgba(var(--color-foreground), 0.1); z-index: 1;">
-                          <input type="text" class="field__input" placeholder="Search..." data-logo-search style="height: 3.5rem; padding: 0 1rem; width: 100%;">
-                          <div data-logo-dropdown-clear style="display: none; padding: 0.8rem 1rem; cursor: pointer; align-items: center; gap: 1rem; color: rgba(var(--color-foreground), 0.6); font-size: 0.9em; border-top: 1px solid rgba(var(--color-foreground), 0.05); background: rgba(var(--color-foreground), 0.02); transition: all 0.2s;" onmouseover="this.style.background='rgba(var(--color-foreground), 0.05)'; this.style.color='rgba(var(--color-foreground), 0.8)'" onmouseout="this.style.background='rgba(var(--color-foreground), 0.02)'; this.style.color='rgba(var(--color-foreground), 0.6)'">
+                          <input
+                            type="text"
+                            class="field__input"
+                            placeholder="Search..."
+                            data-logo-search
+                            style="height: 3.5rem; padding: 0 1rem; width: 100%;"
+                          >
+                          <div
+                            data-logo-dropdown-clear
+                            style="display: none; padding: 0.8rem 1rem; cursor: pointer; align-items: center; gap: 1rem; color: rgba(var(--color-foreground), 0.6); font-size: 0.9em; border-top: 1px solid rgba(var(--color-foreground), 0.05); background: rgba(var(--color-foreground), 0.02); transition: all 0.2s;"
+                            onmouseover="this.style.background='rgba(var(--color-foreground), 0.05)'; this.style.color='rgba(var(--color-foreground), 0.8)'"
+                            onmouseout="this.style.background='rgba(var(--color-foreground), 0.02)'; this.style.color='rgba(var(--color-foreground), 0.6)'"
+                          >
                             <span style="width: 24px; display: flex; justify-content: center;">✕</span> Clear Selection
                           </div>
                         </div>
                         <div data-logo-list>
                           {%- for logo_item in logos -%}
                             {%- if logo_item.active -%}
-                              <div class="item" 
-                                   data-value="{{ logo_item.label | escape }}" 
-                                   data-logo-url="{{ logo_item.logo_image }}"
-                                   data-label-url="{{ logo_item.label_image }}"
-                                   data-label-text="{{ logo_item.label | escape }}">
+                              <div
+                                class="item"
+                                data-value="{{ logo_item.label | escape }}"
+                                data-logo-url="{{ logo_item.logo_image }}"
+                                data-label-url="{{ logo_item.label_image }}"
+                                data-label-text="{{ logo_item.label | escape }}"
+                              >
                                 {%- if logo_item.logo_image != blank -%}
-                                  <img src="{{ logo_item.logo_image }}" class="item-flag" alt="{{ logo_item.label }}" width="50" height="30">
+                                  <img
+                                    src="{{ logo_item.logo_image }}"
+                                    class="item-flag"
+                                    alt="{{ logo_item.label }}"
+                                    width="50"
+                                    height="30"
+                                  >
                                 {%- endif -%}
                                 <span>{{ logo_item.label }}</span>
                               </div>
@@ -576,14 +675,14 @@
                     </div>
                     <input type="hidden" name="properties[Country]" data-logo-input form="{{ product_form_id }}">
                     <input type="hidden" name="properties[_Logo URL]" data-logo-url-input form="{{ product_form_id }}">
-                    <div class="field" style="margin-bottom: 0.2rem; margin-top: 3rem;">
-                      <input class="field__input" type="text" id="CustomNationalityInput-{{ section.id }}" name="properties[Nationality/City]" placeholder="Enter Nationality/City/Country" data-logo-text-url-input form="{{ product_form_id }}" maxlength="12">
-                      <label class="field__label" for="CustomNationalityInput-{{ section.id }}">Nationality/City</label>
+
+                    <div
+                      class="customizer-error"
+                      data-error-logo
+                      style="display: none; color: #EB001B; margin-top: 0.5rem; font-size: 1.2rem;"
+                    >
+                      Please select a nationality
                     </div>
-                    <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
-                      <small class="field__counter" data-nationality-counter style="font-size: 1rem; opacity: 0.6;">0/12</small>
-                    </div>
-                    <div class="customizer-error" data-error-logo style="display: none; color: #EB001B; margin-top: 0.5rem; font-size: 1.2rem;">Please select a nationality</div>
                   </div>
                 {%- elsif request.design_mode -%}
                   <div class="product-form__input" style="margin-bottom: 2rem;" {{ block.shopify_attributes }}>
@@ -593,46 +692,141 @@
                   </div>
                 {%- endif -%}
               {%- when 'custom_name_num' -%}
-                {%- if product.tags contains 'custom-inputs' -%}
+                {%- if product.tags contains 'custom-inputs' or product.tags contains 'city_input' -%}
                   <div class="product-form__input" style="margin-bottom: 2rem;">
-                    <div data-drawer style="display: none; position: relative; padding: 1.5rem; margin-bottom: 1rem; background: rgba(var(--color-foreground), 0.03); border-radius: 8px; border: 1px solid rgba(var(--color-foreground), 0.1);">
-                      <button type="button" data-close-drawer style="position: absolute; top: -12px; right: -12px; background: #fff; border: 1px solid rgba(var(--color-foreground), 0.1); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; color: rgba(var(--color-foreground), 0.7); box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10;" aria-label="Close Customization" onmouseover="this.style.background='#f4f4f4'" onmouseout="this.style.background='#fff'">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                          <line x1="18" y1="6" x2="6" y2="18"></line>
-                          <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                      </button>
-                      {%- if only_custom_inputs -%}
-                        <p style="font-size: 1.3rem; line-height: 1.4; font-style: italic; opacity: 0.8; margin: 0.5rem 0 1.5rem; color: rgba(var(--color-foreground), 0.7);">
-                          Note: When you add a custom name and/or number, your ordered shirt will appear as shown in this sample image.
-                        </p>
-                      {%- endif -%}
-                      <div class="field" style="margin-bottom: 0.2rem; margin-top: 0.5rem;">
-                        <input class="field__input" type="text" id="CustomNameInput-{{ section.id }}" name="properties[Name]" placeholder="Enter Name" maxlength="10" data-name-input form="{{ product_form_id }}">
-                        <label class="field__label" for="CustomNameInput-{{ section.id }}">Name (Max 10)</label>
-                      </div>
-                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <div class="customizer-error" data-error-name style="display: none; color: #EB001B; font-size: 1.2rem; margin: 0;">Please enter a name</div>
-                        <small class="field__counter" data-name-counter style="margin-left: auto; font-size: 1rem; opacity: 0.6;">0/10</small>
-                      </div>
-                      
+                    {%- if product.tags contains 'city_input' -%}
                       <div class="field" style="margin-bottom: 0.2rem;">
-                        <input class="field__input" type="text" id="CustomNumberInput-{{ section.id }}" name="properties[Number]" placeholder="Enter Number" maxlength="2" data-number-input form="{{ product_form_id }}" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
-                        <label class="field__label" for="CustomNumberInput-{{ section.id }}">Number (Max 2)</label>
+                        <input
+                          class="field__input"
+                          type="text"
+                          id="CustomNationalityInput-{{ section.id }}"
+                          name="properties[Nationality/City]"
+                          placeholder="Enter Nationality/City/Country"
+                          data-logo-text-url-input
+                          form="{{ product_form_id }}"
+                          maxlength="12"
+                        >
+                        <label class="field__label" for="CustomNationalityInput-{{ section.id }}"
+                          >Nationality/City</label
+                        >
                       </div>
-                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <div class="customizer-error" data-error-number style="display: none; color: #EB001B; font-size: 1.2rem; margin: 0;">Please enter a number</div>
-                        <small class="field__counter" data-number-counter style="margin-left: auto; font-size: 1rem; opacity: 0.6;">0/2</small>
+                      <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
+                        <small class="field__counter" data-nationality-counter style="font-size: 1rem; opacity: 0.6;"
+                          >0/12</small
+                        >
                       </div>
-                    </div>
-                    <button type="button" class="button button--secondary button--full-width" data-toggle style="margin-bottom: 1rem;">
-                      Customize
-                    </button>
+                    {%- endif -%}
+
+                    {%- if product.tags contains 'custom-inputs' -%}
+                      <div
+                        data-drawer
+                        style="display: none; position: relative; padding: 1.5rem; margin-bottom: 1rem; background: rgba(var(--color-foreground), 0.03); border-radius: 8px; border: 1px solid rgba(var(--color-foreground), 0.1);"
+                      >
+                        <button
+                          type="button"
+                          data-close-drawer
+                          style="position: absolute; top: -12px; right: -12px; background: #fff; border: 1px solid rgba(var(--color-foreground), 0.1); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; color: rgba(var(--color-foreground), 0.7); box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10;"
+                          aria-label="Close Customization"
+                          onmouseover="this.style.background='#f4f4f4'"
+                          onmouseout="this.style.background='#fff'"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+                        {%- if only_custom_inputs -%}
+                          <p style="font-size: 1.3rem; line-height: 1.4; font-style: italic; opacity: 0.8; margin: 0.5rem 0 1.5rem; color: rgba(var(--color-foreground), 0.7);">
+                            Note: When you add a custom name and/or number, your ordered shirt will appear as shown in
+                            this sample image.
+                          </p>
+                        {%- endif -%}
+                        <div class="field" style="margin-bottom: 0.2rem; margin-top: 0.5rem;">
+                          <input
+                            class="field__input"
+                            type="text"
+                            id="CustomNameInput-{{ section.id }}"
+                            name="properties[Name]"
+                            placeholder="Enter Name"
+                            maxlength="10"
+                            data-name-input
+                            form="{{ product_form_id }}"
+                          >
+                          <label class="field__label" for="CustomNameInput-{{ section.id }}">Name (Max 10)</label>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                          <div
+                            class="customizer-error"
+                            data-error-name
+                            style="display: none; color: #EB001B; font-size: 1.2rem; margin: 0;"
+                          >
+                            Please enter a name
+                          </div>
+                          <small
+                            class="field__counter"
+                            data-name-counter
+                            style="margin-left: auto; font-size: 1rem; opacity: 0.6;"
+                            >0/10</small
+                          >
+                        </div>
+
+                        <div class="field" style="margin-bottom: 0.2rem;">
+                          <input
+                            class="field__input"
+                            type="text"
+                            id="CustomNumberInput-{{ section.id }}"
+                            name="properties[Number]"
+                            placeholder="Enter Number"
+                            maxlength="2"
+                            data-number-input
+                            form="{{ product_form_id }}"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                          >
+                          <label class="field__label" for="CustomNumberInput-{{ section.id }}">Number (Max 2)</label>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                          <div
+                            class="customizer-error"
+                            data-error-number
+                            style="display: none; color: #EB001B; font-size: 1.2rem; margin: 0;"
+                          >
+                            Please enter a number
+                          </div>
+                          <small
+                            class="field__counter"
+                            data-number-counter
+                            style="margin-left: auto; font-size: 1rem; opacity: 0.6;"
+                            >0/2</small
+                          >
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        class="button button--secondary button--full-width"
+                        data-toggle
+                        style="margin-bottom: 1rem;"
+                      >
+                        Customize
+                      </button>
+                    {%- endif -%}
                   </div>
                 {%- endif -%}
               {%- when 'buy_buttons' -%}
                 {%- if product.tags contains 'custom-inputs' -%}
-                  <div class="product__accordion accordion quick-add-hidden personalization-return-policy" {{ block.shopify_attributes }}>
+                  <div
+                    class="product__accordion accordion quick-add-hidden personalization-return-policy"
+                    {{ block.shopify_attributes }}
+                  >
                     <details id="PersonalizationNotice-{{ section.id }}">
                       <summary>
                         <div class="summary__title">
@@ -644,7 +838,9 @@
                         {% render 'icon-caret' %}
                       </summary>
                       <div class="accordion__content rte" id="PersonalizationNoticeContent-{{ section.id }}">
-                        When this product is tailored to your individual needs you agree that your right to return lapses. This means that you cannot return the product once it has been personalized. Please double check your spelling and/or choose the correct size before finalizing your order.
+                        When this product is tailored to your individual needs you agree that your right to return
+                        lapses. This means that you cannot return the product once it has been personalized. Please
+                        double check your spelling and/or choose the correct size before finalizing your order.
                       </div>
                     </details>
                   </div>
@@ -660,15 +856,15 @@
                       padding: 1.2rem 0;
                     }
                     .personalization-return-policy .icon-accordion {
-                      fill: #EB001B;
-                      color: #EB001B;
+                      fill: #eb001b;
+                      color: #eb001b;
                     }
                     .personalization-return-policy.is-active {
-                      border-color: #EB001B;
+                      border-color: #eb001b;
                       background: rgba(235, 0, 27, 0.03);
                     }
                     .personalization-return-policy.is-active .accordion__title {
-                      color: #EB001B;
+                      color: #eb001b;
                       font-weight: bold;
                     }
                   </style>
@@ -782,7 +978,7 @@
                                     limit: block.settings.products_per_page
                                     offset: continue
                                   -%}
-                                  {% comment %}theme-check-enable UndefinedObject{% endcomment %}
+                                    {% comment %}theme-check-enable UndefinedObject{% endcomment %}
                                     <li>
                                       {%- if block.settings.enable_quick_add -%}
                                         {% assign quick_add = 'standard' %}
@@ -869,7 +1065,7 @@
                 {% render 'icon-with-text', block: block %}
             {%- endcase -%}
           {%- endfor -%}
-          {%- if product.tags contains 'custom-inputs' -%}
+          {%- if product.tags contains 'custom-inputs' or product.tags contains 'city_input' -%}
             </custom-shirt-customizer>
           {%- endif -%}
           <a href="{{ product.url }}" class="link product__view-details animate-arrow">
@@ -920,8 +1116,6 @@
       <script src="{{ 'product-model.js' | asset_url }}" defer></script>
     {%- endif -%}
 
-
-
     <script type="application/ld+json">
       {{ product | structured_data }}
     </script>
@@ -933,43 +1127,86 @@
   {%- assign has_giftbox_tag = true -%}
 {%- endif -%}
 {%- if has_giftbox_tag and product.metafields.global.add_gift_product != blank -%}
-  <div id="GiftBoxModal-{{ section.id }}" class="custom-modal giftbox-modal" style="display: none;" data-gift-product-id="{{ product.metafields.global.add_gift_product }}">
+  <div
+    id="GiftBoxModal-{{ section.id }}"
+    class="custom-modal giftbox-modal"
+    style="display: none;"
+    data-gift-product-id="{{ product.metafields.global.add_gift_product }}"
+  >
     <div class="custom-modal__content" style="max-width: 500px; padding: 30px 20px 20px;">
       <button type="button" class="custom-modal__close" data-modal-close>&times;</button>
       <div class="custom-modal__body" id="GiftBoxModalBody-{{ section.id }}">
-        <div class="giftbox-loading" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 2rem; gap: 1.5rem; text-align: center;">
-          <div style="width: 3rem; height: 3rem; border: 3px solid rgba(var(--color-foreground), 0.1); border-radius: 50%; border-top-color: rgb(var(--color-foreground)); animation: spin 1s ease-in-out infinite;"></div>
+        <div
+          class="giftbox-loading"
+          style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 2rem; gap: 1.5rem; text-align: center;"
+        >
+          <div
+            style="width: 3rem; height: 3rem; border: 3px solid rgba(var(--color-foreground), 0.1); border-radius: 50%; border-top-color: rgb(var(--color-foreground)); animation: spin 1s ease-in-out infinite;"
+          ></div>
           <p style="margin: 0; font-size: 1.4rem; color: rgba(var(--color-foreground), 0.75);">Loading Gift Offer...</p>
         </div>
         <div class="giftbox-content" style="display: none;">
-          <h3 class="giftbox-title" style="margin-top: 0; margin-bottom: 1.5rem; text-align: center; font-family: inherit; font-size: 2rem; font-weight: bold;">Add a Gift Box?</h3>
-          <div class="giftbox-product-details" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 2rem; border: 1px solid rgba(var(--color-foreground), 0.1); padding: 15px; border-radius: 8px;">
+          <h3
+            class="giftbox-title"
+            style="margin-top: 0; margin-bottom: 1.5rem; text-align: center; font-family: inherit; font-size: 2rem; font-weight: bold;"
+          >
+            Add a Gift Box?
+          </h3>
+          <div
+            class="giftbox-product-details"
+            style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 2rem; border: 1px solid rgba(var(--color-foreground), 0.1); padding: 15px; border-radius: 8px;"
+          >
             <div style="display: flex; gap: 15px; align-items: center;">
-              <img class="giftbox-product-image" src="{{ 'transparent.png' | asset_url }}" alt="Gift Box" width="80" height="80" style="width: 80px !important; height: 80px !important; object-fit: cover; border-radius: 4px; display: none;">
+              <img
+                class="giftbox-product-image"
+                src="{{ 'transparent.png' | asset_url }}"
+                alt="Gift Box"
+                width="80"
+                height="80"
+                style="width: 80px !important; height: 80px !important; object-fit: cover; border-radius: 4px; display: none;"
+              >
               <div style="flex-grow: 1;">
                 <div class="giftbox-product-title" style="font-weight: bold; font-size: 1.4rem;"></div>
-                <div class="giftbox-product-price" style="font-size: 1.3rem; color: rgba(var(--color-foreground), 0.75); margin-top: 5px;"></div>
+                <div
+                  class="giftbox-product-price"
+                  style="font-size: 1.3rem; color: rgba(var(--color-foreground), 0.75); margin-top: 5px;"
+                ></div>
               </div>
             </div>
-            
-            <div class="giftbox-note-field" style="margin-top: 10px; border-top: 1px solid rgba(var(--color-foreground), 0.05); padding-top: 15px;">
+
+            <div
+              class="giftbox-note-field"
+              style="margin-top: 10px; border-top: 1px solid rgba(var(--color-foreground), 0.05); padding-top: 15px;"
+            >
               {% comment %}
-              <label class="form__label" for="GiftBoxNote-{{ section.id }}" style="margin-bottom: 1rem; display: block; font-size: 1.3rem;">Add a gift note (optional):</label>
-              <div class="field" style="margin-bottom: 0.2rem;">
-                <input class="field__input" type="text" id="GiftBoxNote-{{ section.id }}" name="giftbox_note" placeholder="Enter note (max 30 chars)" maxlength="30">
-                <label class="field__label" for="GiftBoxNote-{{ section.id }}">Gift Note</label>
-              </div>
-              <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
-                <small class="field__counter" id="GiftBoxNoteCounter-{{ section.id }}" style="font-size: 1rem; opacity: 0.6;">0/30</small>
-              </div>
+                <label class="form__label" for="GiftBoxNote-{{ section.id }}" style="margin-bottom: 1rem; display: block; font-size: 1.3rem;">Add a gift note (optional):</label>
+                <div class="field" style="margin-bottom: 0.2rem;">
+                  <input class="field__input" type="text" id="GiftBoxNote-{{ section.id }}" name="giftbox_note" placeholder="Enter note (max 30 chars)" maxlength="30">
+                  <label class="field__label" for="GiftBoxNote-{{ section.id }}">Gift Note</label>
+                </div>
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
+                  <small class="field__counter" id="GiftBoxNoteCounter-{{ section.id }}" style="font-size: 1rem; opacity: 0.6;">0/30</small>
+                </div>
               {% endcomment %}
               <div>
-                <button type="button" class="button button--primary giftbox-add-btn" style="width: 100%; height: 4.5rem; font-size: 1.4rem;">Add Gift Box</button>
+                <button
+                  type="button"
+                  class="button button--primary giftbox-add-btn"
+                  style="width: 100%; height: 4.5rem; font-size: 1.4rem;"
+                >
+                  Add Gift Box
+                </button>
               </div>
             </div>
           </div>
           <div style="display: flex; justify-content: center; gap: 10px; margin-top: 1rem;">
-            <button type="button" class="button button--tertiary giftbox-decline-btn" style="text-decoration: underline; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: rgba(var(--color-foreground), 0.75);">No, thanks</button>
+            <button
+              type="button"
+              class="button button--tertiary giftbox-decline-btn"
+              style="text-decoration: underline; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: rgba(var(--color-foreground), 0.75);"
+            >
+              No, thanks
+            </button>
           </div>
         </div>
       </div>
@@ -1015,7 +1252,7 @@
       max-width: 800px;
       max-height: 90vh;
       border-radius: 8px;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
       transform: translateY(30px) scale(0.98);
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1;
@@ -1030,7 +1267,7 @@
       position: absolute;
       top: 10px;
       right: 15px;
-      background: rgba(255,255,255,0.8);
+      background: rgba(255, 255, 255, 0.8);
       border: none;
       width: 34px;
       height: 34px;
@@ -1041,14 +1278,16 @@
       font-size: 24px;
       cursor: pointer;
       z-index: 2;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
     .custom-modal__body {
       width: 100%;
       height: auto;
     }
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
   </style>
 {%- endif -%}
@@ -1236,6 +1475,7 @@
         }
       ]
     },
+
     {
       "type": "custom_name_num",
       "name": "Custom Name Number",

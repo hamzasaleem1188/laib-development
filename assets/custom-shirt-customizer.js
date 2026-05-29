@@ -49,13 +49,15 @@ if (!customElements.get("custom-shirt-customizer")) {
             "[data-logo-dropdown-clear]",
           );
           this.logoUrlInput = this.querySelector("[data-logo-url-input]");
-          this.nationalityCityInput = this.querySelector(
-            "[data-logo-text-url-input]",
-          );
-          this.nationalityCityCounter = this.querySelector(
-            "[data-nationality-counter]",
-          );
         }
+
+        // Independent Nationality/City Input Elements
+        this.nationalityCityInput = this.querySelector(
+          "[data-logo-text-url-input]",
+        );
+        this.nationalityCityCounter = this.querySelector(
+          "[data-nationality-counter]",
+        );
 
         this.updateClearButtons();
 
