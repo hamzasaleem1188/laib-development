@@ -4,46 +4,86 @@
   - product: {Object} Product liquid object
 {% endcomment %}
 
+{%- assign print_color = product.metafields.custom.print_color | default: '#000000' -%}
+{%- assign front_index = -1 -%}
+{%- assign back_index = -1 -%}
+{%- for media in product.media -%}
+  {%- assign alt_down = media.alt | default: media.preview_image.alt | downcase -%}
+  {%- if alt_down contains 'front' and front_index == -1 -%}
+    {%- assign front_index = forloop.index0 -%}
+  {%- elsif alt_down contains 'back' and back_index == -1 -%}
+    {%- assign back_index = forloop.index0 -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{%- if front_index == -1 -%}{%- assign front_index = 0 -%}{%- endif -%}
+{%- if back_index == -1 -%}
+  {%- if product.media.size > 1 -%}
+    {%- assign back_index = 1 -%}
+  {%- else -%}
+    {%- assign back_index = 0 -%}
+  {%- endif -%}
+{%- endif -%}
+
 <div class="product__media-gallery custom-media-gallery{% if section.settings.enable_sticky_info %} product__column-sticky{% endif %}">
-  {%- assign print_color = product.metafields.custom.print_color | default: '#000000' -%}
   <style>
     .custom-media-controls {
       display: inline-flex;
-      background: rgba(var(--color-foreground), 0.04);
+      background: rgba(var(--color-foreground), 0.08);
       padding: 4px;
-      border-radius: 12px;
-      gap: 4px;
-      border: 1px solid rgba(var(--color-foreground), 0.08);
-      backdrop-filter: blur(8px);
-    }
-    .custom-media-controls button {
-      border: none;
-      background: transparent;
-      padding: 10px 24px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 1.3rem;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: rgba(var(--color-foreground), 0.6);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 40px;
       position: relative;
-      overflow: hidden;
-      min-width: 100px;
+      width: 100%;
+      max-width: 300px;
+      margin: 20px auto 10px;
     }
-    .custom-media-controls button:hover:not(:disabled) {
+    .custom-media-controls .toggle-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 10px 0;
+      border-radius: 40px;
+      font-family: var(--font-body-family);
+      font-size: 1.3rem;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: rgba(var(--color-foreground), 0.5);
+      cursor: pointer;
+      transition: color 0.3s ease;
+      position: relative;
+      z-index: 2;
+    }
+    .custom-media-controls .toggle-btn:hover {
+      color: rgba(var(--color-foreground), 0.8);
+    }
+    .custom-media-controls .toggle-btn.is-active {
       color: rgb(var(--color-foreground));
-      background: rgba(var(--color-foreground), 0.05);
+      pointer-events: none;
     }
-    .custom-media-controls button:disabled {
-      background: #fff;
-      color: #000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      cursor: default;
+    .custom-media-controls-indicator {
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: 4px;
+      width: calc(50% - 4px);
+      background: rgb(var(--color-background));
+      border-radius: 40px;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+      z-index: 1;
+      opacity: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+    .custom-media-controls.is-front-active .custom-media-controls-indicator {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    .custom-media-controls.is-back-active .custom-media-controls-indicator {
+      transform: translateX(100%);
+      opacity: 1;
     }
     /* Dark mode adjustment if needed */
-    [data-scheme="dark"] .custom-media-controls button:disabled {
+    [data-scheme='dark'] .custom-media-controls button:disabled {
       background: rgb(var(--color-foreground));
       color: rgb(var(--color-background));
     }
@@ -57,44 +97,118 @@
 
     /* Country Name: Desktop (1025px+) */
     @media screen and (min-width: 1025px) {
-      #PreviewCountryName[data-char-count="1"], #PreviewCountryName[data-char-count="2"], #PreviewCountryName[data-char-count="3"], #PreviewCountryName[data-char-count="4"], #PreviewCountryName[data-char-count="5"], #PreviewCountryName[data-char-count="6"],
-      #PreviewLogoLabel[data-char-count="1"], #PreviewLogoLabel[data-char-count="2"], #PreviewLogoLabel[data-char-count="3"], #PreviewLogoLabel[data-char-count="4"], #PreviewLogoLabel[data-char-count="5"], #PreviewLogoLabel[data-char-count="6"] { font-size: 4.5rem; }
-      #PreviewCountryName[data-char-count="7"], #PreviewCountryName[data-char-count="8"], #PreviewCountryName[data-char-count="9"],
-      #PreviewLogoLabel[data-char-count="7"], #PreviewLogoLabel[data-char-count="8"], #PreviewLogoLabel[data-char-count="9"] { font-size: 4.0rem; }
-      #PreviewCountryName[data-char-count="10"], #PreviewCountryName[data-char-count="11"], #PreviewCountryName[data-char-count="12"],
-      #PreviewLogoLabel[data-char-count="10"], #PreviewLogoLabel[data-char-count="11"], #PreviewLogoLabel[data-char-count="12"] { font-size: 3.5rem; }
+      #PreviewCountryName[data-char-count='1'],
+      #PreviewCountryName[data-char-count='2'],
+      #PreviewCountryName[data-char-count='3'],
+      #PreviewCountryName[data-char-count='4'],
+      #PreviewCountryName[data-char-count='5'],
+      #PreviewCountryName[data-char-count='6'],
+      #PreviewLogoLabel[data-char-count='1'],
+      #PreviewLogoLabel[data-char-count='2'],
+      #PreviewLogoLabel[data-char-count='3'],
+      #PreviewLogoLabel[data-char-count='4'],
+      #PreviewLogoLabel[data-char-count='5'],
+      #PreviewLogoLabel[data-char-count='6'] {
+        font-size: 4.5rem;
+      }
+      #PreviewCountryName[data-char-count='7'],
+      #PreviewCountryName[data-char-count='8'],
+      #PreviewCountryName[data-char-count='9'],
+      #PreviewLogoLabel[data-char-count='7'],
+      #PreviewLogoLabel[data-char-count='8'],
+      #PreviewLogoLabel[data-char-count='9'] {
+        font-size: 4rem;
+      }
+      #PreviewCountryName[data-char-count='10'],
+      #PreviewCountryName[data-char-count='11'],
+      #PreviewCountryName[data-char-count='12'],
+      #PreviewLogoLabel[data-char-count='10'],
+      #PreviewLogoLabel[data-char-count='11'],
+      #PreviewLogoLabel[data-char-count='12'] {
+        font-size: 3.5rem;
+      }
     }
     /* Country Name: Tablet (481px - 1024px) */
     @media screen and (min-width: 481px) and (max-width: 1024px) {
-      #PreviewCountryName[data-char-count="1"], #PreviewCountryName[data-char-count="2"], #PreviewCountryName[data-char-count="3"], #PreviewCountryName[data-char-count="4"], #PreviewCountryName[data-char-count="5"], #PreviewCountryName[data-char-count="6"],
-      #PreviewLogoLabel[data-char-count="1"], #PreviewLogoLabel[data-char-count="2"], #PreviewLogoLabel[data-char-count="3"], #PreviewLogoLabel[data-char-count="4"], #PreviewLogoLabel[data-char-count="5"], #PreviewLogoLabel[data-char-count="6"] { font-size: 3.3rem; }
-      #PreviewCountryName[data-char-count="7"], #PreviewCountryName[data-char-count="8"], #PreviewCountryName[data-char-count="9"],
-      #PreviewLogoLabel[data-char-count="7"], #PreviewLogoLabel[data-char-count="8"], #PreviewLogoLabel[data-char-count="9"] { font-size: 2.8rem; }
-      #PreviewCountryName[data-char-count="10"], #PreviewCountryName[data-char-count="11"], #PreviewCountryName[data-char-count="12"],
-      #PreviewLogoLabel[data-char-count="10"], #PreviewLogoLabel[data-char-count="11"], #PreviewLogoLabel[data-char-count="12"] { font-size: 2.3rem; }
+      #PreviewCountryName[data-char-count='1'],
+      #PreviewCountryName[data-char-count='2'],
+      #PreviewCountryName[data-char-count='3'],
+      #PreviewCountryName[data-char-count='4'],
+      #PreviewCountryName[data-char-count='5'],
+      #PreviewCountryName[data-char-count='6'],
+      #PreviewLogoLabel[data-char-count='1'],
+      #PreviewLogoLabel[data-char-count='2'],
+      #PreviewLogoLabel[data-char-count='3'],
+      #PreviewLogoLabel[data-char-count='4'],
+      #PreviewLogoLabel[data-char-count='5'],
+      #PreviewLogoLabel[data-char-count='6'] {
+        font-size: 3.3rem;
+      }
+      #PreviewCountryName[data-char-count='7'],
+      #PreviewCountryName[data-char-count='8'],
+      #PreviewCountryName[data-char-count='9'],
+      #PreviewLogoLabel[data-char-count='7'],
+      #PreviewLogoLabel[data-char-count='8'],
+      #PreviewLogoLabel[data-char-count='9'] {
+        font-size: 2.8rem;
+      }
+      #PreviewCountryName[data-char-count='10'],
+      #PreviewCountryName[data-char-count='11'],
+      #PreviewCountryName[data-char-count='12'],
+      #PreviewLogoLabel[data-char-count='10'],
+      #PreviewLogoLabel[data-char-count='11'],
+      #PreviewLogoLabel[data-char-count='12'] {
+        font-size: 2.3rem;
+      }
     }
     /* Country Name: Mobile (under 480px) */
     @media screen and (max-width: 480px) {
-      #PreviewCountryName[data-char-count="1"], #PreviewCountryName[data-char-count="2"], #PreviewCountryName[data-char-count="3"], #PreviewCountryName[data-char-count="4"], #PreviewCountryName[data-char-count="5"], #PreviewCountryName[data-char-count="6"],
-      #PreviewLogoLabel[data-char-count="1"], #PreviewLogoLabel[data-char-count="2"], #PreviewLogoLabel[data-char-count="3"], #PreviewLogoLabel[data-char-count="4"], #PreviewLogoLabel[data-char-count="5"], #PreviewLogoLabel[data-char-count="6"] { font-size: 3.2rem; }
-      #PreviewCountryName[data-char-count="7"], #PreviewCountryName[data-char-count="8"], #PreviewCountryName[data-char-count="9"],
-      #PreviewLogoLabel[data-char-count="7"], #PreviewLogoLabel[data-char-count="8"], #PreviewLogoLabel[data-char-count="9"] { font-size: 2.6rem; }
-      #PreviewCountryName[data-char-count="10"], #PreviewCountryName[data-char-count="11"], #PreviewCountryName[data-char-count="12"],
-      #PreviewLogoLabel[data-char-count="10"], #PreviewLogoLabel[data-char-count="11"], #PreviewLogoLabel[data-char-count="12"] { font-size: 2.1rem; }
+      #PreviewCountryName[data-char-count='1'],
+      #PreviewCountryName[data-char-count='2'],
+      #PreviewCountryName[data-char-count='3'],
+      #PreviewCountryName[data-char-count='4'],
+      #PreviewCountryName[data-char-count='5'],
+      #PreviewCountryName[data-char-count='6'],
+      #PreviewLogoLabel[data-char-count='1'],
+      #PreviewLogoLabel[data-char-count='2'],
+      #PreviewLogoLabel[data-char-count='3'],
+      #PreviewLogoLabel[data-char-count='4'],
+      #PreviewLogoLabel[data-char-count='5'],
+      #PreviewLogoLabel[data-char-count='6'] {
+        font-size: 3.2rem;
+      }
+      #PreviewCountryName[data-char-count='7'],
+      #PreviewCountryName[data-char-count='8'],
+      #PreviewCountryName[data-char-count='9'],
+      #PreviewLogoLabel[data-char-count='7'],
+      #PreviewLogoLabel[data-char-count='8'],
+      #PreviewLogoLabel[data-char-count='9'] {
+        font-size: 2.6rem;
+      }
+      #PreviewCountryName[data-char-count='10'],
+      #PreviewCountryName[data-char-count='11'],
+      #PreviewCountryName[data-char-count='12'],
+      #PreviewLogoLabel[data-char-count='10'],
+      #PreviewLogoLabel[data-char-count='11'],
+      #PreviewLogoLabel[data-char-count='12'] {
+        font-size: 2.1rem;
+      }
     }
-    
-    #PreviewFlagFrontContainer, #PreviewFlagBackContainer {
+
+    #PreviewFlagFrontContainer,
+    #PreviewFlagBackContainer {
       width: 20%;
       aspect-ratio: 1.2 / 1;
       overflow: hidden;
     }
-    #PreviewFlagFrontContainer img, #PreviewFlagBackContainer img {
+    #PreviewFlagFrontContainer img,
+    #PreviewFlagBackContainer img {
       width: 100%;
       height: 100%;
       object-fit: contain;
       display: block;
     }
-    
+
     #PreviewFlagFrontContainer {
       top: 23%;
       left: 62%;
@@ -107,120 +221,355 @@
     }
 
     @media screen and (max-width: 480px) {
-      #PreviewFlagFrontContainer, #PreviewFlagBackContainer {
+      #PreviewFlagFrontContainer,
+      #PreviewFlagBackContainer {
         width: 15%;
       }
       #PreviewFlagFrontContainer {
         top: 22%;
       }
     }
-    
-  </style>
 
-  <div class="custom-media-images" style="width: 100%; max-width: 650px; margin: 0 auto; overflow: hidden;">
-    <div id="media-slider-wrapper" style="display: flex; transition: transform 0.4s ease-in-out; width: {% if product.media[1] != blank %}200%{% else %}100%{% endif %};">
-      {%- if product.media[0] != blank -%}
-        <div id="custom-media-front" style="width: {% if product.media[1] != blank %}50%{% else %}100%{% endif %}; flex-shrink: 0; position: relative;">
-        <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
-          {{ product.media[0].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'eager', alt: product.media[0].alt }}
-        </div>
-        <div id="PreviewFlagFrontContainer" style="position: absolute; display: none;">
-          <img id="PreviewFlagFront" src="{{ 'transparent.png' | asset_url }}" width="100" height="66" loading="lazy">
-        </div>
-        <div id="PreviewLogoLabelContainer" style="position: absolute; top: 33%; left: 19%; right: 16%; pointer-events: none; display: none; text-align: center;">
-          <span id="PreviewLogoLabel" style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; white-space: nowrap; display: inline-block; transform-origin: center;"></span>
-        </div>
-        <div id="PreviewCountryNameContainer" style="position: absolute; top: 33%; left: 19%; right: 16%; pointer-events: none; display: none; text-align: center;">
-          <span id="PreviewCountryName" style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; white-space: nowrap; display: inline-block; transform-origin: center;"></span>
-        </div>
-      </div>
-    {%- endif -%}
-    {%- if product.media[1] != blank -%}
-      <div id="custom-media-back" style="width: 50%; flex-shrink: 0; position: relative;">
-        <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
-          {{ product.media[1].preview_image | image_url: width: 1000 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain; border-radius: var(--media-radius, 0);', loading: 'lazy', alt: product.media[1].alt }}
-        </div>
-        <div id="PreviewFlagBackContainer" style="position: absolute; display: none;">
-          <img id="PreviewFlagBack" src="{{ 'transparent.png' | asset_url }}" width="100" height="66" loading="lazy">
-        </div>
-        {%- if product.tags contains 'custom-inputs' -%}
+    .slider-nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      color: #000;
+      transition: all 0.2s;
+    }
+    .slider-nav-btn:hover:not(:disabled) {
+      background: #fff;
+      transform: translateY(-50%) scale(1.05);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+    .slider-nav-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .custom-media-thumbnail {
+      transition: opacity 0.2s, border-color 0.2s;
+    }
+    .custom-media-thumbnail:hover {
+      opacity: 0.8;
+    }
+    .custom-media-thumbnail.active {
+      border-color: #000 !important;
+      opacity: 1;
+    }
 
-            <div style="position: absolute; top: 18%; left: 0; right: 0; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
-              <span id="PreviewName" style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; letter-spacing: 0.5px; line-height: 1; margin-bottom: 3rem;"></span>
-              <span id="PreviewNumber" style="font-weight: normal; font-family: 'Vogue'; color: {{ print_color }}; line-height: 1; display: inline-block; transform: scaleY(1.5); transform-origin: center;"></span>
-            </div>
-            <style>
-              /* PC / Desktop Device */
-              @media screen and (min-width: 1025px) {
-                #PreviewName { font-size: 4.5rem; }
-                #PreviewName[data-char-count="5"], #PreviewName[data-char-count="6"] { font-size: 5rem; }
-                #PreviewName[data-char-count="7"], #PreviewName[data-char-count="8"] { font-size: 4.5rem; }
-                #PreviewName[data-char-count="9"], #PreviewName[data-char-count="10"] { font-size: 4rem; }
+    /* PC / Desktop Device */
+    @media screen and (min-width: 1025px) {
+      #PreviewName {
+        font-size: 4.5rem;
+      }
+      #PreviewName[data-char-count='5'],
+      #PreviewName[data-char-count='6'] {
+        font-size: 5rem;
+      }
+      #PreviewName[data-char-count='7'],
+      #PreviewName[data-char-count='8'] {
+        font-size: 4.5rem;
+      }
+      #PreviewName[data-char-count='9'],
+      #PreviewName[data-char-count='10'] {
+        font-size: 4rem;
+      }
 
-                #PreviewNumber { font-size: 18rem; }
-                #PreviewNumber[data-char-count="2"] { font-size: 17rem; }
-              }
-              
-              /* Tablet Device (Portrait) */
-              @media screen and (min-width: 481px) and (max-width: 1024px) {
-                #PreviewName { font-size: 3.3rem; }
-                #PreviewName[data-char-count="5"] { font-size: 3rem; }
-                #PreviewName[data-char-count="6"] { font-size: 3rem; }
-                #PreviewName[data-char-count="7"] { font-size: 2.8rem; }
-                #PreviewName[data-char-count="8"] { font-size: 2.5rem; }
-                #PreviewName[data-char-count="9"], #PreviewName[data-char-count="10"] { font-size: 2.2rem; }
-
-                #PreviewNumber { font-size: 11rem; }
-                #PreviewNumber[data-char-count="2"] { font-size: 10rem; }
-              }
-
-              /* Mobile Device (Small) */
-              @media screen and (max-width: 480px) {
-                #PreviewNumber { font-size: 10rem; }
-                #PreviewNumber[data-char-count="2"] { font-size: 9rem; }
-
-                #PreviewName { font-size: 3.5rem; }
-                #PreviewName[data-char-count="4"] { font-size: 3.5rem; }
-                #PreviewName[data-char-count="5"] { font-size: 3.2rem; }
-                #PreviewName[data-char-count="6"] { font-size: 3rem; }
-                #PreviewName[data-char-count="7"], #PreviewName[data-char-count="8"] { font-size: 2.7rem; }
-                #PreviewName[data-char-count="9"], #PreviewName[data-char-count="10"] { font-size: 2.3rem; }
-              }
-            </style>
-          {%- endif -%}
-        </div>
-      {%- endif -%}
-    </div>
-  </div>
-
-  <div style="display: flex; justify-content: center; margin-top: 2rem;">
-    <div class="custom-media-controls">
-      {%- if product.media[0] != blank -%}
-        <button id="btn-front" type="button" onclick="switchMedia('front')" disabled>Front</button>
-      {%- endif -%}
-      {%- if product.media[1] != blank -%}
-        <button id="btn-back" type="button" onclick="switchMedia('back')">Back</button>
-      {%- endif -%}
-    </div>
-  </div>
-
-  <script>
-    function switchMedia(type) {
-      const wrapper = document.getElementById('media-slider-wrapper');
-      const btnFront = document.getElementById('btn-front');
-      const btnBack = document.getElementById('btn-back');
-
-      if (!wrapper) return;
-
-      if (type === 'front') {
-        wrapper.style.transform = 'translateX(0)';
-        if (btnFront) btnFront.disabled = true;
-        if (btnBack) btnBack.disabled = false;
-      } else {
-        wrapper.style.transform = 'translateX(-50%)';
-        if (btnFront) btnFront.disabled = false;
-        if (btnBack) btnBack.disabled = true;
+      #PreviewNumber {
+        font-size: 18rem;
+      }
+      #PreviewNumber[data-char-count='2'] {
+        font-size: 17rem;
       }
     }
+
+    /* Tablet Device (Portrait) */
+    @media screen and (min-width: 481px) and (max-width: 1024px) {
+      #PreviewName {
+        font-size: 3.3rem;
+      }
+      #PreviewName[data-char-count='5'] {
+        font-size: 3rem;
+      }
+      #PreviewName[data-char-count='6'] {
+        font-size: 3rem;
+      }
+      #PreviewName[data-char-count='7'] {
+        font-size: 2.8rem;
+      }
+      #PreviewName[data-char-count='8'] {
+        font-size: 2.5rem;
+      }
+      #PreviewName[data-char-count='9'],
+      #PreviewName[data-char-count='10'] {
+        font-size: 2.2rem;
+      }
+
+      #PreviewNumber {
+        font-size: 11rem;
+      }
+      #PreviewNumber[data-char-count='2'] {
+        font-size: 10rem;
+      }
+    }
+
+    /* Mobile Device (Small) */
+    @media screen and (max-width: 480px) {
+      #PreviewNumber {
+        font-size: 10rem;
+      }
+      #PreviewNumber[data-char-count='2'] {
+        font-size: 9rem;
+      }
+
+      #PreviewName {
+        font-size: 3.5rem;
+      }
+      #PreviewName[data-char-count='4'] {
+        font-size: 3.5rem;
+      }
+      #PreviewName[data-char-count='5'] {
+        font-size: 3.2rem;
+      }
+      #PreviewName[data-char-count='6'] {
+        font-size: 3rem;
+      }
+      #PreviewName[data-char-count='7'],
+      #PreviewName[data-char-count='8'] {
+        font-size: 2.7rem;
+      }
+      #PreviewName[data-char-count='9'],
+      #PreviewName[data-char-count='10'] {
+        font-size: 2.3rem;
+      }
+    }
+  </style>
+
+  <div class="custom-media-images" style="width: 100%; max-width: 650px; margin: 0 auto; position: relative;">
+    <div style="overflow: hidden; border-radius: var(--media-radius, 0);">
+      <div
+        id="media-slider-wrapper"
+        style="display: flex; transition: transform 0.4s ease-in-out; width: {{ product.media.size | times: 100 }}%;"
+      >
+        {%- for media in product.media -%}
+          <div
+            class="custom-media-slide"
+            data-index="{{ forloop.index0 }}"
+            style="width: {{ 100.0 | divided_by: product.media.size }}%; flex-shrink: 0; position: relative;"
+          >
+            <div class="global-media-settings" style="width: 100%; aspect-ratio: 1 / 1;">
+              {{
+                media.preview_image
+                | image_url: width: 1000
+                | image_tag: style: 'width: 100%; height: 100%; object-fit: contain;', loading: 'lazy', alt: media.alt
+              }}
+            </div>
+
+            {%- if forloop.index0 == front_index -%}
+              <div id="PreviewFlagFrontContainer" style="position: absolute; display: none;">
+                <img
+                  id="PreviewFlagFront"
+                  src="{{ 'transparent.png' | asset_url }}"
+                  width="100"
+                  height="66"
+                  loading="lazy"
+                >
+              </div>
+              <div
+                id="PreviewLogoLabelContainer"
+                style="position: absolute; top: 33%; left: 19%; right: 16%; pointer-events: none; display: none; text-align: center;"
+              >
+                <span
+                  id="PreviewLogoLabel"
+                  style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; white-space: nowrap; display: inline-block; transform-origin: center;"
+                ></span>
+              </div>
+              <div
+                id="PreviewCountryNameContainer"
+                style="position: absolute; top: 33%; left: 19%; right: 16%; pointer-events: none; display: none; text-align: center;"
+              >
+                <span
+                  id="PreviewCountryName"
+                  style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; white-space: nowrap; display: inline-block; transform-origin: center;"
+                ></span>
+              </div>
+            {%- endif -%}
+
+            {%- if forloop.index0 == back_index -%}
+              <div id="PreviewFlagBackContainer" style="position: absolute; display: none;">
+                <img
+                  id="PreviewFlagBack"
+                  src="{{ 'transparent.png' | asset_url }}"
+                  width="100"
+                  height="66"
+                  loading="lazy"
+                >
+              </div>
+              {%- if product.tags contains 'custom-inputs' -%}
+                <div style="position: absolute; top: 18%; left: 0; right: 0; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+                  <span
+                    id="PreviewName"
+                    style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; letter-spacing: 0.5px; line-height: 1; margin-bottom: 3rem;"
+                  ></span>
+                  <span
+                    id="PreviewNumber"
+                    style="font-weight: normal; font-family: 'Vogue'; color: {{ print_color }}; line-height: 1; display: inline-block; transform: scaleY(1.5); transform-origin: center;"
+                  ></span>
+                </div>
+              {%- endif -%}
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    {%- if product.media.size > 1 -%}
+      <button id="slider-prev" class="slider-nav-btn" style="left: 10px;" aria-label="Previous image">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <button id="slider-next" class="slider-nav-btn" style="right: 10px;" aria-label="Next image">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    {%- endif -%}
+  </div>
+
+  <div style="display: flex; justify-content: center;">
+    <div class="custom-media-controls" id="custom-media-controls-container">
+      <div class="custom-media-controls-indicator"></div>
+      <button id="btn-front" class="toggle-btn" type="button" onclick="switchMedia('front')">Front</button>
+      <button id="btn-back" class="toggle-btn" type="button" onclick="switchMedia('back')">Back</button>
+    </div>
+  </div>
+
+  {%- if product.media.size > 1 -%}
+    <div
+      class="custom-media-thumbnails"
+      style="display: flex; gap: 10px; margin-top: 5px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px; justify-content: flex-start;"
+    >
+      {%- for media in product.media -%}
+        <div
+          class="custom-media-thumbnail{% if forloop.first %} active{% endif %}"
+          data-index="{{ forloop.index0 }}"
+          onclick="goToSlide({{ forloop.index0 }})"
+          style="width: 60px; height: 60px; flex-shrink: 0; cursor: pointer; border: 2px solid transparent; border-radius: 4px; overflow: hidden;"
+        >
+          {{
+            media.preview_image
+            | image_url: width: 120
+            | image_tag: style: 'width: 100%; height: 100%; object-fit: cover;', loading: 'lazy', alt: media.alt
+          }}
+        </div>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+
+  <script>
+    window.customGalleryFrontIndex = {{ front_index }};
+    window.customGalleryBackIndex = {{ back_index }};
+    window.customGalleryTotalSlides = {{ product.media.size }};
+    window.customGalleryCurrentIndex = 0;
+
+    function goToSlide(index) {
+      if (index < 0 || index >= window.customGalleryTotalSlides) return;
+      window.customGalleryCurrentIndex = index;
+      const wrapper = document.getElementById('media-slider-wrapper');
+      if (wrapper) {
+        const percentage = -(index * (100 / window.customGalleryTotalSlides));
+        wrapper.style.transform = `translateX(${percentage}%)`;
+      }
+      
+      const prevBtn = document.getElementById('slider-prev');
+      const nextBtn = document.getElementById('slider-next');
+      if (prevBtn) prevBtn.disabled = (index === 0);
+      if (nextBtn) nextBtn.disabled = (index === window.customGalleryTotalSlides - 1);
+
+      document.querySelectorAll('.custom-media-thumbnail').forEach(el => {
+        if (parseInt(el.getAttribute('data-index')) === index) {
+          el.classList.add('active');
+          el.style.borderColor = '#000';
+        } else {
+          el.classList.remove('active');
+          el.style.borderColor = 'transparent';
+        }
+      });
+
+      const controlsContainer = document.getElementById('custom-media-controls-container');
+      const btnFront = document.getElementById('btn-front');
+      const btnBack = document.getElementById('btn-back');
+      
+      if (controlsContainer) {
+        controlsContainer.classList.remove('is-front-active', 'is-back-active');
+        if (btnFront) btnFront.classList.remove('is-active');
+        if (btnBack) btnBack.classList.remove('is-active');
+
+        if (index === window.customGalleryFrontIndex) {
+          controlsContainer.classList.add('is-front-active');
+          if (btnFront) btnFront.classList.add('is-active');
+        } else if (index === window.customGalleryBackIndex) {
+          controlsContainer.classList.add('is-back-active');
+          if (btnBack) btnBack.classList.add('is-active');
+        }
+      }
+    }
+
+    function switchMedia(type) {
+      if (type === 'front') {
+        goToSlide(window.customGalleryFrontIndex);
+      } else if (type === 'back') {
+        goToSlide(window.customGalleryBackIndex);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const prevBtn = document.getElementById('slider-prev');
+      const nextBtn = document.getElementById('slider-next');
+      if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+          goToSlide(Math.max(0, window.customGalleryCurrentIndex - 1));
+        });
+      }
+      if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+          goToSlide(Math.min(window.customGalleryTotalSlides - 1, window.customGalleryCurrentIndex + 1));
+        });
+      }
+      
+      // Auto-init to 0
+      goToSlide(0);
+    });
   </script>
 </div>
