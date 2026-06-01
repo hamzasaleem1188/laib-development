@@ -143,14 +143,20 @@ if (!customElements.get("product-form")) {
             );
             const isCheckboxChecked = checkboxEl ? checkboxEl.checked : false;
 
+            const giftboxVariantId = this.getAttribute("data-giftbox-variant-id");
+
             if (hasGiftbox && giftboxId && giftboxModal) {
-              this.showGiftBoxPopup(
-                giftboxId,
-                response,
-                giftboxModal,
-                isBuyNow,
-                isCheckboxChecked,
-              );
+              if (isCheckboxChecked && giftboxVariantId) {
+                this.addGiftboxOnly(giftboxVariantId, response, isBuyNow);
+              } else {
+                this.showGiftBoxPopup(
+                  giftboxId,
+                  response,
+                  giftboxModal,
+                  isBuyNow,
+                  isCheckboxChecked,
+                );
+              }
             } else {
               this.resetCheckbox();
               if (isBuyNow) {

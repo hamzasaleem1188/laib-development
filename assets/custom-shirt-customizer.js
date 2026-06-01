@@ -71,6 +71,8 @@ if (!customElements.get("custom-shirt-customizer")) {
           ? JSON.parse(jsonScript.textContent)
           : null;
 
+        this.updateFeaturePrices();
+
         this.form = this.querySelector('form[data-type="add-to-cart-form"]');
         this.submitBtn = this.form?.querySelector('[type="submit"]');
         this.validationActive = false;
@@ -111,89 +113,119 @@ if (!customElements.get("custom-shirt-customizer")) {
             }
           });
         }
+        this.updateExtraPriceSummary = () => {
+          const wrapper = document.querySelector("[data-custom-total-price-wrapper]");
+          if (!wrapper) return;
+
+          let totalExtraPrice = 0;
+          let hasExtra = false;
+
+          // Nationality
+          const nationalityRow = wrapper.querySelector("[data-extra-nationality]");
+          const nationalityDisplay = wrapper.querySelector("[data-nationality-price-display]");
+          const nationalityPriceSpan = this.querySelector("[data-nationality-price]");
+          if (this.nationalityCityInput && this.nationalityCityInput.value.trim() !== "" && nationalityPriceSpan) {
+            const price = parseFloat(nationalityPriceSpan.getAttribute('data-nationality-price') || "100");
+            totalExtraPrice += price;
+            if (nationalityRow) nationalityRow.style.display = "flex";
+            if (nationalityDisplay) nationalityDisplay.innerHTML = nationalityPriceSpan.getAttribute('data-nationality-price-text');
+            hasExtra = true;
+          } else {
+            if (nationalityRow) nationalityRow.style.display = "none";
+          }
+
+          // Logo
+          const logoRow = wrapper.querySelector("[data-extra-logo]");
+          const logoDisplay = wrapper.querySelector("[data-logo-price-display]");
+          const logoPriceSpan = this.querySelector("[data-logo-price]");
+          const hasLogo = this.logoInput && this.logoInput.value.trim() !== "";
+          if (hasLogo && logoPriceSpan) {
+            const price = parseFloat(logoPriceSpan.getAttribute('data-logo-price') || "100");
+            totalExtraPrice += price;
+            if (logoRow) logoRow.style.display = "flex";
+            if (logoDisplay) logoDisplay.innerHTML = logoPriceSpan.getAttribute('data-logo-price-text');
+            hasExtra = true;
+          } else {
+            if (logoRow) logoRow.style.display = "none";
+          }
+
+          // Name & Number
+          const nameNumRow = wrapper.querySelector("[data-extra-name-number]");
+          const nameNumDisplay = wrapper.querySelector("[data-name-number-price-display]");
+          const nameNumPriceSpan = this.querySelector("[data-name-number-price]");
+          const hasNameOrNum = (this.nameInput && this.nameInput.value.trim() !== "") || (this.numberInput && this.numberInput.value.trim() !== "");
+          if (hasNameOrNum && nameNumPriceSpan) {
+            const price = parseFloat(nameNumPriceSpan.getAttribute('data-name-number-price') || "100");
+            totalExtraPrice += price;
+            if (nameNumRow) nameNumRow.style.display = "flex";
+            if (nameNumDisplay) nameNumDisplay.innerHTML = nameNumPriceSpan.getAttribute('data-name-number-price-text');
+            hasExtra = true;
+          } else {
+            if (nameNumRow) nameNumRow.style.display = "none";
+          }
+
+          // Gift Box
+          const giftboxRow = wrapper.querySelector("[data-extra-giftbox]");
+          const giftboxDisplay = wrapper.querySelector("[data-giftbox-price-display]");
+          const productForm = document.querySelector('product-form[data-has-giftbox="true"]');
+          const giftboxCheckbox = document.querySelector('input[name="giftbox_confirm"]');
+
+          const currency = window.Shopify?.currency?.active || "SEK";
+          const format = (cents) => {
+            if (window.Shopify?.formatMoney) {
+              return window.Shopify.formatMoney(cents);
+            }
+            return `${(cents / 100).toString()} ${currency}`;
+          };
+
+          if (giftboxCheckbox && giftboxCheckbox.checked && productForm) {
+            const giftboxPrice = parseFloat(productForm.getAttribute('data-giftbox-price') || "0") / 100; // Shopify prices are in cents
+            if (giftboxPrice > 0) {
+              totalExtraPrice += giftboxPrice;
+              if (giftboxRow) giftboxRow.style.display = "flex";
+              if (giftboxDisplay) giftboxDisplay.innerHTML = `+${format(giftboxPrice * 100)}`;
+              hasExtra = true;
+            }
+          } else {
+            if (giftboxRow) giftboxRow.style.display = "none";
+          }
+
+          const totalDisplay = wrapper.querySelector("[data-final-extra-price]");
+          if (totalDisplay) {
+            if (totalExtraPrice > 0) {
+              totalDisplay.innerHTML = `+${format(totalExtraPrice * 100)}`;
+            }
+          }
+
+          if (hasExtra) {
+            wrapper.style.display = "flex";
+          } else {
+            wrapper.style.display = "none";
+          }
+        };
+
+        if (this.nationalityCityInput) {
+          this.nationalityCityInput.addEventListener("input", this.updateExtraPriceSummary);
+        }
+        if (this.nameInput) {
+          this.nameInput.addEventListener("input", this.updateExtraPriceSummary);
+        }
+        if (this.numberInput) {
+          this.numberInput.addEventListener("input", this.updateExtraPriceSummary);
+        }
+
+        // Listen to giftbox checkbox
+        const giftboxCheckbox = document.querySelector('input[name="giftbox_confirm"]');
+        if (giftboxCheckbox) {
+          giftboxCheckbox.addEventListener("change", this.updateExtraPriceSummary);
+        }
+
+        // Initial check on load in case fields are pre-filled (e.g. going back from cart)
+        setTimeout(() => this.updateExtraPriceSummary(), 100);
+
 
         this.countries = [
-          { name: "Afghanistan", code: "af" },
-          { name: "Argentina", code: "ar" },
-          { name: "Australia", code: "au" },
-          { name: "Austria", code: "at" },
-          { name: "Bangladesh", code: "bd" },
-          { name: "Belgium", code: "be" },
-          { name: "Brazil", code: "br" },
-          { name: "Bulgaria", code: "bg" },
-          { name: "Canada", code: "ca" },
-          { name: "Chile", code: "cl" },
-          { name: "China", code: "cn" },
-          { name: "Colombia", code: "co" },
-          { name: "Croatia", code: "hr" },
-          { name: "Cuba", code: "cu" },
-          { name: "Czechia", code: "cz" },
-          { name: "Denmark", code: "dk" },
-          { name: "Egypt", code: "eg" },
-          { name: "Finland", code: "fi" },
-          { name: "France", code: "fr" },
-          { name: "Germany", code: "de" },
-          { name: "Ghana", code: "gh" },
-          { name: "Greece", code: "gr" },
-          { name: "Hungary", code: "hu" },
-          { name: "Iceland", code: "is" },
-          { name: "India", code: "in" },
-          { name: "Indonesia", code: "id" },
-          { name: "Iran", code: "ir" },
-          { name: "Iraq", code: "iq" },
-          { name: "Ireland", code: "ie" },
-          { name: "Israel", code: "il" },
-          { name: "Italy", code: "it" },
-          { name: "Japan", code: "jp" },
-          { name: "Jordan", code: "jo" },
-          { name: "Kazakhstan", code: "kz" },
-          { name: "Kenya", code: "ke" },
-          { name: "Kuwait", code: "kw" },
-          { name: "Lebanon", code: "lb" },
-          { name: "Malaysia", code: "my" },
-          { name: "Mexico", code: "mx" },
-          { name: "Morocco", code: "ma" },
-          { name: "Netherlands", code: "nl" },
-          { name: "New Zealand", code: "nz" },
-          { name: "Nigeria", code: "ng" },
-          { name: "North Korea", code: "kp" },
-          { name: "Norway", code: "no" },
-          { name: "Oman", code: "om" },
-          { name: "Pakistan", code: "pk" },
-          { name: "Palestine", code: "ps" },
-          { name: "Peru", code: "pe" },
-          { name: "Philippines", code: "ph" },
-          { name: "Poland", code: "pl" },
-          { name: "Portugal", code: "pt" },
-          { name: "Qatar", code: "qa" },
-          { name: "Romania", code: "ro" },
-          { name: "Russia", code: "ru" },
-          { name: "Saudi Arabia", code: "sa" },
-          { name: "Serbia", code: "rs" },
-          { name: "Singapore", code: "sg" },
-          { name: "Slovakia", code: "sk" },
-          { name: "Slovenia", code: "si" },
-          { name: "South Africa", code: "za" },
-          { name: "South Korea", code: "kr" },
-          { name: "Spain", code: "es" },
-          { name: "Sri Lanka", code: "lk" },
-          { name: "Sweden", code: "se" },
-          { name: "Switzerland", code: "ch" },
-          { name: "Syria", code: "sy" },
-          { name: "Taiwan", code: "tw" },
-          { name: "Thailand", code: "th" },
-          { name: "Turkey", code: "tr" },
-          { name: "Ukraine", code: "ua" },
-          { name: "United Arab Emirates", code: "ae" },
-          { name: "United Kingdom", code: "gb" },
-          { name: "United States", code: "us" },
-          { name: "Uruguay", code: "uy" },
-          { name: "Uzbekistan", code: "uz" },
-          { name: "Venezuela", code: "ve" },
-          { name: "Vietnam", code: "vn" },
-          { name: "Yemen", code: "ye" },
-          { name: "Zambia", code: "zm" },
-          { name: "Zimbabwe", code: "zw" },
+
         ];
 
         if (this.toggleBtn)
@@ -718,6 +750,17 @@ if (!customElements.get("custom-shirt-customizer")) {
         const isHidden = this.drawer.style.display === "none";
         this.drawer.style.display = isHidden ? "block" : "none";
 
+        if (this.toggleBtn) {
+          const icon = this.toggleBtn.querySelector(".customizer-accordion-icon");
+          if (isHidden) {
+            this.toggleBtn.classList.add("is-expanded");
+            if (icon) icon.style.transform = "rotate(-180deg)";
+          } else {
+            this.toggleBtn.classList.remove("is-expanded");
+            if (icon) icon.style.transform = "rotate(0deg)";
+          }
+        }
+
         if (this.dataset.onlyCustomInputs === "true" && isHidden) {
           const customizedImg =
             document.querySelector(
@@ -752,7 +795,7 @@ if (!customElements.get("custom-shirt-customizer")) {
         }
 
         if (this.toggleBtn) {
-          this.toggleBtn.innerText = isHidden ? "Done" : "Customize";
+          this.toggleBtn.classList.toggle("is-expanded", !isHidden);
         }
 
         /*
@@ -980,6 +1023,115 @@ if (!customElements.get("custom-shirt-customizer")) {
         }
       }
 
+      updateFeaturePrices() {
+        if (!this.productData) return;
+        const container =
+          document.querySelector("variant-selects") ||
+          document.querySelector("variant-radios");
+        if (!container) return;
+
+        const getPriceForOption = (customOptionValue) => {
+          const matchingVariant = this.productData.variants.find((v) => {
+            return v.options.every((opt, index) => {
+              const optName = this.productData.options[index];
+              if (
+                optName === "Flag" ||
+                optName === "Personalization" ||
+                optName === "NameAndNumber"
+              ) {
+                if (customOptionValue !== undefined) {
+                  return opt.toUpperCase() === customOptionValue.toUpperCase();
+                }
+              }
+
+              let uiValue = "";
+              const select =
+                container.querySelector(`select[name="options[${optName}]"]`) ||
+                container.querySelector(`select[name^="${optName}"]`);
+              if (select) {
+                uiValue = select.value;
+              } else {
+                const checkedInput =
+                  container.querySelector(
+                    `input[name="options[${optName}]"]:checked`,
+                  ) ||
+                  container.querySelector(
+                    `input[name^="${optName}"]:checked`,
+                  ) ||
+                  container.querySelector(
+                    `input[data-option-name="${optName}"]:checked`,
+                  );
+                if (checkedInput) uiValue = checkedInput.value;
+              }
+              return !uiValue || opt === uiValue;
+            });
+          });
+          return matchingVariant ? matchingVariant.price : null;
+        };
+
+        const basePrice = getPriceForOption("NO");
+        if (basePrice === null) return;
+
+        const currency = window.Shopify?.currency?.active || "";
+        const format = (cents) => {
+          if (window.Shopify?.formatMoney) {
+            return window.Shopify.formatMoney(cents);
+          }
+          const strVal = (cents / 100).toString();
+          return `${strVal} ${currency}`;
+        };
+
+        const cityPrice = getPriceForOption("City");
+        const nameNumPrice = getPriceForOption("Name/Num");
+        const logoPrice = getPriceForOption("Logo");
+        const yesPrice = getPriceForOption("YES");
+
+        let cityDiff = 0;
+        if (cityPrice !== null && cityPrice > basePrice) {
+          cityDiff = cityPrice - basePrice;
+        } else if (yesPrice !== null && yesPrice > basePrice) {
+          cityDiff = yesPrice - basePrice;
+        }
+
+        let nameNumDiff = 0;
+        if (nameNumPrice !== null && nameNumPrice > basePrice) {
+          nameNumDiff = nameNumPrice - basePrice;
+        } else if (yesPrice !== null && yesPrice > basePrice) {
+          nameNumDiff = yesPrice - basePrice;
+        }
+
+        let logoDiff = 0;
+        if (logoPrice !== null && logoPrice > basePrice) {
+          logoDiff = logoPrice - basePrice;
+        } else if (yesPrice !== null && yesPrice > basePrice) {
+          logoDiff = yesPrice - basePrice;
+        }
+
+        const nationalityPriceSpan = this.querySelector("[data-nationality-price]");
+        if (nationalityPriceSpan && cityDiff > 0) {
+          const formatted = `+${format(cityDiff)}`;
+          nationalityPriceSpan.innerHTML = formatted;
+          nationalityPriceSpan.setAttribute("data-nationality-price", cityDiff / 100);
+          nationalityPriceSpan.setAttribute("data-nationality-price-text", formatted);
+        }
+
+        const nameNumPriceSpan = this.querySelector("[data-name-number-price]");
+        if (nameNumPriceSpan && nameNumDiff > 0) {
+          const formatted = `+${format(nameNumDiff)}`;
+          nameNumPriceSpan.innerHTML = formatted;
+          nameNumPriceSpan.setAttribute("data-name-number-price", nameNumDiff / 100);
+          nameNumPriceSpan.setAttribute("data-name-number-price-text", formatted);
+        }
+
+        const logoPriceSpan = this.querySelector("[data-logo-price]");
+        if (logoPriceSpan && logoDiff > 0) {
+          const formatted = `+${format(logoDiff)}`;
+          logoPriceSpan.innerHTML = formatted;
+          logoPriceSpan.setAttribute("data-logo-price", logoDiff / 100);
+          logoPriceSpan.setAttribute("data-logo-price-text", formatted);
+        }
+      }
+
       setupPriceObserver() {
         // Find the price container. Dawn usually updates the content of [role="status"] or the .price div inside it.
         const priceContainer = document.querySelector('[id^="price-"]');
@@ -999,7 +1151,11 @@ if (!customElements.get("custom-shirt-customizer")) {
           const hasCustomization = hasNameNum || hasLogo || hasCity;
 
           // Use a slight delay to ensure Dawn finished its DOM replacement
-          setTimeout(() => this.updatePriceBreakdown(hasCustomization), 50);
+          setTimeout(() => {
+            this.updateFeaturePrices();
+            this.updatePriceBreakdown(hasCustomization);
+            this.updateExtraPriceSummary();
+          }, 50);
         });
 
         this.observer.observe(priceContainer, {

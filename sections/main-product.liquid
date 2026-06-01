@@ -614,215 +614,273 @@
               {%- when 'variant_picker' -%}
                 {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
               {%- when 'custom_logo_selector' -%}
-                {%- if product.metafields.custom.logo_list != blank -%}
-                  {%- assign logos = product.metafields.custom.logo_list.value -%}
-                  <div class="product-form__input" style="margin-bottom: 2rem;">
-                    <label class="form__label" style="display: block; margin-bottom: 0.5rem;">
-                      {{- block.settings.heading | default: 'Nationality' -}}
-                    </label>
-                    <div
-                      id="LogoSelector-{{ section.id }}"
-                      class="custom-select logo-select-component"
-                      data-logo-select
-                    >
-                      <div class="select-selected">
-                        <span data-selected-name>select nationality</span>
-                        <span style="font-size: 0.8em;">▼</span>
-                      </div>
-                      <div class="select-items select-hide">
-                        <div style="padding: 0.5rem; position: sticky; top: 0; background: rgb(var(--color-background)); border-bottom: 1px solid rgba(var(--color-foreground), 0.1); z-index: 1;">
-                          <input
-                            type="text"
-                            class="field__input"
-                            placeholder="Search..."
-                            data-logo-search
-                            style="height: 3.5rem; padding: 0 1rem; width: 100%;"
-                          >
-                          <div
-                            data-logo-dropdown-clear
-                            style="display: none; padding: 0.8rem 1rem; cursor: pointer; align-items: center; gap: 1rem; color: rgba(var(--color-foreground), 0.6); font-size: 0.9em; border-top: 1px solid rgba(var(--color-foreground), 0.05); background: rgba(var(--color-foreground), 0.02); transition: all 0.2s;"
-                            onmouseover="this.style.background='rgba(var(--color-foreground), 0.05)'; this.style.color='rgba(var(--color-foreground), 0.8)'"
-                            onmouseout="this.style.background='rgba(var(--color-foreground), 0.02)'; this.style.color='rgba(var(--color-foreground), 0.6)'"
-                          >
-                            <span style="width: 24px; display: flex; justify-content: center;">✕</span> Clear Selection
-                          </div>
-                        </div>
-                        <div data-logo-list>
-                          {%- for logo_item in logos -%}
-                            {%- if logo_item.active -%}
-                              <div
-                                class="item"
-                                data-value="{{ logo_item.label | escape }}"
-                                data-logo-url="{{ logo_item.logo_image }}"
-                                data-label-url="{{ logo_item.label_image }}"
-                                data-label-text="{{ logo_item.label | escape }}"
-                              >
-                                {%- if logo_item.logo_image != blank -%}
-                                  <img
-                                    src="{{ logo_item.logo_image }}"
-                                    class="item-flag"
-                                    alt="{{ logo_item.label }}"
-                                    width="50"
-                                    height="30"
-                                  >
-                                {%- endif -%}
-                                <span>{{ logo_item.label }}</span>
-                              </div>
-                            {%- endif -%}
-                          {%- endfor -%}
-                        </div>
-                      </div>
-                    </div>
-                    <input type="hidden" name="properties[Country]" data-logo-input form="{{ product_form_id }}">
-                    <input type="hidden" name="properties[_Logo URL]" data-logo-url-input form="{{ product_form_id }}">
-
-                    <div
-                      class="customizer-error"
-                      data-error-logo
-                      style="display: none; color: #EB001B; margin-top: 0.5rem; font-size: 1.2rem;"
-                    >
-                      Please select a nationality
-                    </div>
-                  </div>
-                {%- elsif request.design_mode -%}
-                  <div class="product-form__input" style="margin-bottom: 2rem;" {{ block.shopify_attributes }}>
-                    <p style="font-size: 1.2rem; opacity: 0.7; color: rgba(var(--color-foreground), 0.5); border: 1px dashed rgba(var(--color-foreground), 0.2); padding: 1rem; border-radius: 4px;">
-                      (Logos will appear here once added to the <code>custom.logo_list</code> metafield)
-                    </p>
-                  </div>
-                {%- endif -%}
+                {%- comment -%}
+                  Logo selector has been moved inside the Customization accordion (custom_name_num block).
+                {%- endcomment -%}
               {%- when 'custom_name_num' -%}
                 {%- if product.tags contains 'custom-inputs' or product.tags contains 'city_input' -%}
-                  <div class="product-form__input" style="margin-bottom: 2rem;">
-                    {%- if product.tags contains 'city_input' -%}
-                      <div class="field" style="margin-bottom: 0.2rem;">
-                        <input
-                          class="field__input"
-                          type="text"
-                          id="CustomNationalityInput-{{ section.id }}"
-                          name="properties[Nationality/City]"
-                          placeholder="Enter Nationality/City/Country"
-                          data-logo-text-url-input
-                          form="{{ product_form_id }}"
-                          maxlength="12"
-                        >
-                        <label class="field__label" for="CustomNationalityInput-{{ section.id }}"
-                          >Nationality/City</label
-                        >
-                      </div>
-                      <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
-                        <small class="field__counter" data-nationality-counter style="font-size: 1rem; opacity: 0.6;"
-                          >0/12</small
-                        >
-                      </div>
-                    {%- endif -%}
-
-                    {%- if product.tags contains 'custom-inputs' -%}
-                      <div
-                        data-drawer
-                        style="display: none; position: relative; padding: 1.5rem; margin-bottom: 1rem; background: rgba(var(--color-foreground), 0.03); border-radius: 8px; border: 1px solid rgba(var(--color-foreground), 0.1);"
+                  <div
+                    class="product-form__input customizer-accordion-container"
+                    style="margin-bottom: 2rem; border: 1px solid rgba(var(--color-foreground), 0.15); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03);"
+                  >
+                    <div
+                      class="customizer-accordion-header"
+                      data-toggle
+                      style="padding: 1.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: rgb(var(--color-background)); transition: background 0.2s;"
+                      onmouseover="this.style.background='rgba(var(--color-foreground), 0.02)'"
+                      onmouseout="this.style.background='rgb(var(--color-background))'"
+                    >
+                      <span style="font-weight: 600; font-size: 1.5rem; letter-spacing: 0.5px;">Personalization</span>
+                      <span
+                        class="customizer-accordion-icon"
+                        style="transition: transform 0.3s ease; display: flex; align-items: center; justify-content: center; opacity: 0.6;"
                       >
-                        <button
-                          type="button"
-                          data-close-drawer
-                          style="position: absolute; top: -12px; right: -12px; background: #fff; border: 1px solid rgba(var(--color-foreground), 0.1); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; color: rgba(var(--color-foreground), 0.7); box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10;"
-                          aria-label="Close Customization"
-                          onmouseover="this.style.background='#f4f4f4'"
-                          onmouseout="this.style.background='#fff'"
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M2.5 4.5L7 9L11.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </span>
+                    </div>
+
+                    <div
+                      class="customizer-accordion-content"
+                      data-drawer
+                      style="display: none; padding: 0 1.5rem 1.5rem; background: rgb(var(--color-background)); border-top: 1px solid rgba(var(--color-foreground), 0.1);"
+                    >
+                      {%- if only_custom_inputs -%}
+                        <p style="font-size: 1.2rem; line-height: 1.4; font-style: italic; opacity: 0.8; margin: 1.5rem 0 1rem; color: rgba(var(--color-foreground), 0.7);">
+                          Note: When you add a custom name and/or number, your ordered shirt will appear as shown in
+                          this sample image.
+                        </p>
+                      {%- endif -%}
+
+                      {%- if product.metafields.custom.logo_list != blank -%}
+                        {%- assign logos = product.metafields.custom.logo_list.value -%}
+                        <div
+                          class="customizer-section-header"
+                          style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; margin-bottom: 1rem;"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                          <span style="font-weight: 500; font-size: 1.3rem;">Nationality/Logo</span>
+                          <span
+                            style="font-weight: 600; font-size: 1.3rem;"
+                            data-logo-price="{{ block.settings.logo_price }}"
+                            data-logo-price-text="{{ block.settings.logo_price_text | default: '+100 SEK' }}"
                           >
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </button>
-                        {%- if only_custom_inputs -%}
-                          <p style="font-size: 1.3rem; line-height: 1.4; font-style: italic; opacity: 0.8; margin: 0.5rem 0 1.5rem; color: rgba(var(--color-foreground), 0.7);">
-                            Note: When you add a custom name and/or number, your ordered shirt will appear as shown in
-                            this sample image.
-                          </p>
-                        {%- endif -%}
-                        <div class="field" style="margin-bottom: 0.2rem; margin-top: 0.5rem;">
-                          <input
-                            class="field__input"
-                            type="text"
-                            id="CustomNameInput-{{ section.id }}"
-                            name="properties[Name]"
-                            placeholder="Enter Name"
-                            maxlength="10"
-                            data-name-input
-                            form="{{ product_form_id }}"
-                          >
-                          <label class="field__label" for="CustomNameInput-{{ section.id }}">Name (Max 10)</label>
+                            {{- block.settings.logo_price_text | default: '+100 SEK' -}}
+                          </span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <div class="product-form__input" style="margin-bottom: 2rem;">
+                          <div
+                            id="LogoSelector-{{ section.id }}"
+                            class="custom-select logo-select-component"
+                            data-logo-select
+                          >
+                            <div class="select-selected">
+                              <span data-selected-name>Select Nationality/Logo</span>
+                              <span style="font-size: 0.8em;">▼</span>
+                            </div>
+                            <div class="select-items select-hide">
+                              <div style="padding: 0.5rem; position: sticky; top: 0; background: rgb(var(--color-background)); border-bottom: 1px solid rgba(var(--color-foreground), 0.1); z-index: 1;">
+                                <input
+                                  type="text"
+                                  class="field__input"
+                                  placeholder="Search..."
+                                  data-logo-search
+                                  style="height: 3.5rem; padding: 0 1rem; width: 100%;"
+                                >
+                                <div
+                                  data-logo-dropdown-clear
+                                  style="display: none; padding: 0.8rem 1rem; cursor: pointer; align-items: center; gap: 1rem; color: rgba(var(--color-foreground), 0.6); font-size: 0.9em; border-top: 1px solid rgba(var(--color-foreground), 0.05); background: rgba(var(--color-foreground), 0.02); transition: all 0.2s;"
+                                  onmouseover="this.style.background='rgba(var(--color-foreground), 0.05)'; this.style.color='rgba(var(--color-foreground), 0.8)'"
+                                  onmouseout="this.style.background='rgba(var(--color-foreground), 0.02)'; this.style.color='rgba(var(--color-foreground), 0.6)'"
+                                >
+                                  <span style="width: 24px; display: flex; justify-content: center;">✕</span> Clear Selection
+                                </div>
+                              </div>
+                              <div data-logo-list>
+                                {%- for logo_item in logos -%}
+                                  {%- if logo_item.active -%}
+                                    <div
+                                      class="item"
+                                      data-value="{{ logo_item.label | escape }}"
+                                      data-logo-url="{{ logo_item.logo_image }}"
+                                      data-label-url="{{ logo_item.label_image }}"
+                                      data-label-text="{{ logo_item.label | escape }}"
+                                    >
+                                      {%- if logo_item.logo_image != blank -%}
+                                        <img
+                                          src="{{ logo_item.logo_image }}"
+                                          class="item-flag"
+                                          alt="{{ logo_item.label }}"
+                                          width="50"
+                                          height="30"
+                                        >
+                                      {%- endif -%}
+                                      <span>{{ logo_item.label }}</span>
+                                    </div>
+                                  {%- endif -%}
+                                {%- endfor -%}
+                              </div>
+                            </div>
+                          </div>
+                          <input type="hidden" name="properties[Country]" data-logo-input form="{{ product_form_id }}">
+                          <input type="hidden" name="properties[_Logo URL]" data-logo-url-input form="{{ product_form_id }}">
+
                           <div
                             class="customizer-error"
-                            data-error-name
-                            style="display: none; color: #EB001B; font-size: 1.2rem; margin: 0;"
+                            data-error-logo
+                            style="display: none; color: rgb(var(--color-error)); font-size: 1.2rem; margin-top: 0.5rem; align-items: center; gap: 0.5rem;"
                           >
-                            Please enter a name
+                            <svg viewBox="0 0 14 14" width="14" height="14" fill="currentColor">
+                              <path d="M7 0C3.13438 0 0 3.13438 0 7C0 10.8656 3.13438 14 7 14C10.8656 14 14 10.8656 14 7C14 3.13438 10.8656 0 7 0ZM7 12.25C4.10625 12.25 1.75 9.89375 1.75 7C1.75 4.10625 4.10625 1.75 7 1.75C9.89375 1.75 12.25 4.10625 12.25 7C12.25 9.89375 9.89375 12.25 7 12.25ZM7 3.5C6.51875 3.5 6.125 3.89375 6.125 4.375V7.875C6.125 8.35625 6.51875 8.75 7 8.75C7.48125 8.75 7.875 8.35625 7.875 7.875V4.375C7.875 3.89375 7.48125 3.5 7 3.5ZM7 11.375C7.48125 11.375 7.875 10.9813 7.875 10.5C7.875 10.0187 7.48125 9.625 7 9.625C6.51875 9.625 6.125 10.0187 6.125 10.5C6.125 10.9813 6.51875 11.375 7 11.375Z" />
+                            </svg>
+                            <span>Please select a valid option</span>
                           </div>
-                          <small
-                            class="field__counter"
-                            data-name-counter
-                            style="margin-left: auto; font-size: 1rem; opacity: 0.6;"
-                            >0/10</small
-                          >
                         </div>
+                      {%- endif -%}
 
+                      {%- if product.tags contains 'city_input' -%}
+                        <div
+                          class="customizer-section-header"
+                          style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; margin-bottom: 1rem;"
+                        >
+                          <span style="font-weight: 500; font-size: 1.3rem;">Nationality/City</span>
+                          <span
+                            style="font-weight: 600; font-size: 1.3rem;"
+                            data-nationality-price="{{ block.settings.nationality_price }}"
+                            data-nationality-price-text="{{ block.settings.nationality_price_text | default: '+100 SEK' }}"
+                          >
+                            {{- block.settings.nationality_price_text | default: '+100 SEK' -}}
+                          </span>
+                        </div>
                         <div class="field" style="margin-bottom: 0.2rem;">
                           <input
                             class="field__input"
                             type="text"
-                            id="CustomNumberInput-{{ section.id }}"
-                            name="properties[Number]"
-                            placeholder="Enter Number"
-                            maxlength="2"
-                            data-number-input
+                            id="CustomNationalityInput-{{ section.id }}"
+                            name="properties[Nationality/City]"
+                            placeholder="Enter nationality or city"
+                            data-logo-text-url-input
                             form="{{ product_form_id }}"
-                            oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                            maxlength="12"
+                            style="border-radius: 4px; margin: 0;"
                           >
-                          <label class="field__label" for="CustomNumberInput-{{ section.id }}">Number (Max 2)</label>
+                          <label class="field__label" for="CustomNationalityInput-{{ section.id }}"
+                            >Enter nationality or city</label
+                          >
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                          <div
-                            class="customizer-error"
-                            data-error-number
-                            style="display: none; color: #EB001B; font-size: 1.2rem; margin: 0;"
-                          >
-                            Please enter a number
-                          </div>
+                        <div style="display: flex; justify-content: flex-end; margin-bottom: 2rem;">
                           <small
                             class="field__counter"
-                            data-number-counter
-                            style="margin-left: auto; font-size: 1rem; opacity: 0.6;"
-                            >0/2</small
+                            data-nationality-counter
+                            style="font-size: 1.1rem; opacity: 0.6;"
+                            >0/12</small
                           >
                         </div>
-                      </div>
+                      {%- endif -%}
+
+                      {%- if product.tags contains 'custom-inputs' -%}
+                        <div
+                          class="customizer-section-header"
+                          style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; margin-bottom: 1rem;"
+                        >
+                          <span style="font-weight: 500; font-size: 1.3rem;">Name & Number</span>
+                          <span
+                            style="font-weight: 600; font-size: 1.3rem;"
+                            data-name-number-price="{{ block.settings.name_number_price }}"
+                            data-name-number-price-text="{{ block.settings.name_number_price_text | default: '+100 SEK' }}"
+                          >
+                            {{- block.settings.name_number_price_text | default: '+100 SEK' -}}
+                          </span>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem;">
+                          <div style="flex: 1.4;">
+                            <div class="field" style="margin-bottom: 0.2rem;">
+                              <input
+                                class="field__input"
+                                type="text"
+                                id="CustomNameInput-{{ section.id }}"
+                                name="properties[Name]"
+                                placeholder="Name (Max 10)"
+                                maxlength="10"
+                                data-name-input
+                                form="{{ product_form_id }}"
+                                style="border-radius: 4px; margin: 0;"
+                              >
+                              <label
+                                class="field__label"
+                                for="CustomNameInput-{{ section.id }}"
+                                style="white-space: nowrap; max-width: calc(100% - 2rem); overflow: hidden; text-overflow: ellipsis;"
+                                >Name (Max 10)</label
+                              >
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                              <div
+                                class="customizer-error"
+                                data-error-name
+                                style="display: none; color: #EB001B; font-size: 1.1rem; margin: 0;"
+                              >
+                                Please enter a name
+                              </div>
+                              <small
+                                class="field__counter"
+                                data-name-counter
+                                style="margin-left: auto; font-size: 1.1rem; opacity: 0.6;"
+                                >0/10</small
+                              >
+                            </div>
+                          </div>
+
+                          <div style="flex: 1;">
+                            <div class="field" style="margin-bottom: 0.2rem;">
+                              <input
+                                class="field__input"
+                                type="text"
+                                id="CustomNumberInput-{{ section.id }}"
+                                name="properties[Number]"
+                                placeholder="Number (Max 2)"
+                                maxlength="2"
+                                data-number-input
+                                form="{{ product_form_id }}"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                style="border-radius: 4px; margin: 0;"
+                              >
+                              <label
+                                class="field__label"
+                                for="CustomNumberInput-{{ section.id }}"
+                                style="white-space: nowrap; max-width: calc(100% - 2rem); overflow: hidden; text-overflow: ellipsis;"
+                                >Number (Max 2)</label
+                              >
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                              <div
+                                class="customizer-error"
+                                data-error-number
+                                style="display: none; color: #EB001B; font-size: 1.1rem; margin: 0;"
+                              >
+                                Required
+                              </div>
+                              <small
+                                class="field__counter"
+                                data-number-counter
+                                style="margin-left: auto; font-size: 1.1rem; opacity: 0.6;"
+                                >0/2</small
+                              >
+                            </div>
+                          </div>
+                        </div>
+                      {%- endif -%}
+
                       <button
                         type="button"
                         class="button button--secondary button--full-width"
-                        data-toggle
-                        style="margin-bottom: 1rem;"
+                        data-close-drawer
+                        style="margin-top: 2.5rem; border-radius: 2px; font-weight: normal; background: #fff; color: #000; border: 1px solid #000;"
                       >
-                        Customize
+                        Done
                       </button>
-                    {%- endif -%}
+                    </div>
                   </div>
-                {%- endif -%}
-              {%- when 'buy_buttons' -%}
-                {%- if product.tags contains 'custom-inputs' -%}
                   <div
                     class="product__accordion accordion quick-add-hidden personalization-return-policy"
                     {{ block.shopify_attributes }}
@@ -835,7 +893,11 @@
                             Cannot be returned once the product is personalized.
                           </h2>
                         </div>
-                        {% render 'icon-caret' %}
+                        <span class="icon-caret" style="display: flex; align-items: center; justify-content: center; opacity: 0.6;">
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2.5 4.5L7 9L11.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>
+                        </span>
                       </summary>
                       <div class="accordion__content rte" id="PersonalizationNoticeContent-{{ section.id }}">
                         When this product is tailored to your individual needs you agree that your right to return
@@ -847,13 +909,14 @@
                   <style>
                     .personalization-return-policy {
                       margin-top: 1rem;
-                      margin-bottom: 1.5rem;
-                      border: 1px solid rgba(var(--color-foreground), 0.1);
-                      border-radius: 4px;
+                      margin-bottom: 2rem;
+                      border: 1px solid rgba(var(--color-foreground), 0.15);
+                      border-radius: 8px;
                       padding: 0 1.5rem;
+                      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
                     }
                     .personalization-return-policy summary {
-                      padding: 1.2rem 0;
+                      padding: 1.5rem 0;
                     }
                     .personalization-return-policy .icon-accordion {
                       fill: #eb001b;
@@ -867,8 +930,16 @@
                       color: #eb001b;
                       font-weight: bold;
                     }
+                    .personalization-return-policy summary .icon-caret {
+                      transition: transform 0.3s ease;
+                    }
+                    .personalization-return-policy details[open] summary .icon-caret {
+                      transform: rotate(180deg);
+                    }
                   </style>
                 {%- endif -%}
+
+              {%- when 'buy_buttons' -%}
                 {%- render 'buy-buttons',
                   block: block,
                   product: product,
@@ -1480,7 +1551,47 @@
       "type": "custom_name_num",
       "name": "Custom Name Number",
       "limit": 1,
-      "settings": []
+      "settings": [
+        {
+          "type": "text",
+          "id": "nationality_price_text",
+          "label": "Nationality Price Text",
+          "default": "+100 SEK"
+        },
+        {
+          "type": "number",
+          "id": "nationality_price",
+          "label": "Nationality Price (Numeric)",
+          "default": 100,
+          "info": "Used for calculating total price"
+        },
+        {
+          "type": "text",
+          "id": "name_number_price_text",
+          "label": "Name & Number Price Text",
+          "default": "+100 SEK"
+        },
+        {
+          "type": "number",
+          "id": "name_number_price",
+          "label": "Name & Number Price (Numeric)",
+          "default": 100,
+          "info": "Used for calculating total price"
+        },
+        {
+          "type": "text",
+          "id": "logo_price_text",
+          "label": "Logo Price Text",
+          "default": "+100 SEK"
+        },
+        {
+          "type": "number",
+          "id": "logo_price",
+          "label": "Logo Price (Numeric)",
+          "default": 100,
+          "info": "Used for calculating total price"
+        }
+      ]
     },
     {
       "type": "buy_buttons",

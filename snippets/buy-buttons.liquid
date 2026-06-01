@@ -24,10 +24,15 @@
       endif
     -%}
     {%- liquid
-      assign giftbox_id = product.metafields.global.add_gift_product
-      assign gift_product_obj = product.metafields.global.add_gift_product.value
-      if product.metafields.global.add_gift_product.value != blank
-        assign giftbox_id = product.metafields.global.add_gift_product
+      assign giftbox_meta = product.metafields.global.add_gift_product
+      assign gift_product_obj = giftbox_meta.value
+      
+      if gift_product_obj.first
+        assign gift_product_obj = gift_product_obj.first
+      endif
+      
+      if gift_product_obj == blank
+        assign gift_product_obj = all_products[giftbox_meta]
       endif
     -%}
     <product-form
@@ -35,7 +40,10 @@
       data-hide-errors="{{ gift_card_recipient_feature_active }}"
       data-section-id="{{ section.id }}"
       data-has-giftbox="{% if product.tags contains 'add_gift_product' and product.metafields.global.add_gift_product != blank and gift_product_obj.available != false %}true{% else %}false{% endif %}"
-      data-giftbox-id="{{ giftbox_id }}"
+      data-giftbox-id="{{ gift_product_obj.id | default: giftbox_meta }}"
+      data-giftbox-variant-id="{{ gift_product_obj.selected_or_first_available_variant.id | default: gift_product_obj.variants.first.id }}"
+      data-giftbox-price="{{ gift_product_obj.price }}"
+      data-giftbox-price-text="{{ gift_product_obj.price | money }}"
     >
       <div class="product-form__error-message-wrapper" role="alert" hidden>
         <svg
@@ -158,6 +166,29 @@
             </div>
           </div>
         {%- endif -%}
+
+        <div data-custom-total-price-wrapper style="display: none; padding: 1.5rem; background: rgba(var(--color-foreground), 0.03); border: 1px solid rgba(var(--color-foreground), 0.1); border-radius: 4px; margin-bottom: 1.5rem; flex-direction: column; gap: 0.8rem;">
+          <div data-extra-logo style="display: none; justify-content: space-between; font-size: 1.3rem;">
+            <span>Nationality/Logo</span>
+            <span data-logo-price-display></span>
+          </div>
+          <div data-extra-nationality style="display: none; justify-content: space-between; font-size: 1.3rem;">
+            <span>Nationality/City</span>
+            <span data-nationality-price-display></span>
+          </div>
+          <div data-extra-name-number style="display: none; justify-content: space-between; font-size: 1.3rem;">
+            <span>Name & Number</span>
+            <span data-name-number-price-display></span>
+          </div>
+          <div data-extra-giftbox style="display: none; justify-content: space-between; font-size: 1.3rem;">
+            <span>Gift Box</span>
+            <span data-giftbox-price-display></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.4rem; margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid rgba(var(--color-foreground), 0.1);">
+            <span>Total Extra Price</span>
+            <span data-final-extra-price></span>
+          </div>
+        </div>
 
         <div class="product-form__buttons">
           {%- liquid
