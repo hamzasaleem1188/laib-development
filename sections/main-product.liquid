@@ -181,10 +181,21 @@
             endif
           -%}
           {%- if product.tags contains 'custom-inputs' or product.tags contains 'city_input' -%}
+            {%- liquid 
+              assign nationality_addon = product.metafields.custom.nationality_addon.value
+              assign name_number_addon = product.metafields.custom.name_number_addon.value
+              assign logo_addon = product.metafields.custom.logo_addon.value
+            -%}
             <custom-shirt-customizer
               class="customization-section"
               style="display: block;"
               data-only-custom-inputs="{{ only_custom_inputs }}"
+              data-nationality-id="{{ nationality_addon.first_available_variant.id }}"
+              data-nationality-price="{{ nationality_addon.first_available_variant.price }}"
+              data-name-id="{{ name_number_addon.first_available_variant.id }}"
+              data-name-price="{{ name_number_addon.first_available_variant.price }}"
+              data-logo-id="{{ logo_addon.first_available_variant.id }}"
+              data-logo-price="{{ logo_addon.first_available_variant.price }}"
             >
           {%- endif -%}
           {%- for block in section.blocks -%}

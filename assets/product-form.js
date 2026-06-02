@@ -85,22 +85,92 @@ if (!customElements.get("product-form")) {
 
         const config = fetchConfig("javascript");
         config.headers["X-Requested-With"] = "XMLHttpRequest";
-        delete config.headers["Content-Type"];
+        // Do not delete Content-Type as we are sending JSON
 
         const formData = new FormData(this.form);
+        const mainVariantId = formData.get("id");
+        const quantity = Number(formData.get("quantity") || 1);
+
+        let bundleId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        let items = [];
+        let mainProperties = {};
+
+        for (let [key, value] of formData.entries()) {
+          if (key.startsWith("properties[")) {
+            let propName = key.match(/properties\[(.*?)\]/)[1];
+            if (value.trim() !== "") {
+              mainProperties[propName] = value;
+            }
+          }
+        }
+
+        const customizer = document.querySelector('custom-shirt-customizer');
+        let hasCustomization = false;
+
+        if (customizer && customizer.style.display !== "none") {
+          const natId = customizer.getAttribute("data-nationality-id");
+          const natInput = customizer.querySelector("[data-logo-text-url-input]");
+          if (natId && natInput && natInput.value.trim() !== "") {
+            items.push({
+              id: parseInt(natId),
+              quantity: quantity,
+              properties: { _bundle_id: bundleId }
+            });
+            hasCustomization = true;
+          }
+
+          const nameId = customizer.getAttribute("data-name-id");
+          const nameInput = customizer.querySelector("[data-name-input]");
+          const numInput = customizer.querySelector("[data-number-input]");
+          if (nameId && ((nameInput && nameInput.value.trim() !== "") || (numInput && numInput.value.trim() !== ""))) {
+            items.push({
+              id: parseInt(nameId),
+              quantity: quantity,
+              properties: { _bundle_id: bundleId }
+            });
+            hasCustomization = true;
+          }
+
+          const logoId = customizer.getAttribute("data-logo-id");
+          const logoInput = customizer.querySelector("[data-logo-input]");
+          if (logoId && logoInput && logoInput.value.trim() !== "") {
+            items.push({
+              id: parseInt(logoId),
+              quantity: quantity,
+              properties: { _bundle_id: bundleId }
+            });
+            hasCustomization = true;
+          }
+        }
+
+        if (hasCustomization) {
+          mainProperties["_bundle_id"] = bundleId;
+        }
+
+        items.unshift({
+          id: parseInt(mainVariantId),
+          quantity: quantity,
+          properties: mainProperties
+        });
+
+        const requestBody = { items: items };
+        let addUrl = routes.cart_add_url;
+
         if (this.cart) {
-          formData.append(
-            "sections",
-            this.cart.getSectionsToRender().map((section) => section.id),
-          );
-          formData.append("sections_url", window.location.pathname);
+          const sectionsStr = this.cart.getSectionsToRender().map((section) => section.id).join(",");
+          addUrl = `${routes.cart_add_url}?sections=${sectionsStr}`;
+          requestBody.sections_url = window.location.pathname;
           this.cart.setActiveElement(document.activeElement);
         }
-        config.body = formData;
+        config.body = JSON.stringify(requestBody);
 
-        fetch(`${routes.cart_add_url}`, config)
+        fetch(addUrl, config)
           .then((response) => response.json())
           .then((response) => {
+            if (response.items && response.items.length > 0 && !response.key) {
+              response.key = response.items[0].key;
+            }
+
             if (response.status) {
               publish(PUB_SUB_EVENTS.cartError, {
                 source: "product-form",
@@ -123,12 +193,27 @@ if (!customElements.get("product-form")) {
               return;
             }
 
-            if (!this.error)
+            if (!this.error) {
               publish(PUB_SUB_EVENTS.cartUpdate, {
                 source: "product-form",
                 productVariantId: formData.get("id"),
                 cartData: response,
               });
+
+              // Force clear customizer
+              const customizer = document.querySelector("custom-shirt-customizer");
+              if (customizer && typeof customizer.clearCustomization === "function") {
+                customizer.clearCustomization();
+                customizer.validationActive = false;
+                if (customizer.errorNationality) customizer.errorNationality.style.display = "none";
+                if (customizer.errorLogo) customizer.errorLogo.style.display = "none";
+                if (customizer.errorName) customizer.errorName.style.display = "none";
+                if (customizer.errorNumber) customizer.errorNumber.style.display = "none";
+                if (customizer.drawer && customizer.drawer.style.display !== "none") {
+                  customizer.toggleDrawer();
+                }
+              }
+            }
             this.error = false;
 
             const hasGiftbox = this.getAttribute("data-has-giftbox") === "true";
@@ -212,21 +297,56 @@ if (!customElements.get("product-form")) {
       }
 
       renderCartOrRedirect(response) {
-        const quickAddModal = this.closest("quick-add-modal");
-        if (quickAddModal) {
-          document.body.addEventListener(
-            "modalClosed",
-            () => {
-              setTimeout(() => {
-                this.cart.renderContents(response);
-              });
-            },
-            { once: true },
-          );
-          quickAddModal.hide(true);
-        } else {
-          this.cart.renderContents(response);
+        const doRender = (finalResponse) => {
+          const quickAddModal = this.closest("quick-add-modal");
+          if (quickAddModal) {
+            document.body.addEventListener(
+              "modalClosed",
+              () => {
+                setTimeout(() => {
+                  this.cart.renderContents(finalResponse);
+                });
+              },
+              { once: true },
+            );
+            quickAddModal.hide(true);
+          } else {
+            this.cart.renderContents(finalResponse);
+          }
+        };
+
+        if (this.cart && !response.sections) {
+          response.sections = {};
+          const rootUrl = (window.routes.root_url || "/").replace(/\/$/, "");
+          const sectionsToFetch = this.cart.getSectionsToRender().map((s) => s.id);
+          
+          Promise.all(
+            sectionsToFetch.map((sectionId) =>
+              fetch(`${rootUrl}/?section_id=${sectionId}`)
+                .then((res) => res.text())
+                .then((html) => {
+                  response.sections[sectionId] = html;
+                })
+            )
+          )
+            .then(() => doRender(response))
+            .catch(() => doRender(response));
+          return;
         }
+
+        if (this.cart && response.sections && response.sections["cart-notification-product"] === null) {
+          const rootUrl = (window.routes.root_url || "/").replace(/\/$/, "");
+          fetch(`${rootUrl}/?section_id=cart-notification-product`)
+            .then((res) => res.text())
+            .then((html) => {
+              response.sections["cart-notification-product"] = html;
+              doRender(response);
+            })
+            .catch(() => doRender(response));
+          return;
+        }
+
+        doRender(response);
       }
 
       showGiftBoxPopup(
@@ -324,12 +444,12 @@ if (!customElements.get("product-form")) {
               if (imgEl) imgEl.style.display = "none";
               if (addBtn) addBtn.style.display = "none";
               if (declineBtn) {
-                 declineBtn.textContent = "Continue to cart";
-                 declineBtn.style.textDecoration = "none";
-                 declineBtn.classList.remove("button--tertiary");
-                 declineBtn.classList.add("button--primary");
+                declineBtn.textContent = "Continue to cart";
+                declineBtn.style.textDecoration = "none";
+                declineBtn.classList.remove("button--tertiary");
+                declineBtn.classList.add("button--primary");
               }
-              
+
               loadingEl.style.display = "none";
               contentEl.style.display = "block";
               return;

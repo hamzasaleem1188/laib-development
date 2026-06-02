@@ -114,7 +114,28 @@
 
                   <tbody role="rowgroup">
                     {%- for item in cart.items -%}
-                      <tr id="CartDrawer-Item-{{ item.index | plus: 1 }}" class="cart-item" role="row">
+                      {%- if item.product.tags contains 'hide_from_cart' -%}
+                        <tr class="cart-item hidden" id="CartDrawer-Item-{{ item.index | plus: 1 }}" style="display: none;" data-bundle-id="{{ item.properties._bundle_id }}" data-key="{{ item.key }}"></tr>
+                        {%- continue -%}
+                      {%- endif -%}
+                      <tr id="CartDrawer-Item-{{ item.index | plus: 1 }}" class="cart-item" role="row" data-bundle-id="{{ item.properties._bundle_id }}" data-key="{{ item.key }}">
+                        {%- liquid
+                          assign bundle_original_price = item.original_price
+                          assign bundle_final_price = item.final_price
+                          assign bundle_original_line_price = item.original_line_price
+                          assign bundle_final_line_price = item.final_line_price
+                          
+                          if item.properties._bundle_id
+                            for bundled_item in cart.items
+                              if bundled_item.key != item.key and bundled_item.properties._bundle_id == item.properties._bundle_id
+                                assign bundle_original_price = bundle_original_price | plus: bundled_item.original_price
+                                assign bundle_final_price = bundle_final_price | plus: bundled_item.final_price
+                                assign bundle_original_line_price = bundle_original_line_price | plus: bundled_item.original_line_price
+                                assign bundle_final_line_price = bundle_final_line_price | plus: bundled_item.final_line_price
+                              endif
+                            endfor
+                          endif
+                        -%}
                         <td class="cart-item__media" role="cell" headers="CartDrawer-ColumnProductImage">
                           {% if item.image %}
                             {% comment %} Leave empty space due to a:empty CSS display: none rule {% endcomment %}
@@ -139,24 +160,24 @@
                             {{- item.product.title | escape -}}
                           </a>
 
-                          {%- if item.original_price != item.final_price -%}
+                          {%- if bundle_original_price != bundle_final_price -%}
                             <div class="cart-item__discounted-prices">
                               <span class="visually-hidden">
                                 {{ 'products.product.price.regular_price' | t }}
                               </span>
                               <s class="cart-item__old-price product-option">
-                                {{- item.original_price | money -}}
+                                {{- bundle_original_price | money -}}
                               </s>
                               <span class="visually-hidden">
                                 {{ 'products.product.price.sale_price' | t }}
                               </span>
                               <strong class="cart-item__final-price product-option">
-                                {{ item.final_price | money }}
+                                {{ bundle_final_price | money }}
                               </strong>
                             </div>
                           {%- else -%}
                             <div class="product-option">
-                              {{ item.original_price | money }}
+                              {{ bundle_original_price | money }}
                             </div>
                           {%- endif -%}
 
@@ -221,24 +242,24 @@
                         <td class="cart-item__totals right" role="cell" headers="CartDrawer-ColumnTotal">
                           {%- render 'loading-spinner' -%}
                           <div class="cart-item__price-wrapper">
-                            {%- if item.original_line_price != item.final_line_price -%}
+                            {%- if bundle_original_line_price != bundle_final_line_price -%}
                               <div class="cart-item__discounted-prices">
                                 <span class="visually-hidden">
                                   {{ 'products.product.price.regular_price' | t }}
                                 </span>
                                 <s class="cart-item__old-price price price--end">
-                                  {{ item.original_line_price | money }}
+                                  {{ bundle_original_line_price | money }}
                                 </s>
                                 <span class="visually-hidden">
                                   {{ 'products.product.price.sale_price' | t }}
                                 </span>
                                 <span class="price price--end">
-                                  {{ item.final_line_price | money }}
+                                  {{ bundle_final_line_price | money }}
                                 </span>
                               </div>
                             {%- else -%}
                               <span class="price price--end">
-                                {{ item.original_line_price | money }}
+                                {{ bundle_original_line_price | money }}
                               </span>
                             {%- endif -%}
 

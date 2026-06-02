@@ -146,14 +146,37 @@ class CartItems extends HTMLElement {
   updateQuantity(line, quantity, name, variantId) {
     this.enableLoading(line);
 
-    const body = JSON.stringify({
-      line,
-      quantity,
-      sections: this.getSectionsToRender().map((section) => section.section),
-      sections_url: window.location.pathname,
-    });
+    const lineItemRow = document.getElementById(`CartItem-${line}`) || document.getElementById(`CartDrawer-Item-${line}`);
+    const bundleId = lineItemRow ? lineItemRow.getAttribute('data-bundle-id') : null;
 
-    fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } })
+    let fetchPromise;
+
+    if (bundleId) {
+      let updates = {};
+      const allRows = document.querySelectorAll(`[data-bundle-id="${bundleId}"]`);
+      allRows.forEach(row => {
+        const key = row.getAttribute('data-key');
+        if (key) {
+          updates[key] = quantity;
+        }
+      });
+      const body = JSON.stringify({
+        updates,
+        sections: this.getSectionsToRender().map((section) => section.section),
+        sections_url: window.location.pathname,
+      });
+      fetchPromise = fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } });
+    } else {
+      const body = JSON.stringify({
+        line,
+        quantity,
+        sections: this.getSectionsToRender().map((section) => section.section),
+        sections_url: window.location.pathname,
+      });
+      fetchPromise = fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } });
+    }
+
+    fetchPromise
       .then((response) => {
         return response.text();
       })
@@ -161,7 +184,6 @@ class CartItems extends HTMLElement {
         const parsedState = JSON.parse(state);
         const quantityElement =
           document.getElementById(`Quantity-${line}`) || document.getElementById(`Drawer-quantity-${line}`);
-        const items = document.querySelectorAll('.cart-item');
 
         if (parsedState.errors) {
           quantityElement.value = quantityElement.getAttribute('value');
@@ -184,15 +206,21 @@ class CartItems extends HTMLElement {
             section.selector
           );
         });
-        const updatedValue = parsedState.items[line - 1] ? parsedState.items[line - 1].quantity : undefined;
-        let message = '';
-        if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
-          if (typeof updatedValue === 'undefined') {
-            message = window.cartStrings.error;
-          } else {
-            message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
-          }
+
+        const key = lineItemRow ? lineItemRow.getAttribute('data-key') : null;
+        let updatedItem = parsedState.items[line - 1];
+        if (key && parsedState.items) {
+           updatedItem = parsedState.items.find(item => item.key === key);
         }
+
+        const updatedValue = updatedItem ? updatedItem.quantity : undefined;
+        let message = '';
+        if (updatedValue !== undefined && updatedValue !== parseInt(quantityElement.value)) {
+            message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
+        } else if (updatedValue === undefined && quantityElement.value > 0) {
+            message = window.cartStrings.error;
+        }
+        
         this.updateLiveRegions(line, message);
 
         const lineItem =
@@ -212,7 +240,7 @@ class CartItems extends HTMLElement {
       .catch(() => {
         this.querySelectorAll('.loading__spinner').forEach((overlay) => overlay.classList.add('hidden'));
         const errors = document.getElementById('cart-errors') || document.getElementById('CartDrawer-CartErrors');
-        errors.textContent = window.cartStrings.error;
+        if (errors) errors.textContent = window.cartStrings.error;
       })
       .finally(() => {
         this.disableLoading(line);
