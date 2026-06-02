@@ -181,7 +181,7 @@
             endif
           -%}
           {%- if product.tags contains 'custom-inputs' or product.tags contains 'city_input' -%}
-            {%- liquid 
+            {%- liquid
               assign nationality_addon = product.metafields.custom.nationality_addon.value
               assign name_number_addon = product.metafields.custom.name_number_addon.value
               assign logo_addon = product.metafields.custom.logo_addon.value
@@ -704,7 +704,8 @@
                                   onmouseover="this.style.background='rgba(var(--color-foreground), 0.05)'; this.style.color='rgba(var(--color-foreground), 0.8)'"
                                   onmouseout="this.style.background='rgba(var(--color-foreground), 0.02)'; this.style.color='rgba(var(--color-foreground), 0.6)'"
                                 >
-                                  <span style="width: 24px; display: flex; justify-content: center;">✕</span> Clear Selection
+                                  <span style="width: 24px; display: flex; justify-content: center;">✕</span> Clear
+                                  Selection
                                 </div>
                               </div>
                               <div data-logo-list>
@@ -734,7 +735,12 @@
                             </div>
                           </div>
                           <input type="hidden" name="properties[Country]" data-logo-input form="{{ product_form_id }}">
-                          <input type="hidden" name="properties[_Logo URL]" data-logo-url-input form="{{ product_form_id }}">
+                          <input
+                            type="hidden"
+                            name="properties[_Logo URL]"
+                            data-logo-url-input
+                            form="{{ product_form_id }}"
+                          >
 
                           <div
                             class="customizer-error"
@@ -904,8 +910,17 @@
                             Cannot be returned once the product is personalized.
                           </h2>
                         </div>
-                        <span class="icon-caret" style="display: flex; align-items: center; justify-content: center; opacity: 0.6;">
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <span
+                          class="icon-caret"
+                          style="display: flex; align-items: center; justify-content: center; opacity: 0.6;"
+                        >
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 14 14"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
                             <path d="M2.5 4.5L7 9L11.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                           </svg>
                         </span>
