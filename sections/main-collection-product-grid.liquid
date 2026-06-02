@@ -152,7 +152,8 @@
             >
               {% assign skip_card_product_styles = false %}
               {%- for product in collection.products -%}
-                {% assign lazy_load = false %}
+                {%- unless product.tags contains 'hidden_addon' -%}
+                  {% assign lazy_load = false %}
                 {%- if forloop.index > 2 -%}
                   {%- assign lazy_load = true -%}
                 {%- endif -%}
@@ -177,6 +178,7 @@
                   %}
                 </li>
                 {%- assign skip_card_product_styles = true -%}
+                {%- endunless -%}
               {%- endfor -%}
             </ul>
 

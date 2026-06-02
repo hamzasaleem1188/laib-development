@@ -256,7 +256,8 @@
               >
                 {%- assign skip_card_product_styles = false -%}
                 {%- for item in search.results -%}
-                  {% assign lazy_load = false %}
+                  {%- unless item.tags contains 'hidden_addon' -%}
+                    {% assign lazy_load = false %}
                   {%- if forloop.index > 2 -%}
                     {%- assign lazy_load = true -%}
                   {%- endif -%}
@@ -315,6 +316,7 @@
                         </div>
                     {%- endcase -%}
                   </li>
+                  {%- endunless -%}
                 {%- endfor -%}
               </ul>
               {%- if paginate.pages > 1 -%}

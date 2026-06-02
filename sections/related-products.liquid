@@ -37,6 +37,7 @@
       >
         {% assign skip_card_product_styles = false %}
         {% for recommendation in recommendations.products %}
+          {%- unless recommendation.tags contains 'hidden_addon' -%}
           <li class="grid__item">
             {% render 'card-product',
               card_product: recommendation,
@@ -49,6 +50,7 @@
             %}
           </li>
           {%- assign skip_card_product_styles = true -%}
+          {%- endunless -%}
         {% endfor %}
       </ul>
     {% endif %}

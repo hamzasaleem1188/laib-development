@@ -1076,6 +1076,7 @@
                                     offset: continue
                                   -%}
                                     {% comment %}theme-check-enable UndefinedObject{% endcomment %}
+                                    {%- unless product.tags contains 'hidden_addon' -%}
                                     <li>
                                       {%- if block.settings.enable_quick_add -%}
                                         {% assign quick_add = 'standard' %}
@@ -1095,6 +1096,7 @@
                                       %}
                                     </li>
                                     {%- assign skip_card_product_styles = true -%}
+                                    {%- endunless -%}
                                   {%- endfor -%}
                                 </ul>
                               </div>

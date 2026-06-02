@@ -28,6 +28,11 @@
     <div class="collage{% if section.settings.mobile_layout == 'collage' %} collage--mobile{% endif %}">
       {% assign skip_card_product_styles = false %}
       {%- for block in section.blocks -%}
+        {%- assign skip_block = false -%}
+        {%- if block.type == 'product' and block.settings.product.tags contains 'hidden_addon' -%}
+          {%- assign skip_block = true -%}
+        {%- endif -%}
+        {%- unless skip_block -%}
         <div
           class="collage__item collage__item--{{ block.type }} collage__item--{{ section.settings.desktop_layout }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
           {{ block.shopify_attributes }}
@@ -206,6 +211,7 @@
               </div>
           {%- endcase -%}
         </div>
+        {%- endunless -%}
       {%- endfor -%}
     </div>
   </div>
