@@ -1221,16 +1221,34 @@
   </div>
 </product-info>
 
-{%- assign has_giftbox_tag = false -%}
-{%- if product.tags contains 'add_gift_product' -%}
-  {%- assign has_giftbox_tag = true -%}
-{%- endif -%}
-{%- if has_giftbox_tag and product.metafields.global.add_gift_product != blank -%}
+{%- liquid
+  assign giftbox_meta = product.metafields.global.add_gift_product
+  assign gift_product_obj = giftbox_meta.value
+  
+  if gift_product_obj.first
+    assign gift_product_obj = gift_product_obj.first
+  endif
+  
+  if gift_product_obj == blank and giftbox_meta != blank
+    assign gift_product_obj = all_products[giftbox_meta]
+  endif
+
+  if gift_product_obj == blank
+    assign default_gift_handle = 'gift-box'
+    assign gift_product_obj = all_products[default_gift_handle]
+  endif
+
+  assign has_giftbox = false
+  if gift_product_obj != blank and gift_product_obj.handle != product.handle and gift_product_obj.available
+    assign has_giftbox = true
+  endif
+-%}
+{%- if has_giftbox -%}
   <div
     id="GiftBoxModal-{{ section.id }}"
     class="custom-modal giftbox-modal"
     style="display: none;"
-    data-gift-product-id="{{ product.metafields.global.add_gift_product }}"
+    data-gift-product-id="{{ gift_product_obj.id }}"
   >
     <div class="custom-modal__content" style="max-width: 500px; padding: 30px 20px 20px;">
       <button type="button" class="custom-modal__close" data-modal-close>&times;</button>
