@@ -1,0 +1,86 @@
+{{ 'trust-banner.css' | asset_url | stylesheet_tag }}
+
+<div class="trust-banner-section page-width">
+  <div class="trust-banner-container">
+    {% for block in section.blocks %}
+      <div class="trust-banner-item" {{ block.shopify_attributes }}>
+        <div class="trust-banner-icon">
+          {{ block.settings.icon_svg }}
+        </div>
+        <div class="trust-banner-text">
+          <div class="trust-banner-title">{{ block.settings.title }}</div>
+          <div class="trust-banner-subtitle">{{ block.settings.subtitle }}</div>
+        </div>
+      </div>
+      {% unless forloop.last %}
+        <div class="trust-banner-divider"></div>
+      {% endunless %}
+    {% endfor %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Trust Banner",
+  "tag": "section",
+  "class": "section",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "trust_item",
+      "name": "Trust Item",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "html",
+          "id": "icon_svg",
+          "label": "Icon SVG"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "30+ COUNTRIES"
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "label": "Subtitle",
+          "default": "Worldwide shipping"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust Banner",
+      "blocks": [
+        {
+          "type": "trust_item",
+          "settings": {
+            "title": "30+ COUNTRIES",
+            "subtitle": "Worldwide shipping",
+            "icon_svg": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"></line><path d=\"M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z\"></path></svg>"
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "title": "30,000+ CUSTOMERS",
+            "subtitle": "Join the LAIB family",
+            "icon_svg": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path><circle cx=\"9\" cy=\"7\" r=\"4\"></circle><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"></path><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"></path></svg>"
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "title": "30-DAY GUARANTEE",
+            "subtitle": "Love it or get a refund",
+            "icon_svg": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><polygon points=\"12 2 15.09 5.09 19.5 4.5 20.09 8.91 23.18 12 20.09 15.09 19.5 19.5 15.09 18.91 12 22 8.91 18.91 4.5 19.5 5.09 15.09 2 12 5.09 8.91 4.5 4.5 8.91 5.09 12 2\"></polygon><polyline points=\"9 12 11 14 15 10\"></polyline></svg>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

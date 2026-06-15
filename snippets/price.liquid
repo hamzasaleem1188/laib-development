@@ -15,6 +15,25 @@
 {%- liquid
   if use_variant
     assign target = product.selected_or_first_available_variant
+    if product.tags contains 'custom_pdp' and product.selected_variant == blank
+      for variant in product.variants
+        assign has_black = false
+        assign has_m = false
+        for option in variant.options
+          assign opt_down = option | downcase
+          if opt_down == 'black'
+            assign has_black = true
+          endif
+          if opt_down == 'm'
+            assign has_m = true
+          endif
+        endfor
+        if has_black and has_m and variant.available
+          assign target = variant
+          break
+        endif
+      endfor
+    endif
   elsif placeholder
     assign target = null
   else
@@ -91,6 +110,10 @@
         {%- endif -%}
       </div>
       <div class="price__sale">
+        <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.sale_price' | t }}</span>
+        <span class="price-item price-item--sale price-item--last">
+          {{ money_price }}
+        </span>
         {%- unless product.price_varies == false and product.compare_at_price_varies %}
           <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.regular_price' | t }}</span>
           <span>
@@ -103,10 +126,6 @@
             </s>
           </span>
         {%- endunless -%}
-        <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.sale_price' | t }}</span>
-        <span class="price-item price-item--sale price-item--last">
-          {{ money_price }}
-        </span>
       </div>
       <small class="unit-price caption{% if product.selected_or_first_available_variant.unit_price_measurement == nil %} hidden{% endif %}">
         <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
@@ -123,12 +142,21 @@
         </span>
       </small>
     </div>
-    <div id="CustomPriceLabel-{{ section_id | default: id | default: product.id }}" class="custom-price-breakdown product__tax caption rte" style="display: none;">
+    <div
+      id="CustomPriceLabel-{{ section_id | default: id | default: product.id }}"
+      class="custom-price-breakdown product__tax caption rte"
+      style="display: none;"
+    >
       <!-- Breakdown populated by JS -->
     </div>
     {%- if show_badges -%}
-      <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
-        {{ 'products.product.on_sale' | t }}
+      <span class="badge price__badge-sale custom-save-badge{% if template.suffix == 'black-gold' %} is-black-gold{% endif %}">
+        {%- if compare_at_price > price -%}
+          {%- assign saved_amount = compare_at_price | minus: price | money_without_trailing_zeros -%}
+          You save {{ saved_amount }}
+        {%- else -%}
+          {{ 'products.product.on_sale' | t }}
+        {%- endif -%}
       </span>
 
       <span class="badge price__badge-sold-out color-{{ settings.sold_out_badge_color_scheme }}">

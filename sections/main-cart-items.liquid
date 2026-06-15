@@ -135,6 +135,9 @@
                                {%- if option.name == 'Personalization' or option.name == 'Flag' -%}
                                  {%- continue -%}
                                {%- endif -%}
+                               {%- if option.name == 'Nationality' -%}
+                                 {%- continue -%}
+                               {%- endif -%}
                                <div class="product-option">
                                  <dt>{{ option.name }}:</dt>
                                  <dd>{{ option.value }}</dd>

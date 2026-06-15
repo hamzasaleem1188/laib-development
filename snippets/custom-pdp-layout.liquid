@@ -1,0 +1,659 @@
+{% comment %}
+  Custom PDP layout (rendered when product is tagged `custom_pdp`).
+  Reuses the theme's variant logic via <variant-selects> + buy-buttons so that
+  price / variant id / cart wiring keeps working, while presenting a card-based
+  design with an inline-expanding personalization section and a sticky CTA bar.
+
+  Accepts:
+  - section, product, variant_images
+{% endcomment %}
+
+{{ 'custom-pdp.css' | asset_url | stylesheet_tag }}
+
+{%- assign product_form_id = 'product-form-' | append: section.id -%}
+{%- assign nationality_addon = product.metafields.custom.nationality_addon.value -%}
+{%- assign name_number_addon = product.metafields.custom.name_number_addon.value -%}
+{%- assign logo_addon = product.metafields.custom.logo_addon.value -%}
+
+{%- liquid
+  assign target_default_variant = product.selected_or_first_available_variant
+  if product.tags contains 'custom_pdp' and product.selected_variant == blank
+    for variant in product.variants
+      assign has_black = false
+      assign has_m = false
+      for option in variant.options
+        assign opt_down = option | downcase
+        if opt_down == 'black'
+          assign has_black = true
+        endif
+        if opt_down == 'm'
+          assign has_m = true
+        endif
+      endfor
+      if has_black and has_m and variant.available
+        assign target_default_variant = variant
+        break
+      endif
+    endfor
+  endif
+-%}
+
+{%- assign has_giftbox = false -%}
+{%- assign giftbox_meta = product.metafields.global.add_gift_product -%}
+{%- if giftbox_meta != blank -%}
+  {%- assign gift_product_obj = giftbox_meta.value | default: all_products[giftbox_meta] -%}
+  {%- if gift_product_obj.first -%}
+    {%- assign gift_product_obj = gift_product_obj.first -%}
+  {%- endif -%}
+  {%- if gift_product_obj != blank and gift_product_obj.handle != product.handle and gift_product_obj.available -%}
+    {%- assign has_giftbox = true -%}
+  {%- endif -%}
+{%- endif -%}
+{%- unless has_giftbox -%}
+  {%- assign gift_product_obj = all_products['gift-box'] -%}
+  {%- if gift_product_obj != blank and gift_product_obj.handle != product.handle and gift_product_obj.available -%}
+    {%- assign has_giftbox = true -%}
+  {%- endif -%}
+{%- endunless -%}
+
+<div class="custom-pdp-container{% if template.suffix == 'black-gold' %} is-black-gold{% endif %}{% if product.tags contains 'pc_layout' %} force-pc-layout{% endif %}">
+  <!-- Left Column -->
+  <div class="custom-pdp-left">
+    {% render 'custom-pdp-media-gallery', variant_images: variant_images, product: product, section: section %}
+  </div>
+
+  <!-- Right Column -->
+  <div class="custom-pdp-right">
+    <div class="custom-pdp-brand">{{ product.vendor }}</div>
+    <h1 class="custom-pdp-title">{{ product.title | escape }}</h1>
+
+    <div id="price-{{ section.id }}" role="status" class="custom-pdp-price">
+      {%- render 'price', product: product, use_variant: true, show_badges: true, price_class: 'price--large' -%}
+    </div>
+
+    <!-- Variant Picker (native theme picker, identical to the rest of the store) -->
+    {%- assign rendered_picker = false -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'variant_picker' -%}
+        {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
+        {%- assign rendered_picker = true -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- unless rendered_picker -%}
+      {% render 'product-variant-picker', product: product, block: null, product_form_id: product_form_id %}
+    {%- endunless -%}
+
+    {%- assign mixed_inventory = false -%}
+    {%- if product.tags contains 'mixed_inventory' -%}
+      {%- assign mixed_inventory = true -%}
+    {%- endif -%}
+    <custom-shirt-customizer
+      class="custom-pdp-customizer"
+      {% if mixed_inventory %}
+        data-mixed-inventory="true"
+      {% endif %}
+      style="display: block;"
+      data-only-custom-inputs="true"
+      data-nationality-id="{{ nationality_addon.first_available_variant.id }}"
+      data-nationality-price="{{ nationality_addon.first_available_variant.price }}"
+      data-name-id="{{ name_number_addon.first_available_variant.id }}"
+      data-name-price="{{ name_number_addon.first_available_variant.price }}"
+      data-logo-id="{{ logo_addon.first_available_variant.id }}"
+      data-logo-price="{{ logo_addon.first_available_variant.price }}"
+    >
+      <div class="personalization-dropdown">
+        <button type="button" class="personalization-dropdown-summary" id="PersonalizationDropdownToggle">
+          <div class="summary-content">
+            <span>START CUSTOMIZING</span>
+          </div>
+          <span class="dropdown-icon">
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </span>
+        </button>
+        <div class="personalization-dropdown-content-wrapper">
+          <div class="personalization-dropdown-content-inner">
+            <div class="custom-pdp-cards-wrapper">
+              <!-- Identity Badge -->
+              <div class="custom-pdp-card" id="Card-IdentityBadge">
+                <div class="card-row">
+                  <div class="card-icon" id="IdentityBadgeIcon">
+                    <svg
+                      id="IdentityBadgeIconSvg"
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <img
+                      id="IdentityBadgeIconPreview"
+                      src="{{ 'transparent.png' | asset_url }}"
+                      alt=""
+                      width="22"
+                      height="22"
+                      style="display:none; width:100%; height:100%; object-fit:cover;"
+                    >
+                  </div>
+                  <div class="card-title-group">
+                    <div class="card-title-row">
+                      <span class="card-title">1. NATIONALITY</span>
+                      <div class="card-price" data-logo-price="{{ logo_addon.first_available_variant.price }}"></div>
+                      <div class="card-checkmark" id="Checkmark-IdentityBadge">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                      <div class="card-accordion-icon">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                      </div>
+                    </div>
+                    <span class="card-subtitle">Appears on chest &amp; back neck.</span>
+                  </div>
+                </div>
+                <div class="card-input-wrapper">
+                  <div class="card-input-area">
+                    <div class="custom-select logo-select-component" data-logo-select>
+                      <div class="select-selected">
+                        <span data-selected-name>Select nationality / logo</span>
+                        <span class="select-caret">▼</span>
+                      </div>
+                      <div class="select-items select-hide">
+                        <div style="padding: 0.5rem; position: sticky; top: 0; background: #fff; border-bottom: 1px solid #eee; z-index: 1;">
+                          <input
+                            type="text"
+                            class="field__input"
+                            placeholder="Search…"
+                            data-logo-search
+                            style="height: 3.5rem; padding: 0 1rem; width: 100%;"
+                          >
+                        </div>
+                        <div data-logo-list>
+                          {%- assign logos = product.metafields.custom.logo_list.value -%}
+                          {%- for logo_item in logos -%}
+                            {%- if logo_item.active -%}
+                              <div
+                                class="item"
+                                data-value="{{ logo_item.label | escape }}"
+                                data-logo-url="{{ logo_item.logo_image }}"
+                                data-label-url="{{ logo_item.label_image }}"
+                                data-label-text="{{ logo_item.label | escape }}"
+                                data-is-best-selling="{{ logo_item.is_best_selling | default: false }}"
+                              >
+                                {%- if logo_item.logo_image != blank -%}
+                                  <img
+                                    src="{{ logo_item.logo_image }}"
+                                    class="item-flag"
+                                    alt="{{ logo_item.label }}"
+                                    width="24"
+                                    height="16"
+                                  >
+                                {%- endif -%}
+                                <span>{{ logo_item.label }}</span>
+                              </div>
+                            {%- endif -%}
+                          {%- endfor -%}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden" name="properties[Country]" data-logo-input form="{{ product_form_id }}">
+                <input type="hidden" name="properties[_Logo URL]" data-logo-url-input form="{{ product_form_id }}">
+              </div>
+
+              <!-- Front Text -->
+              <div class="custom-pdp-card" id="Card-FrontText">
+                <div class="card-row">
+                  <div class="card-icon">
+                    <span style="font-size: 2rem; font-weight: bold; font-family: serif; line-height:1;">T</span>
+                  </div>
+                  <div class="card-title-group">
+                    <div class="card-title-row">
+                      <span class="card-title">2. FRONT TEXT</span>
+                      <div
+                        class="card-price"
+                        data-nationality-price="{{ nationality_addon.first_available_variant.price }}"
+                      ></div>
+                      <div class="card-checkmark" id="Checkmark-FrontText">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                      <div class="card-accordion-icon">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                      </div>
+                    </div>
+                    <span class="card-subtitle">City, nationality or your word.</span>
+                  </div>
+                </div>
+                <div class="card-input-wrapper">
+                  <div class="card-input-area" style="position: relative;">
+                    <input
+                      class="field__input custom-pdp-input"
+                      type="text"
+                      name="properties[Country]"
+                      placeholder="e.g. Stockholm"
+                      data-logo-text-url-input
+                      form="{{ product_form_id }}"
+                      maxlength="12"
+                      style="padding-right: 4rem;"
+                    >
+                    <span
+                      class="char-counter"
+                      data-nationality-city-counter
+                      style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.1rem; color: #999; pointer-events: none;"
+                      >0/12</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Name & Number -->
+              <div class="custom-pdp-card" id="Card-NameNumber">
+                <div class="card-row">
+                  <div class="card-icon">
+                    {%- if product.featured_media -%}
+                      <img
+                        src="{{ product.featured_media | image_url: width: 96 }}"
+                        alt="{{ product.title | escape }}"
+                        width="48"
+                        height="48"
+                      >
+                    {%- else -%}
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"></path>
+                      </svg>
+                    {%- endif -%}
+                  </div>
+                  <div class="card-title-group">
+                    <div class="card-title-row">
+                      <span class="card-title">3. NAME &amp; NUMBER</span>
+                      <div
+                        class="card-price"
+                        data-name-number-price="{{ name_number_addon.first_available_variant.price }}"
+                      ></div>
+                      <div class="card-checkmark" id="Checkmark-NameNumber">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                      <div class="card-accordion-icon">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                      </div>
+                    </div>
+                    <span class="card-subtitle">Printed on the back.</span>
+                  </div>
+                </div>
+                <div class="card-input-wrapper">
+                  <div class="card-input-area inline-inputs">
+                    <div class="inline-inputs-wrapper">
+                      <div class="input-group">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                          <label class="card-field-label" style="margin-bottom: 0;">Name</label>
+                          <span class="char-counter" data-name-counter style="font-size: 1.1rem; color: #999;"
+                            >0/10</span
+                          >
+                        </div>
+                        <input
+                          class="field__input custom-pdp-input"
+                          type="text"
+                          name="properties[Name]"
+                          placeholder="BAHDKE"
+                          data-name-input
+                          form="{{ product_form_id }}"
+                          maxlength="10"
+                        >
+                      </div>
+                      <div class="input-group input-group--number">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                          <label class="card-field-label" style="margin-bottom: 0;">Number</label>
+                          <span class="char-counter" data-number-counter style="font-size: 1.1rem; color: #999;"
+                            >0/2</span
+                          >
+                        </div>
+                        <input
+                          class="field__input custom-pdp-input"
+                          type="text"
+                          inputmode="numeric"
+                          pattern="[0-9]*"
+                          name="properties[Number]"
+                          placeholder="10"
+                          data-number-input
+                          form="{{ product_form_id }}"
+                          maxlength="2"
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Add Giftbox — always shown; price/unit populated when metafield is configured -->
+              {%- assign giftbox_price = gift_product_obj.price | default: 0 -%}
+              <div class="custom-pdp-card" id="Card-Giftbox" data-giftbox-unit="{{ giftbox_price }}">
+                <div class="card-row">
+                  <div class="card-icon">
+                    {%- if gift_product_obj.featured_image -%}
+                      <img
+                        src="{{ gift_product_obj.featured_image | image_url: width: 96 }}"
+                        alt="{{ gift_product_obj.title | escape }}"
+                        width="48"
+                        height="48"
+                      >
+                    {%- else -%}
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <rect x="3" y="8" width="18" height="14" rx="2" ry="2"></rect>
+                        <line x1="12" y1="8" x2="12" y2="22"></line>
+                        <path d="M19 8c-1-3-3-3-4-3-2 0-3 2-3 3s1 3 3 3h4c2 0 3-2 3-3z"></path>
+                        <path d="M5 8c1-3 3-3 4-3 2 0 3 2 3 3s-1 3-3 3H5C3 11 2 9 2 8z"></path>
+                      </svg>
+                    {%- endif -%}
+                  </div>
+                  <div class="card-title-group">
+                    <div class="card-title-row">
+                      <span class="card-title">4. GIFT BOX</span>
+                    </div>
+                    <span class="card-subtitle">Premium gift packaging.</span>
+                  </div>
+                  <!-- Price + checkbox stacked vertically on the right -->
+                  <div class="card-giftbox-toggle">
+                    <div class="card-price" data-giftbox-price></div>
+                    <label class="card-checkbox-label" for="GiftboxCheckbox">
+                      <input type="checkbox" id="GiftboxCheckbox" class="card-checkbox-input">
+                      <span class="card-checkbox-custom"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const toggle = document.getElementById('PersonalizationDropdownToggle');
+          const dropdown = toggle.closest('.personalization-dropdown');
+          toggle.addEventListener('click', function () {
+            dropdown.classList.toggle('is-open');
+          });
+
+          // Card Accordion Logic
+          const cardIcons = document.querySelectorAll('.custom-pdp-card .card-accordion-icon');
+          cardIcons.forEach((icon) => {
+            const row = icon.closest('.card-row');
+            if (row) {
+              row.addEventListener('click', function (e) {
+                // Prevent toggling if they clicked an input inside the row
+                if (e.target.tagName.toLowerCase() === 'input') return;
+                const card = this.closest('.custom-pdp-card');
+
+                // Close all other cards to keep length minimized
+                document.querySelectorAll('.custom-pdp-card').forEach((c) => {
+                  if (c !== card) c.classList.remove('is-open');
+                });
+
+                card.classList.toggle('is-open');
+              });
+            }
+          });
+        });
+      </script>
+
+      <div class="custom-pdp-trust-badges-wrapper">
+        <div class="custom-pdp-trust-badges">
+          <div class="badge-item">
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/>
+            </svg>
+            <div class="badge-item-text">
+              <span>Custom printed</span>
+              <span class="badge-item-sub">in Sweden</span>
+            </div>
+          </div>
+          <span class="badge-divider"></span>
+          <div class="badge-item">
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="1" y="3" width="15" height="13" rx="1"/>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/>
+              <circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+            <div class="badge-item-text">
+              <span>Ships in</span>
+              <span class="badge-item-sub">2-4 business days</span>
+            </div>
+          </div>
+          <span class="badge-divider"></span>
+          <div class="badge-item">
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+            <div class="badge-item-text">
+              <span>Personalized</span>
+              <span class="badge-item-sub">for you</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="custom-pdp-how-it-works-wrapper">
+        <div class="custom-pdp-how-it-works">
+          <h2 class="how-it-works-title">HOW IT WORKS</h2>
+          <div class="how-it-works-steps">
+            <div class="how-it-works-step">
+              <div class="step-circle">1</div>
+              <span class="step-label">Choose your base</span>
+            </div>
+            <div class="how-it-works-step">
+              <div class="step-circle">2</div>
+              <span class="step-label">Add your identity</span>
+            </div>
+            <div class="how-it-works-step">
+              <div class="step-circle">3</div>
+              <span class="step-label">We craft &amp; deliver</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sticky Bottom Container -->
+      <div class="custom-pdp-sticky-bottom">
+        <!-- Summary Box -->
+        <div class="custom-pdp-summary">
+          <h3 class="summary-title">Your shirt</h3>
+          <div class="summary-rows">
+            <div class="summary-row">
+              <span class="summary-label">Base shirt</span>
+              <span class="summary-value" id="Summary-BasePrice">
+                {{- target_default_variant.price | money -}}
+              </span>
+            </div>
+            <div class="summary-row" id="SummaryRow-ExtraPrice" style="display: none;">
+              <span class="summary-label">Extra price added</span>
+              <span class="summary-value" id="SummaryValue-ExtraPrice"></span>
+            </div>
+          </div>
+          <div class="summary-total-row">
+            <span class="summary-total-label">Total</span>
+            <span class="summary-total-value" id="Summary-TotalPrice">
+              {{- target_default_variant.price | money -}}
+            </span>
+          </div>
+        </div>
+
+        <!-- Main Form & Add to Cart (theme buy-buttons: real product-form + giftbox logic) -->
+        <div class="custom-pdp-buy-buttons">
+          {%- render 'buy-buttons',
+            block: null,
+            product: product,
+            product_form_id: product_form_id,
+            section_id: section.id,
+            show_pickup_availability: false,
+            force_dynamic_checkout: true,
+            target_default_variant: target_default_variant
+          -%}
+        </div>
+      </div>
+
+      <!-- Responsive Section Re-ordering via JS -->
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const howItWorks = document.querySelector('.custom-pdp-how-it-works-wrapper');
+          const trustBadges = document.querySelector('.custom-pdp-trust-badges-wrapper');
+          const socialVideos =
+            document.querySelector('.social-videos-section')?.closest('.shopify-section') ||
+            document.querySelector('[id*="social-videos"]');
+          const externalTrustBanner =
+            document.querySelector('.trust-banner-section')?.closest('.shopify-section') ||
+            document.querySelector('[id*="trust_banner"]');
+          const mainProduct =
+            document.querySelector('.custom-pdp-container') || document.querySelector('.product.grid');
+
+          if (window.innerWidth > 749) {
+            // DESKTOP: Move How It Works & Trust Badges OUT of the right column to be full width
+            if (mainProduct) {
+              // Create a container for full width sections to keep them grouped nicely
+              const desktopContainer = document.createElement('div');
+              desktopContainer.className = 'custom-pdp-desktop-full-width-sections';
+              mainProduct.after(desktopContainer);
+
+              if (trustBadges) desktopContainer.appendChild(trustBadges);
+              if (howItWorks) desktopContainer.appendChild(howItWorks);
+            }
+          } else {
+            // MOBILE: Move Social Videos and External Trust Banner INTO the right column
+            if (!howItWorks) return;
+
+            if (socialVideos) {
+              socialVideos.classList.add('custom-pdp-moved-section');
+              howItWorks.insertAdjacentElement('afterend', socialVideos);
+            }
+            if (externalTrustBanner) {
+              externalTrustBanner.classList.add('custom-pdp-moved-section', 'custom-pdp-trust-banner-moved');
+              const target = socialVideos || howItWorks;
+              target.insertAdjacentElement('afterend', externalTrustBanner);
+            }
+          }
+        });
+      </script>
+    </custom-shirt-customizer>
+  </div>
+</div>

@@ -26,7 +26,26 @@
 {%- endif -%}
 
 <div class="product__media-gallery custom-media-gallery{% if section.settings.enable_sticky_info %} product__column-sticky{% endif %}">
+  <script>
+    window.customMediaData = [
+      {%- for media in product.media -%}
+        { index: {{ forloop.index0 }}, alt: {{ media.alt | default: media.preview_image.alt | downcase | json }} } {%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ];
+  </script>
   <style>
+    :root {
+      --print-color: {{ print_color }};
+    }
+    .colorize-logo {
+      background-color: var(--print-color) !important;
+      -webkit-mask-size: contain !important;
+      -webkit-mask-repeat: no-repeat !important;
+      -webkit-mask-position: center !important;
+      mask-size: contain !important;
+      mask-repeat: no-repeat !important;
+      mask-position: center !important;
+    }
     .custom-media-controls {
       display: inline-flex;
       background: rgba(var(--color-foreground), 0.08);
@@ -215,7 +234,7 @@
       transform: translate(-50%, -50%);
     }
     #PreviewFlagBackContainer {
-      top: 9.3%;
+      top: 10%;
       left: 50%;
       transform: translate(-50%, -50%);
     }
@@ -358,7 +377,7 @@
   </style>
 
   <div class="custom-media-images" style="width: 100%; max-width: 650px; margin: 0 auto; position: relative;">
-    <div style="overflow: hidden; border-radius: var(--media-radius, 0);">
+    <div style="overflow: hidden; border-radius: var(--media-radius, 0); position: relative;">
       <div
         id="media-slider-wrapper"
         style="display: flex; transition: transform 0.4s ease-in-out; width: {{ product.media.size | times: 100 }}%;"
@@ -376,62 +395,69 @@
                 | image_tag: style: 'width: 100%; height: 100%; object-fit: contain;', loading: 'lazy', alt: media.alt
               }}
             </div>
-
-            {%- if forloop.index0 == front_index -%}
-              <div id="PreviewFlagFrontContainer" style="position: absolute; display: none;">
-                <img
-                  id="PreviewFlagFront"
-                  src="{{ 'transparent.png' | asset_url }}"
-                  width="100"
-                  height="66"
-                  loading="lazy"
-                >
-              </div>
-              <div
-                id="PreviewLogoLabelContainer"
-                style="position: absolute; top: 33%; left: 19%; right: 16%; pointer-events: none; display: none; text-align: center;"
-              >
-                <span
-                  id="PreviewLogoLabel"
-                  style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; white-space: nowrap; display: inline-block; transform-origin: center;"
-                ></span>
-              </div>
-              <div
-                id="PreviewCountryNameContainer"
-                style="position: absolute; top: 33%; left: 19%; right: 16%; pointer-events: none; display: none; text-align: center;"
-              >
-                <span
-                  id="PreviewCountryName"
-                  style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; white-space: nowrap; display: inline-block; transform-origin: center;"
-                ></span>
-              </div>
-            {%- endif -%}
-
-            {%- if forloop.index0 == back_index -%}
-              <div id="PreviewFlagBackContainer" style="position: absolute; display: none;">
-                <img
-                  id="PreviewFlagBack"
-                  src="{{ 'transparent.png' | asset_url }}"
-                  width="100"
-                  height="66"
-                  loading="lazy"
-                >
-              </div>
-              {%- if product.tags contains 'custom-inputs' -%}
-                <div style="position: absolute; top: 18%; left: 0; right: 0; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
-                  <span
-                    id="PreviewName"
-                    style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; letter-spacing: 0.5px; line-height: 1; margin-bottom: 3rem;"
-                  ></span>
-                  <span
-                    id="PreviewNumber"
-                    style="font-weight: normal; font-family: 'Vogue'; color: {{ print_color }}; line-height: 1; display: inline-block; transform: scaleY(1.5); transform-origin: center;"
-                  ></span>
-                </div>
-              {%- endif -%}
-            {%- endif -%}
           </div>
         {%- endfor -%}
+      </div>
+
+      <!-- Global Overlays -->
+      <div
+        id="GlobalFrontOverlays"
+        style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"
+      >
+        <div id="PreviewFlagFrontContainer" style="position: absolute; display: none;">
+          <img
+            id="PreviewFlagFront"
+            src="{{ 'transparent.png' | asset_url }}"
+            width="100"
+            height="66"
+            loading="lazy"
+          >
+        </div>
+        <div
+          id="PreviewLogoLabelContainer"
+          style="position: absolute; top: 33%; left: 19%; right: 16%; pointer-events: none; display: none; text-align: center;"
+        >
+          <span
+            id="PreviewLogoLabel"
+            style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; white-space: nowrap; display: inline-block; transform-origin: center;"
+          ></span>
+        </div>
+        <div
+          id="PreviewCountryNameContainer"
+          style="position: absolute; top: 33%; left: 19%; right: 16%; pointer-events: none; display: none; text-align: center;"
+        >
+          <span
+            id="PreviewCountryName"
+            style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; white-space: nowrap; display: inline-block; transform-origin: center;"
+          ></span>
+        </div>
+      </div>
+
+      <div
+        id="GlobalBackOverlays"
+        style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"
+      >
+        <div id="PreviewFlagBackContainer" style="position: absolute; display: none;">
+          <img
+            id="PreviewFlagBack"
+            src="{{ 'transparent.png' | asset_url }}"
+            width="100"
+            height="66"
+            loading="lazy"
+          >
+        </div>
+        {%- if product.tags contains 'custom-inputs' -%}
+          <div style="position: absolute; top: 20%; left: 0; right: 0; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+            <span
+              id="PreviewName"
+              style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; letter-spacing: 0.5px; line-height: 1; margin-top: 0.5rem; margin-bottom: 2rem;"
+            ></span>
+            <span
+              id="PreviewNumber"
+              style="font-weight: normal; font-family: 'Vogue'; color: {{ print_color }}; line-height: 1; display: inline-block; transform: scaleY(1.5); transform-origin: center;"
+            ></span>
+          </div>
+        {%- endif -%}
       </div>
     </div>
 
@@ -503,7 +529,7 @@
     window.customGalleryTotalSlides = {{ product.media.size }};
     window.customGalleryCurrentIndex = 0;
 
-    function goToSlide(index) {
+    window.goToSlide = function(index) {
       if (index < 0 || index >= window.customGalleryTotalSlides) return;
       window.customGalleryCurrentIndex = index;
       const wrapper = document.getElementById('media-slider-wrapper');
@@ -530,6 +556,8 @@
       const controlsContainer = document.getElementById('custom-media-controls-container');
       const btnFront = document.getElementById('btn-front');
       const btnBack = document.getElementById('btn-back');
+      const frontOverlays = document.getElementById('GlobalFrontOverlays');
+      const backOverlays = document.getElementById('GlobalBackOverlays');
       
       if (controlsContainer) {
         controlsContainer.classList.remove('is-front-active', 'is-back-active');
@@ -544,32 +572,47 @@
           if (btnBack) btnBack.classList.add('is-active');
         }
       }
-    }
 
-    function switchMedia(type) {
-      if (type === 'front') {
-        goToSlide(window.customGalleryFrontIndex);
-      } else if (type === 'back') {
-        goToSlide(window.customGalleryBackIndex);
+      // Re-parent the overlays into the correct slides so they animate together!
+      const currentGallery = document.querySelector('.custom-media-gallery:not(.custom-pdp-gallery)');
+      const activeFrontSlide = currentGallery ? currentGallery.querySelector(`.custom-media-slide[data-index="${window.customGalleryFrontIndex}"]`) : document.querySelector(`.custom-media-slide[data-index="${window.customGalleryFrontIndex}"]`);
+      
+      if (activeFrontSlide && frontOverlays) {
+        activeFrontSlide.appendChild(frontOverlays);
+        frontOverlays.style.display = 'block';
       }
-    }
+      
+      const activeBackSlide = currentGallery ? currentGallery.querySelector(`.custom-media-slide[data-index="${window.customGalleryBackIndex}"]`) : document.querySelector(`.custom-media-slide[data-index="${window.customGalleryBackIndex}"]`);
+      if (activeBackSlide && backOverlays) {
+        activeBackSlide.appendChild(backOverlays);
+        backOverlays.style.display = 'block';
+      }
+    };
+
+    window.switchMedia = function(type) {
+      if (type === 'front') {
+        window.goToSlide(window.customGalleryFrontIndex);
+      } else if (type === 'back') {
+        window.goToSlide(window.customGalleryBackIndex);
+      }
+    };
 
     document.addEventListener('DOMContentLoaded', function() {
       const prevBtn = document.getElementById('slider-prev');
       const nextBtn = document.getElementById('slider-next');
       if (prevBtn) {
         prevBtn.addEventListener('click', function() {
-          goToSlide(Math.max(0, window.customGalleryCurrentIndex - 1));
+          window.goToSlide(Math.max(0, window.customGalleryCurrentIndex - 1));
         });
       }
       if (nextBtn) {
         nextBtn.addEventListener('click', function() {
-          goToSlide(Math.min(window.customGalleryTotalSlides - 1, window.customGalleryCurrentIndex + 1));
+          window.goToSlide(Math.min(window.customGalleryTotalSlides - 1, window.customGalleryCurrentIndex + 1));
         });
       }
       
       // Auto-init to 0
-      goToSlide(0);
+      window.goToSlide(0);
     });
   </script>
 </div>

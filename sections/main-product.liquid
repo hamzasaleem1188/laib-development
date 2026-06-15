@@ -41,7 +41,7 @@
 
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
-  {%- if product.tags contains 'custom-inputs' -%}
+  {%- if product.tags contains 'custom-inputs' or product.tags contains 'custom_pdp' -%}
     <script src="{{ 'custom-shirt-customizer.js' | asset_url }}" defer="defer"></script>
     <script id="ProductJSON-{{ section.id }}" type="application/json">
       {{ product | json }}
@@ -157,7 +157,10 @@
 
   {% assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' %}
   <div class="page-width">
-    <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
+    {%- if product.tags contains 'custom_pdp' -%}
+      {% render 'custom-pdp-layout', section: section, product: product, variant_images: variant_images %}
+    {%- else -%}
+      <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-desktop{% else %}product--no-media{% endif %}">
       <div class="grid__item product__media-wrapper">
         {% render 'product-media-gallery', variant_images: variant_images %}
       </div>
@@ -335,53 +338,7 @@
                   </details>
                 </div>
               {%- when 'quantity_selector' -%}
-                {%- if product.tags contains 'custom-flags' -%}
-                  <div class="product-form__input" style="margin-bottom: 2rem;">
-                    <label class="form__label" style="display: block; margin-bottom: 0.5rem;">Nationality</label>
-                    <div id="FlagSelector-{{ section.id }}" class="custom-select" data-flag-select>
-                      <div class="select-selected">
-                        <span data-selected-name>Select Nationality</span>
-                        <span style="font-size: 0.8em;">▼</span>
-                      </div>
-                      <div class="select-items select-hide">
-                        <div style="padding: 0.5rem; position: sticky; top: 0; background: rgb(var(--color-background)); border-bottom: 1px solid rgba(var(--color-foreground), 0.1); z-index: 1;">
-                          <input
-                            type="text"
-                            class="field__input"
-                            placeholder="Search..."
-                            data-flag-search
-                            style="height: 3.5rem; padding: 0 1rem; width: 100%;"
-                          >
-                          <div
-                            data-dropdown-clear
-                            style="display: none; padding: 0.8rem 1rem; cursor: pointer; align-items: center; gap: 1rem; color: rgba(var(--color-foreground), 0.6); font-size: 0.9em; border-top: 1px solid rgba(var(--color-foreground), 0.05); background: rgba(var(--color-foreground), 0.02); transition: all 0.2s;"
-                            onmouseover="this.style.background='rgba(var(--color-foreground), 0.05)'; this.style.color='rgba(var(--color-foreground), 0.8)'"
-                            onmouseout="this.style.background='rgba(var(--color-foreground), 0.02)'; this.style.color='rgba(var(--color-foreground), 0.6)'"
-                          >
-                            <span style="width: 24px; display: flex; justify-content: center;">✕</span> Clear Selection
-                          </div>
-                        </div>
-                        <div data-flag-list>
-                          <!-- Options populated by JS -->
-                        </div>
-                      </div>
-                    </div>
-                    <input type="hidden" name="properties[Country]" data-flag-input form="{{ product_form_id }}">
-                    <input
-                      type="hidden"
-                      name="properties[_Country Flag URL]"
-                      data-flag-url-input
-                      form="{{ product_form_id }}"
-                    >
-                    <div
-                      class="customizer-error"
-                      data-error-nationality
-                      style="display: none; color: #EB001B; margin-top: 0.5rem; font-size: 1.2rem;"
-                    >
-                      Please select a nationality
-                    </div>
-                  </div>
-                {%- endif -%}
+
                 <div
                   id="Quantity-Form-{{ section.id }}"
                   class="product-form__input product-form__quantity{% if settings.inputs_shadow_vertical_offset != 0 and settings.inputs_shadow_vertical_offset < 0 %} product-form__quantity-top{% endif %}"
@@ -659,7 +616,7 @@
                           class="customizer-section-header"
                           style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; margin-bottom: 1rem;"
                         >
-                          <span style="font-weight: 500; font-size: 1.3rem;">Nationality/Logo</span>
+                          <span style="font-weight: 500; font-size: 1.3rem;">Logo</span>
                           <span
                             style="font-weight: 600; font-size: 1.3rem;"
                             data-logo-price="{{ block.settings.logo_price }}"
@@ -675,7 +632,7 @@
                             data-logo-select
                           >
                             <div class="select-selected">
-                              <span data-selected-name>Select Nationality/Logo</span>
+                              <span data-selected-name>Select Logo</span>
                               <span style="font-size: 0.8em;">▼</span>
                             </div>
                             <div class="select-items select-hide">
@@ -757,7 +714,7 @@
                             class="field__input"
                             type="text"
                             id="CustomNationalityInput-{{ section.id }}"
-                            name="properties[Nationality/City]"
+                            name="properties[Country]"
                             placeholder="Enter nationality or city"
                             data-logo-text-url-input
                             form="{{ product_form_id }}"
@@ -1185,6 +1142,7 @@
         {{ product.media | where: 'media_type', 'model' | json }}
       </script>
       <script src="{{ 'product-model.js' | asset_url }}" defer></script>
+    {%- endif -%}
     {%- endif -%}
 
     <script type="application/ld+json">

@@ -1,0 +1,1411 @@
+/* custom-pdp.css */
+.custom-pdp-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4rem;
+  padding: 4rem 0;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media screen and (min-width: 990px) {
+  .custom-pdp-container {
+    grid-template-columns: 55fr 45fr;
+    gap: 6rem;
+  }
+}
+
+@media screen and (max-width: 989px) {
+  .custom-pdp-container.force-pc-layout {
+    grid-template-columns: 55fr 45fr;
+    gap: 2rem;
+  }
+}
+
+@media screen and (max-width: 749px) {
+  .custom-pdp-container.force-pc-layout {
+    display: grid;
+    grid-template-columns: 50fr 50fr;
+    gap: 1rem;
+  }
+
+  .custom-pdp-container.force-pc-layout .custom-pdp-right {
+    display: contents;
+  }
+
+  .custom-pdp-container.force-pc-layout .custom-pdp-left {
+    grid-column: 1;
+    grid-row: 1 / span 5;
+    /* Spans rows for brand, title, price, variants */
+  }
+
+  .custom-pdp-container.force-pc-layout .custom-pdp-brand,
+  .custom-pdp-container.force-pc-layout .custom-pdp-title,
+  .custom-pdp-container.force-pc-layout .custom-pdp-price,
+  .custom-pdp-container.force-pc-layout variant-selects,
+  .custom-pdp-container.force-pc-layout variant-radios {
+    grid-column: 2;
+  }
+
+  .custom-pdp-container.force-pc-layout .custom-pdp-trust-badges-wrapper,
+  .custom-pdp-container.force-pc-layout .custom-pdp-how-it-works-wrapper,
+  .custom-pdp-container.force-pc-layout .custom-pdp-moved-section {
+    grid-column: 2;
+    width: calc(200% + 1rem) !important;
+    margin-left: calc(-100% - 1rem) !important;
+  }
+
+  .custom-pdp-container.force-pc-layout .custom-pdp-customizer {
+    display: contents;
+  }
+
+  .custom-pdp-container.force-pc-layout .personalization-dropdown {
+    grid-column: 2;
+    margin-top: 0.2rem;
+    margin-bottom: 0 !important;
+    align-self: start;
+    border: none;
+    background: transparent;
+  }
+
+  .custom-pdp-container.force-pc-layout .personalization-dropdown-content-inner {
+    width: calc(200% + 1rem);
+    margin-left: calc(-100% - 1rem);
+    border: 1px solid transparent;
+    /* Hide border when closed to prevent the horizontal line */
+    border-radius: 14px;
+    background-color: transparent;
+    /* Hide background when closed */
+    margin-top: 1rem;
+    box-sizing: border-box;
+    margin-bottom: 1rem;
+  }
+
+  .custom-pdp-container.force-pc-layout .personalization-dropdown.is-open .personalization-dropdown-content-inner {
+    border-color: #eaeaea;
+    background-color: #fff;
+  }
+
+  .is-black-gold .custom-pdp-container.force-pc-layout .personalization-dropdown.is-open .personalization-dropdown-content-inner {
+    border-color: #c99c52;
+    background-color: #fffaf0;
+  }
+
+  .custom-pdp-container.force-pc-layout * {
+    min-width: 0;
+    /* Prevents flex children from blowing out container width */
+  }
+
+  .custom-pdp-container.force-pc-layout .custom-pdp-brand {
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  .custom-pdp-container.force-pc-layout .custom-pdp-title {
+    font-size: 1.6rem;
+    margin-bottom: 0.2rem;
+    margin-top: 0;
+    line-height: 1.2;
+    word-break: break-word;
+  }
+
+  .custom-pdp-container.force-pc-layout .form__label,
+  .custom-pdp-container.force-pc-layout .form__label span,
+  .custom-pdp-container.force-pc-layout .size-chart-trigger {
+    font-size: 1rem;
+    margin-bottom: 0;
+  }
+
+  .custom-pdp-container.force-pc-layout .select__select {
+    font-size: 1rem;
+    padding: 0.2rem 2rem 0.2rem 0.6rem;
+    min-height: 2.8rem;
+    height: 2.8rem;
+  }
+
+  .custom-pdp-container.force-pc-layout .product-form__input {
+    margin-bottom: 1.4rem;
+  }
+
+  .custom-pdp-container.force-pc-layout .custom-pdp-price {
+    font-size: 1.4rem;
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+  }
+
+
+
+  .custom-pdp-container.force-pc-layout .personalization-dropdown-summary {
+    padding: 1rem;
+    font-size: 1.1rem;
+    background-color: #000;
+    color: #c99c52;
+    border-radius: 6px;
+    height: 4rem;
+  }
+
+  .custom-pdp-container.force-pc-layout .dropdown-icon svg {
+    stroke: #c99c52;
+  }
+
+  .custom-pdp-container.force-pc-layout .custom-media-thumbnail {
+    width: 45px !important;
+    height: 45px !important;
+    border-radius: 4px !important;
+  }
+
+  .custom-pdp-container.force-pc-layout .custom-media-thumbnails {
+    gap: 6px !important;
+  }
+
+  .custom-pdp-container.force-pc-layout .custom-media-controls .toggle-btn {
+    padding: 6px 14px;
+    font-size: 1.1rem;
+  }
+
+  .custom-pdp-container.force-pc-layout .personalization-dropdown-content-inner .custom-pdp-cards-wrapper {
+    padding: 1rem;
+    gap: 0.8rem;
+  }
+
+  .custom-pdp-container.force-pc-layout .card-row {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+
+  .custom-pdp-container.force-pc-layout .card-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .custom-pdp-container.force-pc-layout .card-title {
+    font-size: 1rem;
+    white-space: nowrap;
+  }
+
+  .custom-pdp-container.force-pc-layout .card-price {
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .custom-pdp-container.force-pc-layout .card-desc {
+    display: none;
+  }
+
+  .custom-pdp-container.force-pc-layout .card-input-row input,
+  .custom-pdp-container.force-pc-layout .card-input-row select {
+    padding: 0.6rem;
+    font-size: 1rem;
+  }
+
+  .custom-pdp-container.force-pc-layout .card-checkmark {
+    width: 16px;
+    height: 16px;
+  }
+
+  .custom-pdp-container.force-pc-layout .custom-pdp-summary {
+    padding: 1.2rem;
+  }
+
+  .custom-pdp-container.force-pc-layout .summary-title {
+    font-size: 1.2rem;
+  }
+
+  .custom-pdp-container.force-pc-layout .summary-row {
+    font-size: 1rem;
+  }
+
+  .custom-pdp-container.force-pc-layout .summary-total-row {
+    font-size: 1.2rem;
+  }
+}
+
+.custom-pdp-left {
+  position: relative;
+}
+
+.custom-pdp-brand {
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.custom-pdp-title {
+  font-size: 3.2rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  line-height: 1.1;
+  color: #111;
+}
+
+.custom-pdp-price {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 3rem;
+}
+
+.custom-pdp-container.force-pc-layout .price.price--show-badge {
+  margin-bottom: 0 !important;
+}
+
+/* Remove gaps between price and variants when force-pc-layout is active */
+.custom-pdp-container.force-pc-layout .custom-pdp-price {
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+}
+
+.custom-pdp-container.force-pc-layout variant-selects {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Make every option block (native variant picker + custom cards + summary +
+   buttons) share the exact same width inside the right column. */
+.custom-pdp-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-pdp-right>*,
+.custom-pdp-customizer>* {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.custom-pdp-customizer {
+  display: block;
+  width: 100%;
+}
+
+.custom-pdp-right variant-selects,
+.custom-pdp-right .product-form__input,
+.custom-pdp-right .product-form,
+.custom-pdp-right .product-form__buttons {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Customizer Cards Wrapper */
+.custom-pdp-cards-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Personalization Dropdown Accordion */
+.personalization-dropdown {
+  margin-bottom: 3rem;
+  border: 1px solid #eaeaea;
+  border-radius: 14px;
+  background-color: #fff;
+}
+
+.is-black-gold .personalization-dropdown {
+  border-color: #c99c52;
+  background-color: #fffaf0;
+}
+
+.personalization-dropdown-summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f5f5f5;
+  color: #111;
+  padding: 1.6rem 2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  user-select: none;
+  width: 100%;
+  border: none;
+  font-family: inherit;
+}
+
+.is-black-gold .personalization-dropdown-summary {
+  background-color: #111;
+  color: #c99c52;
+}
+
+.personalization-dropdown.is-open .personalization-dropdown-summary {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.personalization-dropdown-summary::-webkit-details-marker {
+  display: none;
+}
+
+.personalization-dropdown-summary:hover {
+  background-color: #ebebeb;
+}
+
+.is-black-gold .personalization-dropdown-summary:hover {
+  background-color: #000;
+}
+
+.personalization-dropdown-summary .summary-content {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.personalization-dropdown-summary .dropdown-icon {
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.personalization-dropdown.is-open .dropdown-icon {
+  transform: rotate(180deg);
+}
+
+.personalization-dropdown-content-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s ease;
+}
+
+.personalization-dropdown.is-open .personalization-dropdown-content-wrapper {
+  grid-template-rows: 1fr;
+}
+
+.personalization-dropdown-content-inner {
+  overflow: hidden;
+}
+
+.personalization-dropdown-content-inner .custom-pdp-cards-wrapper {
+  padding: 2rem;
+}
+
+.custom-pdp-price {
+  margin-top: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.custom-pdp-price .price__sale {
+  display: flex !important;
+  flex-direction: column;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+/* Ensure all three price elements share the exact same consistent font size */
+.custom-pdp-price .price-item--sale,
+.custom-pdp-price .price-item--regular,
+.custom-pdp-price .custom-save-badge {
+  font-size: 1.1rem !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+.custom-pdp-price .price-item--sale,
+.custom-pdp-price .price-item--regular:not(s) {
+  color: #111 !important;
+  font-weight: 700;
+}
+
+.custom-pdp-price s.price-item--regular {
+  color: #aaa !important;
+  font-weight: 500;
+}
+
+.custom-pdp-price .custom-save-badge {
+  padding: 0.4rem 1rem !important;
+  display: inline-flex !important;
+  align-items: center;
+  margin-bottom: 1rem !important;
+  /* Add gap below save price */
+}
+
+@media screen and (min-width: 750px) {
+
+  .custom-pdp-price .price-item--sale,
+  .custom-pdp-price .price-item--regular,
+  .custom-pdp-price .custom-save-badge {
+    font-size: 1.7rem !important;
+  }
+}
+
+/* Two-row card: header row (icon · title · price · check) + input row below */
+.custom-pdp-card {
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  padding: 1.4rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 0;
+  overflow: visible;
+}
+
+.custom-pdp-card:hover {
+  border-color: #d0d0d0;
+}
+
+.custom-pdp-card.is-active {
+  border-color: #e0e0e0;
+}
+
+.custom-pdp-card:focus-within {
+  border-color: #e0a94f;
+  box-shadow: 0 0 0 1px #e0a94f;
+  background: #fffdf8;
+}
+
+/* Header row */
+.card-row {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  cursor: pointer;
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #333;
+  overflow: hidden;
+}
+
+.is-black-gold .card-icon {
+  background: #111;
+  color: #c99c52;
+}
+
+/* Product-image icons fill the rounded square; inline svg/letters stay centered */
+.card-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Title group grows to fill available space */
+.card-title-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Title + price on the same line; title grows, price stays at the far right */
+.card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.card-title-row .card-title {
+  flex: 1;
+}
+
+/* Input row wrapper for animation */
+.card-input-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease-in-out, margin-top 0.3s ease-in-out;
+  margin-top: 0;
+  width: 100%;
+}
+
+.custom-pdp-card.is-open .card-input-wrapper {
+  grid-template-rows: 1fr;
+  margin-top: 1rem;
+}
+
+/* Input row — full card width */
+.card-input-area {
+  overflow: hidden;
+  min-height: 0;
+  width: 100%;
+}
+
+.custom-pdp-card.is-open .card-input-area {
+  overflow: visible;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.card-subtitle {
+  font-size: 1.2rem;
+  color: #666;
+  margin-top: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-price {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #111;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.is-black-gold .card-price {
+  color: #c99c52;
+}
+
+.card-checkmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  background: #111;
+  color: #fff;
+  border-radius: 50%;
+  opacity: 0.15;
+  transition: opacity 0.25s, transform 0.25s;
+  transform: scale(1);
+}
+
+.card-accordion-icon {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease;
+  color: #999;
+}
+
+.custom-pdp-card.is-open .card-accordion-icon {
+  transform: rotate(90deg);
+}
+
+.is-black-gold .card-checkmark {
+  background: #c99c52;
+  color: #111;
+}
+
+.card-checkmark.is-visible {
+  opacity: 1;
+}
+
+/* Card Inputs */
+.custom-pdp-input {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 1rem 1.2rem;
+  font-size: 1.4rem;
+  height: 4.4rem;
+  background: #fff;
+}
+
+.custom-pdp-input:focus {
+  border-color: #111;
+  outline: none;
+}
+
+/* Override Dawn's floating-label padding increase on focus/filled state */
+.custom-pdp-customizer .field__input:focus,
+.custom-pdp-customizer .field__input:not(:placeholder-shown),
+.custom-pdp-customizer .field__input:-webkit-autofill {
+  padding: 1rem 1.2rem;
+  margin: 0;
+}
+
+/* Name & Number side-by-side inputs */
+.card-input-area.inline-inputs>.inline-inputs-wrapper {
+  display: flex;
+  gap: 1.2rem;
+}
+
+.card-input-area .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.card-input-area .input-group--number {
+  flex: 0 0 8rem;
+}
+
+.card-field-label {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Giftbox right-side toggle column: checkmark indicator above, checkbox below */
+.card-giftbox-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 1.2rem;
+}
+
+#Card-Giftbox .card-checkbox-custom {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 6px;
+}
+
+#Card-Giftbox .card-checkbox-input:checked+.card-checkbox-custom::after {
+  width: 0.6rem;
+  height: 1.1rem;
+}
+
+/* Giftbox checkbox */
+.card-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.card-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.card-checkbox-custom {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+  background: #fff;
+}
+
+.card-checkbox-input:checked+.card-checkbox-custom {
+  background: #111;
+  border-color: #111;
+}
+
+.is-black-gold .card-checkbox-input:checked+.card-checkbox-custom {
+  background: #c99c52;
+  border-color: #c99c52;
+}
+
+.card-checkbox-input:checked+.card-checkbox-custom::after {
+  content: '';
+  display: block;
+  width: 0.5rem;
+  height: 0.9rem;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translateY(-1px);
+}
+
+.card-checkbox-text {
+  font-size: 1.3rem;
+  color: #444;
+}
+
+/* Giftbox quantity stepper (kept for non-custom-pdp usage) */
+.custom-pdp-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+  height: 4rem;
+}
+
+.custom-pdp-stepper.is-active {
+  border-color: #000;
+}
+
+.custom-pdp-stepper .stepper-btn {
+  width: 3.6rem;
+  height: 100%;
+  border: none;
+  background: #fff;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: #111;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.custom-pdp-stepper .stepper-btn:hover:not(:disabled) {
+  background: #f3f3f3;
+}
+
+.custom-pdp-stepper .stepper-btn:disabled {
+  color: #c4c4c4;
+  cursor: not-allowed;
+}
+
+.custom-pdp-stepper .stepper-value {
+  min-width: 3.4rem;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #111;
+  border-left: 1px solid #eee;
+  border-right: 1px solid #eee;
+  padding: 0 0.4rem;
+  line-height: 4rem;
+}
+
+/* Summary Box */
+.custom-pdp-summary {
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 2rem;
+  background: #fafafa;
+  margin-bottom: 2rem;
+}
+
+.is-black-gold .custom-pdp-summary {
+  border-color: #c99c52;
+  background: #111;
+}
+
+.summary-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
+  color: #111;
+}
+
+.is-black-gold .summary-title {
+  color: #c99c52;
+}
+
+.summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.3rem;
+  color: #444;
+}
+
+.is-black-gold .summary-row {
+  color: #f5f5f5;
+}
+
+.summary-label span {
+  color: #111;
+  font-weight: 500;
+}
+
+.is-black-gold .summary-label span {
+  color: #c99c52;
+}
+
+.summary-total-row {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #ddd;
+  padding-top: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.is-black-gold .summary-total-row {
+  border-top-color: #333;
+  color: #c99c52;
+}
+
+/* Sticky Bottom Bar & Compact Styling */
+@media screen and (max-width: 749px) {
+  .custom-pdp-sticky-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    z-index: 999;
+    padding: 0.5rem 0.8rem 0.8rem;
+    padding-bottom: calc(0.3rem + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .is-black-gold .custom-pdp-sticky-bottom {
+    background-color: #1a1a1a;
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .custom-pdp-right {
+    position: sticky;
+    top: 4rem;
+    align-self: start;
+    height: max-content;
+    z-index: 10;
+  }
+
+  .custom-pdp-sticky-bottom {
+    position: static;
+    background-color: transparent !important;
+    padding-top: 2rem;
+    padding-bottom: 0;
+    margin-top: 0;
+    border-top: none !important;
+  }
+}
+
+.custom-pdp-sticky-bottom .custom-pdp-summary {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+}
+
+.custom-pdp-sticky-bottom .summary-title {
+  font-size: 0.95rem;
+  margin: 0 0 0.3rem 0;
+}
+
+.custom-pdp-sticky-bottom .summary-rows {
+  gap: 0.15rem;
+  margin-bottom: 0.3rem;
+  max-height: 80px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Thin scrollbar for the summary rows */
+.custom-pdp-sticky-bottom .summary-rows::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-pdp-sticky-bottom .summary-rows::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-pdp-sticky-bottom .summary-rows::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.custom-pdp-sticky-bottom .summary-row {
+  font-size: 0.85rem;
+}
+
+.custom-pdp-sticky-bottom .summary-total-row {
+  padding-top: 0.3rem;
+  font-size: 1.1rem;
+}
+
+.custom-pdp-container {
+  padding-bottom: 0px;
+  /* Space for the fixed bottom bar */
+}
+
+/* Artificial Loading Animation for Price */
+.price-calculating-loader {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 100%;
+}
+
+.price-calculating-loader span {
+  width: 5px;
+  height: 5px;
+  background-color: currentColor;
+  border-radius: 50%;
+  animation: price-bounce 1.4s infinite ease-in-out both;
+  opacity: 0.6;
+}
+
+.price-calculating-loader span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.price-calculating-loader span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes price-bounce {
+
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+
+  40% {
+    transform: scale(1);
+  }
+}
+
+/* Button Compression & Side-by-Side inside Sticky Bar */
+.custom-pdp-sticky-bottom .product-form__buttons {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.custom-pdp-sticky-bottom .custom-pdp-add-btn,
+.custom-pdp-sticky-bottom .product-form__submit,
+.custom-pdp-sticky-bottom .shopify-payment-button__button,
+.custom-pdp-sticky-bottom .shopify-payment-button__button--unbranded {
+  height: 3.6rem !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  min-height: 3.6rem !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  flex: 1;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: transform 0.2s ease, opacity 0.2s ease !important;
+}
+
+.custom-pdp-sticky-bottom .custom-pdp-add-btn,
+.custom-pdp-sticky-bottom .product-form__submit {
+  background-color: #111 !important;
+  color: #c99c52 !important;
+  border: 1px solid #c99c52 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Hide Shopify's default pseudo-element borders that interfere with custom borders */
+.custom-pdp-sticky-bottom .custom-pdp-add-btn::after,
+.custom-pdp-sticky-bottom .product-form__submit::after,
+.custom-pdp-sticky-bottom .shopify-payment-button__button::after,
+.custom-pdp-sticky-bottom .shopify-payment-button__button--unbranded::after {
+  display: none !important;
+  box-shadow: none !important;
+}
+
+.custom-pdp-sticky-bottom .custom-pdp-add-btn:active,
+.custom-pdp-sticky-bottom .product-form__submit:active {
+  transform: scale(0.98) !important;
+}
+
+.custom-pdp-sticky-bottom .shopify-payment-button__button,
+.custom-pdp-sticky-bottom .shopify-payment-button__button--unbranded {
+  background-color: #c99c52 !important;
+  color: #111 !important;
+  box-shadow: 0 4px 12px rgba(201, 156, 82, 0.3) !important;
+}
+
+.custom-pdp-sticky-bottom .shopify-payment-button__button:active,
+.custom-pdp-sticky-bottom .shopify-payment-button__button--unbranded:active {
+  transform: scale(0.98) !important;
+}
+
+/* Button */
+.custom-pdp-add-btn {
+  height: 5.6rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Trust Badges Wrapper */
+.custom-pdp-trust-badges-wrapper {
+  position: relative;
+  background-color: #f4f4f4;
+  margin-bottom: 0;
+}
+
+/* Trust Badges Inner */
+.custom-pdp-trust-badges {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0rem 0;
+  background: transparent;
+}
+
+.badge-divider {
+  display: block;
+  width: 1px;
+  background-color: #ccc;
+  height: 40px;
+}
+
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  gap: 0.7rem;
+  font-size: 1.15rem;
+  color: #111;
+  padding: 1rem 0;
+  background: none;
+  border: none;
+  white-space: normal;
+  line-height: 1.3;
+}
+
+.badge-item svg {
+  color: #e0a94f;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+}
+
+.badge-item-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: 1.3;
+  font-weight: 500;
+}
+
+.badge-item-sub {
+  color: inherit;
+  font-size: inherit;
+}
+
+@media screen and (min-width: 750px) {
+  .custom-pdp-trust-badges {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1;
+    padding-top: 1rem;
+  }
+
+  .badge-divider {
+    display: block;
+    background-color: #eaeaea;
+    width: 1px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .badge-item {
+    flex-direction: column;
+    flex: 1;
+    justify-content: center;
+    text-align: center;
+    font-size: 1.2rem;
+    gap: 0.8rem;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    white-space: nowrap;
+  }
+
+  .badge-item-text {
+    align-items: center;
+    text-align: center;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Native variant picker spacing (Size, Color — rendered by product-variant-picker)
+--------------------------------------------------------------------------- */
+.custom-pdp-right variant-selects {
+  display: block;
+  margin-bottom: 2rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Self-contained dropdown styles (in case the inline <style> block is absent)
+--------------------------------------------------------------------------- */
+.custom-pdp-customizer .custom-select {
+  position: relative;
+  width: 100%;
+}
+
+.custom-pdp-customizer .select-selected {
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  height: 4rem;
+  font-size: 1.4rem;
+}
+
+.custom-pdp-customizer .select-items {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  border: 1px solid #ddd;
+  border-top: none;
+  max-height: 250px;
+  overflow-y: auto;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 4px 4px;
+}
+
+.custom-pdp-customizer .select-items div.item {
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: background 0.2s;
+}
+
+.custom-pdp-customizer .select-items div.item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.custom-pdp-customizer .select-hide {
+  display: none !important;
+}
+
+.custom-pdp-customizer .item-flag {
+  width: 24px;
+  height: 16px;
+  object-fit: contain;
+  border-radius: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   Buy buttons: keep the real submit, hide the theme's legacy extras here
+--------------------------------------------------------------------------- */
+.custom-pdp-buy-buttons {
+  margin-bottom: 2rem;
+}
+
+.custom-pdp-buy-buttons .product-form__submit {
+  height: 5.6rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.custom-pdp-customizer [data-custom-total-price-wrapper],
+.custom-pdp-customizer .giftbox-checkbox-wrapper {
+  display: none !important;
+}
+
+.custom-pdp-desktop-full-width-sections {
+  margin-top: 4rem;
+  width: 100%;
+}
+
+.custom-pdp-how-it-works-wrapper {
+  position: relative;
+  background-color: #000;
+  margin-bottom: 2rem;
+}
+
+.custom-pdp-how-it-works {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  border: none;
+  background: transparent;
+  text-align: center;
+}
+
+.how-it-works-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #e0a94f;
+  margin: 0 0 1rem;
+}
+
+/* Moved Trust Banner Full Bleed */
+.custom-pdp-trust-banner-moved .trust-banner-container {
+  box-shadow: 0 0 0 100vmax #FAF4E8;
+  clip-path: inset(0 -100vmax);
+  border-radius: 0;
+  margin-bottom: 0;
+}
+
+.custom-pdp-trust-banner-moved.trust-banner-section {
+  padding-bottom: 0 !important;
+}
+
+/* 3 equal columns — required so the ::before math is exact */
+.how-it-works-steps {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  position: relative;
+}
+
+/* Single continuous line: starts at centre of circle 1, ends at centre of
+   circle 3. With 3 equal flex columns each circle centre sits at 1/6, 3/6,
+   5/6 of the total width → left/right offset = 100%/6. */
+.how-it-works-steps::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  /* half of 40px circle */
+  left: calc(100% / 6);
+  right: calc(100% / 6);
+  height: 2px;
+  background: #e0a94f;
+  z-index: 0;
+}
+
+.how-it-works-step {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  /* circles sit above the line */
+}
+
+.step-circle {
+  width: 40px;
+  height: 40px;
+  background: #000;
+  color: #e0a94f;
+  border: 2px solid #e0a94f;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.step-label {
+  font-size: 1.3rem;
+  color: #fff;
+  line-height: 1.4;
+  white-space: nowrap;
+  /* one line on desktop */
+}
+
+@media screen and (max-width: 749px) {
+  .step-label {
+    white-space: normal;
+    /* wrap to 2 lines on mobile */
+    font-size: 1.1rem;
+    padding: 0 0.3rem;
+  }
+
+  .custom-pdp-how-it-works-wrapper {
+    box-shadow: 0 0 0 100vmax #000;
+    clip-path: inset(0 -100vmax);
+  }
+
+  .custom-pdp-trust-badges-wrapper {
+    box-shadow: 0 0 0 100vmax #f4f4f4;
+    clip-path: inset(0 -100vmax);
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .custom-pdp-how-it-works-wrapper {
+    margin-bottom: 0;
+  }
+
+  .custom-pdp-trust-badges-wrapper {
+    padding-bottom: 0rem;
+  }
+
+  .custom-pdp-trust-badges {
+    padding: 2rem 0;
+    /* Desktop padding */
+  }
+}
+
+/* Restore Original Large Sizing on Desktop for Sticky Bottom elements */
+@media screen and (min-width: 750px) {
+  .custom-pdp-sticky-bottom .custom-pdp-summary {
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .custom-pdp-sticky-bottom .summary-title {
+    font-size: 1.6rem;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .custom-pdp-sticky-bottom .summary-rows {
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    max-height: none;
+    padding-right: 0;
+  }
+
+  .custom-pdp-sticky-bottom .summary-row {
+    font-size: 1.3rem;
+  }
+
+  .custom-pdp-sticky-bottom .summary-total-row {
+    padding-top: 1.5rem;
+    font-size: 1.8rem;
+  }
+
+  .custom-pdp-sticky-bottom .product-form__buttons {
+    gap: 1rem;
+  }
+
+  .custom-pdp-sticky-bottom .custom-pdp-add-btn,
+  .custom-pdp-sticky-bottom .product-form__submit,
+  .custom-pdp-sticky-bottom .shopify-payment-button__button,
+  .custom-pdp-sticky-bottom .shopify-payment-button__button--unbranded {
+    height: 5.6rem !important;
+    font-size: 1.5rem !important;
+    min-height: 5.6rem !important;
+  }
+}
