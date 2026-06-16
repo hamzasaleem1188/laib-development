@@ -1,0 +1,471 @@
+{% comment %}
+  Social Videos Section — "As Seen On TikTok / Instagram"
+  - Auto-fetches thumbnails via oEmbed when none is uploaded
+  - Play button opens video in a full-ratio modal (fixes video crop)
+  - Active card shows pause button while modal is open
+  - TikTok / Instagram open-in-new-tab badge on every card
+  - Mobile: 3 cards visible initially with "View more" button
+{% endcomment %}
+
+{{ 'social-videos.css' | asset_url | stylesheet_tag }}
+
+<div class="social-videos-section page-width" id="SocialVideos-{{ section.id }}">
+  <div class="social-videos-header">
+    <div class="social-videos-header-inner">
+      {%- if section.settings.show_tiktok_icon -%}
+        <svg class="social-videos-header-icon" viewBox="0 0 24 24" fill="currentColor" width="32" height="32" aria-hidden="true">
+          <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.01a8.28 8.28 0 0 0 4.84 1.56V7.1a4.85 4.85 0 0 1-1.07-.41z"/>
+        </svg>
+      {%- endif -%}
+      <div class="social-videos-title-col">
+        <h2 class="social-videos-title">{{ section.settings.title }}</h2>
+        {%- if section.settings.subtitle != blank -%}
+          <p class="social-videos-subtitle">{{ section.settings.subtitle }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+    {%- if section.settings.view_more_url != blank -%}
+      <a href="{{ section.settings.view_more_url }}" class="social-videos-view-more">
+        {{- section.settings.view_more_text | default: 'View more' -}}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </a>
+    {%- endif -%}
+  </div>
+
+  {%- assign rendered_count = 0 -%}
+  {%- for block in section.blocks -%}
+    {%- if block.settings.video_url != blank -%}
+      {%- assign rendered_count = rendered_count | plus: 1 -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- if section.blocks.size > 0 -%}
+    <div class="social-videos-grid" style="--sv-count: {{ rendered_count }};">
+      {%- for block in section.blocks -%}
+        {%- if block.settings.video_url != blank -%}
+          {%- assign is_tiktok = false -%}
+          {%- if block.settings.video_url contains 'tiktok.com' -%}
+            {%- assign is_tiktok = true -%}
+          {%- endif -%}
+
+          {%- comment -%}Resolve Shopify-hosted video MP4 URL if a file was uploaded{%- endcomment -%}
+          {%- assign sv_video_src = '' -%}
+          {%- if block.settings.video_file != blank -%}
+            {%- for source in block.settings.video_file.sources -%}
+              {%- if source.mime_type == 'video/mp4' -%}
+                {%- assign sv_video_src = source.url -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if sv_video_src == '' -%}
+              {%- assign sv_video_src = block.settings.video_file.sources.first.url -%}
+            {%- endif -%}
+          {%- endif -%}
+
+          <div
+            class="social-video-card{% if forloop.index0 >= 3 %} js-sv-extra{% endif %}"
+            data-card-index="{{ forloop.index0 }}"
+            {{ block.shopify_attributes }}
+          >
+            <div
+              class="social-video-thumbnail"
+              data-video-url="{{ block.settings.video_url | escape }}"
+              {% if sv_video_src != '' %}data-video-src="{{ sv_video_src | escape }}"{% endif %}
+            >
+              {%- if block.settings.thumbnail != blank -%}
+                <img
+                  src="{{ block.settings.thumbnail | image_url: width: 400 }}"
+                  alt="{{ block.settings.alt_text | default: section.settings.title | escape }}"
+                  loading="lazy"
+                  width="400"
+                  height="533"
+                >
+              {%- elsif is_tiktok -%}
+                <div class="social-video-placeholder social-video-placeholder--tiktok"></div>
+              {%- else -%}
+                <div class="social-video-placeholder social-video-placeholder--ig">
+                  <svg viewBox="0 0 24 24" fill="white" width="28" height="28" aria-hidden="true" style="opacity:0.9;">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                  </svg>
+                </div>
+              {%- endif -%}
+
+              <!-- Play button — always opens the popup modal -->
+              <button class="social-video-play-btn" aria-label="Play video" type="button">
+                <svg viewBox="0 0 52 52" width="54" height="54" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="26" cy="26" r="26" fill="rgba(0,0,0,0.52)"/>
+                  <polygon points="22,15 42,26 22,37" fill="white"/>
+                </svg>
+              </button>
+
+              {%- if block.settings.views != blank -%}
+                <div class="social-video-views-overlay">
+                  <svg viewBox="0 0 24 24" fill="white" width="12" height="12">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  <span>{{ block.settings.views }}</span>
+                </div>
+              {%- else -%}
+                <!-- Platform open-in-new-tab badge -->
+                <a
+                  href="{{ block.settings.video_url | escape }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="social-video-platform-btn{% if is_tiktok %} is-tiktok{% else %} is-instagram{% endif %}"
+                  aria-label="{% if is_tiktok %}Open in TikTok{% else %}Open in Instagram{% endif %}"
+                  title="{% if is_tiktok %}Open in TikTok{% else %}Open in Instagram{% endif %}"
+                >
+                  {%- if is_tiktok -%}
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true">
+                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.01a8.28 8.28 0 0 0 4.84 1.56V7.1a4.85 4.85 0 0 1-1.07-.41z"/>
+                    </svg>
+                    <span>TikTok</span>
+                  {%- else -%}
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                    <span>Instagram</span>
+                  {%- endif -%}
+                </a>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    {%- if rendered_count > 3 -%}
+      <div class="social-videos-more-wrap" id="SVMoreWrap-{{ section.id }}">
+        <button class="social-videos-more-btn" type="button" id="SVMoreBtn-{{ section.id }}">
+          <span>View more videos</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+      </div>
+      <div class="social-videos-more-wrap" id="SVLessWrap-{{ section.id }}" style="display:none;">
+        <button class="social-videos-more-btn social-videos-more-btn--less" type="button" id="SVLessBtn-{{ section.id }}">
+          <span>Show less</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
+        </button>
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+</div>
+
+<!-- ── Video Modal ──────────────────────────────────────────────────── -->
+<div
+  id="SocialVideoModal-{{ section.id }}"
+  class="social-video-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Video player"
+>
+  <div class="social-video-modal__backdrop"></div>
+  <div class="social-video-modal__inner">
+    <!-- X close button — top-right corner of the popup -->
+    <button class="social-video-modal__close" type="button" aria-label="Close video">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <div class="social-video-modal__frame" id="SocialVideoFrame-{{ section.id }}">
+      <!-- iframe injected by JS -->
+    </div>
+    <a
+      class="social-video-modal__open-btn"
+      href="#"
+      target="_blank"
+      rel="noopener noreferrer"
+      id="SocialVideoOpenBtn-{{ section.id }}"
+    ><!-- content set by JS --></a>
+  </div>
+</div>
+
+<script>
+(function () {
+  var sectionId = '{{ section.id }}';
+  var section  = document.getElementById('SocialVideos-' + sectionId);
+  var modal    = document.getElementById('SocialVideoModal-' + sectionId);
+  var frame    = document.getElementById('SocialVideoFrame-' + sectionId);
+  var openBtn  = document.getElementById('SocialVideoOpenBtn-' + sectionId);
+  if (!section || !modal) return;
+
+  // ── Embed URL builder ──────────────────────────────────────────────
+  function getEmbedUrl(url) {
+    var u = (url || '').trim();
+    var tt = u.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
+    if (tt) return 'https://www.tiktok.com/embed/v2/' + tt[1];
+    var igR = u.match(/instagram\.com\/reel\/([A-Za-z0-9_-]+)/);
+    if (igR) return 'https://www.instagram.com/reel/' + igR[1] + '/embed/';
+    var igP = u.match(/instagram\.com\/p\/([A-Za-z0-9_-]+)/);
+    if (igP) return 'https://www.instagram.com/p/' + igP[1] + '/embed/';
+    return null;
+  }
+
+  function makeIframe(embedUrl) {
+    var iframe = document.createElement('iframe');
+    iframe.src = embedUrl;
+    iframe.setAttribute('frameborder', '0');
+    iframe.setAttribute('scrolling', 'no');
+    iframe.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share');
+    iframe.setAttribute('allowfullscreen', '');
+    return iframe;
+  }
+
+  // ── Auto-fetch thumbnails for placeholder cards ────────────────────
+  section.querySelectorAll('.social-video-placeholder').forEach(function (el) {
+    var thumb = el.closest('.social-video-thumbnail');
+    if (!thumb) return;
+    var vUrl = thumb.dataset.videoUrl || '';
+    var apiUrl = null;
+
+    if (vUrl.indexOf('tiktok.com') !== -1) {
+      apiUrl = 'https://www.tiktok.com/oembed?url=' + encodeURIComponent(vUrl);
+    } else if (vUrl.indexOf('instagram.com') !== -1) {
+      apiUrl = 'https://api.instagram.com/oembed/?url=' + encodeURIComponent(vUrl);
+    }
+    if (!apiUrl) return;
+
+    fetch(apiUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function (data) {
+        if (!data || !data.thumbnail_url) return;
+        var img = new Image();
+        img.src = data.thumbnail_url;
+        img.alt = data.title || '';
+        img.loading = 'lazy';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+        el.replaceWith(img);
+      })
+      .catch(function () {});
+  });
+
+  // ── Popup open / close ────────────────────────────────────────────
+  var tiktokSvg = '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.01a8.28 8.28 0 0 0 4.84 1.56V7.1a4.85 4.85 0 0 1-1.07-.41z"/></svg>';
+  var igSvg     = '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>';
+
+  function openPopup(card) {
+    var thumb    = card && card.querySelector('.social-video-thumbnail');
+    var vUrl     = (thumb && thumb.dataset.videoUrl) || '';
+    var videoSrc = (thumb && thumb.dataset.videoSrc) || '';
+
+    frame.innerHTML = '';
+
+    if (videoSrc) {
+      // Native <video> — Shopify-hosted file, no iframe needed
+      var vid = document.createElement('video');
+      vid.src = videoSrc;
+      vid.autoplay = true;
+      vid.controls = true;
+      vid.setAttribute('playsinline', '');
+      vid.setAttribute('preload', 'auto');
+      frame.appendChild(vid);
+
+      // Hide the "Open in app" link — not relevant for uploaded files
+      if (openBtn) openBtn.style.display = 'none';
+    } else {
+      // Fallback: iframe embed for TikTok / Instagram URLs
+      var embedUrl = getEmbedUrl(vUrl);
+      if (!embedUrl) return;
+      frame.appendChild(makeIframe(embedUrl));
+
+      if (openBtn) {
+        openBtn.style.display = '';
+        openBtn.href = vUrl;
+        openBtn.innerHTML = vUrl.indexOf('tiktok.com') !== -1
+          ? tiktokSvg + '<span>Open in TikTok</span>'
+          : igSvg     + '<span>Open in Instagram</span>';
+      }
+    }
+
+    modal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal.classList.remove('is-open');
+    document.body.style.overflow = '';
+    frame.innerHTML = '';
+    // Block ghost clicks for 350 ms so iOS phantom tap can't hit links beneath
+    modal.style.pointerEvents = 'none';
+    setTimeout(function () { modal.style.pointerEvents = ''; }, 350);
+  }
+
+  // ── Play button → always open popup ───────────────────────────────
+  section.querySelectorAll('.social-video-play-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var card = btn.closest('.social-video-card');
+      if (card) openPopup(card);
+    });
+  });
+
+  // ── Modal close ────────────────────────────────────────────────────
+  var closeEl   = modal.querySelector('.social-video-modal__close');
+  var innerCard = modal.querySelector('.social-video-modal__inner');
+
+  function onCloseClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    closeModal();
+  }
+
+  // X button
+  if (closeEl) closeEl.addEventListener('click',    onCloseClick);
+  if (closeEl) closeEl.addEventListener('touchend', onCloseClick, { passive: false });
+
+  // Click / tap anywhere outside the card
+  function onModalTouch(e) {
+    if (innerCard && innerCard.contains(e.target)) return;
+    e.preventDefault();
+    closeModal();
+  }
+  modal.addEventListener('click',    onModalTouch);
+  modal.addEventListener('touchend', onModalTouch, { passive: false });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+  });
+
+  // ── View More / Show Less (mobile) ────────────────────────────────
+  var moreBtn  = document.getElementById('SVMoreBtn-'  + sectionId);
+  var moreWrap = document.getElementById('SVMoreWrap-' + sectionId);
+  var lessBtn  = document.getElementById('SVLessBtn-'  + sectionId);
+  var lessWrap = document.getElementById('SVLessWrap-' + sectionId);
+
+  if (moreBtn) {
+    moreBtn.addEventListener('click', function () {
+      section.querySelectorAll('.js-sv-extra').forEach(function (c) {
+        c.classList.add('js-sv-visible');
+      });
+      if (moreWrap) moreWrap.style.display = 'none';
+      if (lessWrap) lessWrap.style.display = '';
+    });
+  }
+
+  if (lessBtn) {
+    lessBtn.addEventListener('click', function () {
+      section.querySelectorAll('.js-sv-extra').forEach(function (c) {
+        c.classList.remove('js-sv-visible');
+      });
+      if (lessWrap) lessWrap.style.display = 'none';
+      if (moreWrap) moreWrap.style.display = '';
+    });
+  }
+
+  // ── Close popup when TikTok video ends ────────────────────────────
+  // Removes the iframe so TikTok's "watch more" overlay never appears.
+  window.addEventListener('message', function (e) {
+    if (!e.origin || e.origin.indexOf('tiktok') === -1) return;
+    var data;
+    try { data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; }
+    catch (ex) { return; }
+    if (!data) return;
+
+    var ended = false;
+    if (data.type === 'VideoStatusUpdate' && (data.videoStatus === 'ended' || data.videoStatus === 'end')) ended = true;
+    if (data.type === 'VIDEO_STATUS'      && (data.status === 'ended'       || data.status === 'end'))    ended = true;
+    if (data.event === 'ended' || data.event === 'end') ended = true;
+    if (data.type === 'onStateChange'     && data.value === 0) ended = true;
+    if (!ended && data.type === 'VIDEO_PROGRESS' && data.duration && data.currentTime) {
+      if (data.currentTime >= data.duration - 0.5) ended = true;
+    }
+
+    if (ended && modal.classList.contains('is-open')) closeModal();
+  });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Black Gold",
+  "tag": "section",
+  "class": "social-videos-wrapper",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section title",
+      "default": "AS SEEN ON TIKTOK"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tiktok_icon",
+      "label": "Show TikTok Icon",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Millions of views. Thousands of LAIBs made."
+    },
+    {
+      "type": "text",
+      "id": "view_more_text",
+      "label": "\"View more\" label",
+      "default": "View more"
+    },
+    {
+      "type": "url",
+      "id": "view_more_url",
+      "label": "\"View more\" link URL",
+      "info": "Leave blank to hide the link"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Video",
+      "settings": [
+        {
+          "type": "video",
+          "id": "video_file",
+          "label": "Video file",
+          "info": "Upload an MP4 directly — plays natively without any embed player. If blank, the URL below is used instead."
+        },
+        {
+          "type": "text",
+          "id": "video_url",
+          "label": "Video URL (TikTok / Instagram)",
+          "info": "Used only when no video file is uploaded above"
+        },
+        {
+          "type": "image_picker",
+          "id": "thumbnail",
+          "label": "Thumbnail image",
+          "info": "Optional — leave blank to auto-fetch from TikTok. Recommended: portrait (3:4 ratio)."
+        },
+        {
+          "type": "text",
+          "id": "alt_text",
+          "label": "Thumbnail alt text",
+          "info": "Describe the video for screen readers"
+        },
+        {
+          "type": "text",
+          "id": "views",
+          "label": "Views (e.g. 1.2M)",
+          "info": "Display view count on the video thumbnail. If filled, replaces the platform pill badge."
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "Black Gold",
+      "blocks": [
+        { "type": "video" },
+        { "type": "video" },
+        { "type": "video" }
+      ]
+    }
+  ]
+}
+{% endschema %}

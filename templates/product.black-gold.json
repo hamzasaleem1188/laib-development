@@ -101,69 +101,70 @@
         "padding_bottom": 12
       }
     },
-    "social_videos_trXNLz": {
+    "social-videos": {
       "type": "social-videos",
       "blocks": {
-        "video_HBegAb": {
-          "type": "video",
-          "settings": {
-            "video_url": "https://www.tiktok.com/@laib__/video/7647608162161265942?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
-            "duration": "",
-            "alt_text": ""
-          }
-        },
-        "video_QMHjwm": {
-          "type": "video",
-          "settings": {
-            "video_url": "https://www.tiktok.com/@laib__/video/7647906805720386838?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
-            "duration": "",
-            "alt_text": ""
-          }
-        },
-        "video_Gy6aHc": {
-          "type": "video",
-          "settings": {
-            "video_url": "https://www.tiktok.com/@laib__/video/7649734691557395734?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
-            "duration": "",
-            "alt_text": ""
-          }
-        },
-        "video_34rMd8": {
+        "video-1": {
           "type": "video",
           "settings": {
             "video_url": "https://www.tiktok.com/@laib__/video/7385304160524176673?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
-            "duration": "",
-            "alt_text": ""
+            "alt_text": "",
+            "views": ""
           }
         },
-        "video_C4ghmy": {
+        "video-2": {
+          "type": "video",
+          "settings": {
+            "video_url": "https://www.instagram.com/reel/DX64hLWMVLU/?utm_source=ig_web_copy_link&igsh=NTc4MTIwNjQ2YQ==",
+            "alt_text": "",
+            "views": ""
+          }
+        },
+        "video-3": {
           "type": "video",
           "settings": {
             "video_url": "https://www.tiktok.com/@laib__/video/7363765766639947041?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
-            "duration": "",
-            "alt_text": ""
+            "alt_text": "",
+            "views": ""
           }
         },
-        "video_TaEYYg": {
+        "video-4": {
+          "type": "video",
+          "settings": {
+            "video_url": "https://www.tiktok.com/@laib__/video/7363027199663901984?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
+            "alt_text": "",
+            "views": ""
+          }
+        },
+        "video-5": {
+          "type": "video",
+          "settings": {
+            "video_url": "https://www.tiktok.com/@laib__/video/7650457883628375318?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
+            "alt_text": "",
+            "views": ""
+          }
+        },
+        "video-6": {
           "type": "video",
           "settings": {
             "video_url": "https://www.tiktok.com/@laib__/video/7650080549423402262?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
-            "duration": "",
-            "alt_text": ""
+            "alt_text": "",
+            "views": ""
           }
         }
       },
       "block_order": [
-        "video_HBegAb",
-        "video_QMHjwm",
-        "video_Gy6aHc",
-        "video_34rMd8",
-        "video_C4ghmy",
-        "video_TaEYYg"
+        "video-1",
+        "video-2",
+        "video-3",
+        "video-4",
+        "video-5",
+        "video-6"
       ],
-      "name": "Social Videos",
       "settings": {
         "title": "AS SEEN ON TIKTOK",
+        "show_tiktok_icon": true,
+        "subtitle": "Millions of views. Thousands of LAIBs made.",
         "view_more_text": "View more",
         "view_more_url": ""
       }
@@ -185,11 +186,48 @@
         "padding_top": 36,
         "padding_bottom": 28
       }
+    },
+    "trust_banner_eeNby8": {
+      "type": "trust-banner",
+      "blocks": {
+        "trust_item_MBHK4k": {
+          "type": "trust_item",
+          "settings": {
+            "icon_svg": "<svg viewbox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"></line><path d=\"M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z\"></path></svg>",
+            "title": "30+ COUNTRIES",
+            "subtitle": "Worldwide shipping"
+          }
+        },
+        "trust_item_JJfRgL": {
+          "type": "trust_item",
+          "settings": {
+            "icon_svg": "<svg viewbox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path><circle cx=\"9\" cy=\"7\" r=\"4\"></circle><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"></path><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"></path></svg>",
+            "title": "30,000+ CUSTOMERS",
+            "subtitle": "Join the LAIB family"
+          }
+        },
+        "trust_item_6VTWiE": {
+          "type": "trust_item",
+          "settings": {
+            "icon_svg": "<svg viewbox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><polygon points=\"12 2 15.09 5.09 19.5 4.5 20.09 8.91 23.18 12 20.09 15.09 19.5 19.5 15.09 18.91 12 22 8.91 18.91 4.5 19.5 5.09 15.09 2 12 5.09 8.91 4.5 4.5 8.91 5.09 12 2\"></polygon><polyline points=\"9 12 11 14 15 10\"></polyline></svg>",
+            "title": "30-DAY GUARANTEE",
+            "subtitle": "Love it or get a refund"
+          }
+        }
+      },
+      "block_order": [
+        "trust_item_MBHK4k",
+        "trust_item_JJfRgL",
+        "trust_item_6VTWiE"
+      ],
+      "name": "Trust Banner",
+      "settings": {}
     }
   },
   "order": [
     "main",
-    "social_videos_trXNLz",
+    "social-videos",
+    "trust_banner_eeNby8",
     "related-products"
   ]
 }

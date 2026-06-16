@@ -21,26 +21,40 @@
       assign show_dynamic_checkout = false
       if block.settings.show_dynamic_checkout and gift_card_recipient_feature_active == false
         assign show_dynamic_checkout = true
+      elsif force_dynamic_checkout and gift_card_recipient_feature_active == false
+        assign show_dynamic_checkout = true
       endif
     -%}
     {%- liquid
       assign giftbox_meta = product.metafields.global.add_gift_product
       assign gift_product_obj = giftbox_meta.value
-      
+
       if gift_product_obj.first
         assign gift_product_obj = gift_product_obj.first
       endif
-      
-      if gift_product_obj == blank
+
+      if gift_product_obj == blank and giftbox_meta != blank
         assign gift_product_obj = all_products[giftbox_meta]
+      endif
+
+      # Fallback to default gift box product handle
+      if gift_product_obj == blank
+        assign default_gift_handle = 'gift-box'
+        assign gift_product_obj = all_products[default_gift_handle]
+      endif
+
+      # Check if gift box is available (quantity > 0) and is not the current product itself
+      assign has_giftbox = false
+      if gift_product_obj != blank and gift_product_obj.handle != product.handle and gift_product_obj.available
+        assign has_giftbox = true
       endif
     -%}
     <product-form
       class="product-form"
       data-hide-errors="{{ gift_card_recipient_feature_active }}"
       data-section-id="{{ section.id }}"
-      data-has-giftbox="{% if product.tags contains 'add_gift_product' and product.metafields.global.add_gift_product != blank and gift_product_obj.available != false %}true{% else %}false{% endif %}"
-      data-giftbox-id="{{ gift_product_obj.id | default: giftbox_meta }}"
+      data-has-giftbox="{% if has_giftbox %}true{% else %}false{% endif %}"
+      data-giftbox-id="{{ gift_product_obj.id }}"
       data-giftbox-variant-id="{{ gift_product_obj.selected_or_first_available_variant.id | default: gift_product_obj.variants.first.id }}"
       data-giftbox-price="{{ gift_product_obj.price }}"
       data-giftbox-price-text="{{ gift_product_obj.price | money }}"
@@ -67,13 +81,14 @@
         novalidate: 'novalidate',
         data-type: 'add-to-cart-form'
       -%}
+        {%- assign initial_variant = target_default_variant | default: product.selected_or_first_available_variant -%}
         <input
           type="hidden"
           name="id"
-          value="{{ product.selected_or_first_available_variant.id }}"
-          {% if product.selected_or_first_available_variant.available == false
+          value="{{ initial_variant.id }}"
+          {% if initial_variant.available == false
             or quantity_rule_soldout
-            or product.selected_or_first_available_variant == nil
+            or initial_variant == null
           %}
             disabled
           {% endif %}
@@ -86,7 +101,7 @@
 
         {% comment %} Customization UI moved to separate block in main-product.liquid {% endcomment %}
 
-        {%- if product.tags contains 'add_gift_product' and product.metafields.global.add_gift_product != blank and gift_product_obj.available != false -%}
+        {%- if has_giftbox -%}
           <style>
             .giftbox-checkbox-wrapper {
               margin-bottom: 2.2rem;
@@ -119,46 +134,62 @@
                 font-size: 0.85rem !important;
               }
               .giftbox-checkbox-price {
-                font-size: 1.0rem !important;
+                font-size: 1rem !important;
                 padding: 1px 8px !important;
               }
             }
           </style>
 
-          <div class="giftbox-checkbox-wrapper" onclick="const cb = this.querySelector('input[type=checkbox]'); cb.checked = !cb.checked; cb.dispatchEvent(new Event('change'));">
-            <input type="checkbox" id="GiftBoxConfirmCheckbox-{{ section_id }}" name="giftbox_confirm" style="
-              width: 2.8rem;
-              height: 2.8rem;
-              cursor: pointer;
-              margin: 0;
-              accent-color: rgb(var(--color-keyboard-focus));
-              flex-shrink: 0;
-            " onclick="event.stopPropagation();">
-            
+          <div
+            class="giftbox-checkbox-wrapper"
+            onclick="const cb = this.querySelector('input[type=checkbox]'); cb.checked = !cb.checked; cb.dispatchEvent(new Event('change'));"
+          >
+            <input
+              type="checkbox"
+              id="GiftBoxConfirmCheckbox-{{ section_id }}"
+              name="giftbox_confirm"
+              style="
+                width: 2.8rem;
+                height: 2.8rem;
+                cursor: pointer;
+                margin: 0;
+                accent-color: rgb(var(--color-keyboard-focus));
+                flex-shrink: 0;
+              "
+              onclick="event.stopPropagation();"
+            >
+
             <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0;">
               <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
-                <label for="GiftBoxConfirmCheckbox-{{ section_id }}" style="
-                  font-size: 1.25rem;
-                  font-weight: 600;
-                  cursor: pointer;
-                  user-select: none;
-                  margin: 0;
-                  line-height: 1.3;
-                  color: rgb(var(--color-foreground));
-                " onclick="event.stopPropagation();">
+                <label
+                  for="GiftBoxConfirmCheckbox-{{ section_id }}"
+                  style="
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    user-select: none;
+                    margin: 0;
+                    line-height: 1.3;
+                    color: rgb(var(--color-foreground));
+                  "
+                  onclick="event.stopPropagation();"
+                >
                   Add Gift Box🎁
                 </label>
-                <span class="giftbox-checkbox-price" style="
-                  display: none;
-                  background: rgba(var(--color-foreground), 0.08);
-                  padding: 2px 10px;
-                  border-radius: 20px;
-                  font-weight: 700;
-                  font-size: 1.2rem;
-                  color: rgb(var(--color-foreground));
-                  white-space: nowrap;
-                  flex-shrink: 0;
-                "></span>
+                <span
+                  class="giftbox-checkbox-price"
+                  style="
+                    display: none;
+                    background: rgba(var(--color-foreground), 0.08);
+                    padding: 2px 10px;
+                    border-radius: 20px;
+                    font-weight: 700;
+                    font-size: 1.2rem;
+                    color: rgb(var(--color-foreground));
+                    white-space: nowrap;
+                    flex-shrink: 0;
+                  "
+                ></span>
               </div>
               <span style="font-size: 0.95rem; color: rgba(var(--color-foreground), 0.6); line-height: 1.2; display: block; white-space: nowrap;">
                 Premium gift packaging for the full LAIB experience
@@ -167,7 +198,10 @@
           </div>
         {%- endif -%}
 
-        <div data-custom-total-price-wrapper style="display: none; padding: 1.5rem; background: rgba(var(--color-foreground), 0.03); border: 1px solid rgba(var(--color-foreground), 0.1); border-radius: 4px; margin-bottom: 1.5rem; flex-direction: column; gap: 0.8rem;">
+        <div
+          data-custom-total-price-wrapper
+          style="display: none; padding: 1.5rem; background: rgba(var(--color-foreground), 0.03); border: 1px solid rgba(var(--color-foreground), 0.1); border-radius: 4px; margin-bottom: 1.5rem; flex-direction: column; gap: 0.8rem;"
+        >
           <div data-extra-logo style="display: none; justify-content: space-between; font-size: 1.3rem;">
             <span>Nationality/Logo</span>
             <span data-logo-price-display></span>
@@ -193,10 +227,10 @@
         <div class="product-form__buttons">
           {%- liquid
             assign check_against_inventory = true
-            if product.selected_or_first_available_variant.inventory_management != 'shopify' or product.selected_or_first_available_variant.inventory_policy == 'continue'
+            if initial_variant.inventory_management != 'shopify' or initial_variant.inventory_policy == 'continue'
               assign check_against_inventory = false
             endif
-            if product.selected_or_first_available_variant.quantity_rule.min > product.selected_or_first_available_variant.inventory_quantity and check_against_inventory
+            if initial_variant.quantity_rule.min > initial_variant.inventory_quantity and check_against_inventory
               assign quantity_rule_soldout = true
             endif
           -%}
@@ -205,17 +239,17 @@
             type="submit"
             name="add"
             class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
-            {% if product.selected_or_first_available_variant.available == false
+            {% if initial_variant.available == false
               or quantity_rule_soldout
-              or product.selected_or_first_available_variant == nil
+              or initial_variant == null
             %}
               disabled
             {% endif %}
           >
             <span>
-              {%- if product.selected_or_first_available_variant == nil -%}
+              {%- if initial_variant == null -%}
                 {{ 'products.product.unavailable' | t }}
-              {%- elsif product.selected_or_first_available_variant.available == false or quantity_rule_soldout -%}
+              {%- elsif initial_variant.available == false or quantity_rule_soldout -%}
                 {{ 'products.product.sold_out' | t }}
               {%- else -%}
                 {{ 'products.product.add_to_cart' | t }}
@@ -224,7 +258,27 @@
             {%- render 'loading-spinner' -%}
           </button>
           {%- if show_dynamic_checkout -%}
-            {{ form | payment_button }}
+            {%- if product.tags contains 'custom_pdp' -%}
+              <style>
+                .custom-buy-now-btn[disabled] {
+                  opacity: 0.5;
+                  cursor: not-allowed;
+                  pointer-events: none;
+                }
+              </style>
+              <button type="button" class="shopify-payment-button__button shopify-payment-button__button--unbranded custom-buy-now-btn" style="display: block; width: 100%; margin-top: 1rem; transition: opacity 0.2s;"
+                {% if product.selected_or_first_available_variant.available == false
+                  or quantity_rule_soldout
+                  or product.selected_or_first_available_variant == null
+                %}
+                  disabled
+                {% endif %}
+              >
+                Buy it now
+              </button>
+            {%- else -%}
+              {{ form | payment_button }}
+            {%- endif -%}
           {%- endif -%}
         </div>
       {%- endform -%}

@@ -22,13 +22,28 @@ if (!customElements.get("product-form")) {
         this.addEventListener(
           "click",
           (evt) => {
-            const buyNowButton = evt.target.closest(".shopify-payment-button");
+            const buyNowButton = evt.target.closest(".shopify-payment-button") || evt.target.closest(".custom-buy-now-btn");
             if (buyNowButton) {
-              const hasGiftbox =
-                this.getAttribute("data-has-giftbox") === "true";
-              if (hasGiftbox) {
+              // Capturing phase bypasses the browser's native disabled check — guard manually
+              const actualBtn = buyNowButton.matches("button") ? buyNowButton : buyNowButton.querySelector("button");
+              if (actualBtn && (actualBtn.disabled || actualBtn.getAttribute("aria-disabled") === "true")) return;
+              if (buyNowButton.disabled || buyNowButton.getAttribute("aria-disabled") === "true") return;
+
+              const hasGiftbox = this.getAttribute("data-has-giftbox") === "true";
+              const customizer = document.querySelector('custom-shirt-customizer');
+              const hasCustomization = customizer && customizer.style.display !== "none";
+
+              if (hasGiftbox || hasCustomization || buyNowButton.classList.contains('custom-buy-now-btn')) {
                 evt.preventDefault();
                 evt.stopPropagation();
+
+                if (hasCustomization && typeof customizer.validateCustomization === 'function') {
+                  customizer.validationActive = true;
+                  if (!customizer.validateCustomization()) {
+                    return; // Validation failed
+                  }
+                }
+
                 this.handleFormSubmit(true);
               }
             }
@@ -46,25 +61,39 @@ if (!customElements.get("product-form")) {
         const priceSpan = this.querySelector(".giftbox-checkbox-price");
         if (!priceSpan) return;
 
-        fetch(
-          `${window.routes.root_url || "/"}search?view=giftbox-ajax&q=${giftboxId}`,
-        )
+        // Page-level cache: one fetch per giftbox product ID per page load.
+        // Prevents duplicate requests when multiple product-forms share the same
+        // giftbox ID, and reduces 429s from rapid reloads in shopify theme dev.
+        if (!window._giftboxPriceCache) window._giftboxPriceCache = {};
+
+        const applyData = (data) => {
+          if (!data?.price_formatted) return;
+          if (data.available === false) {
+            const wrapper = this.querySelector(".giftbox-checkbox-wrapper");
+            if (wrapper) wrapper.style.display = "none";
+            this.setAttribute("data-has-giftbox", "false");
+          } else {
+            priceSpan.textContent = `+${data.price_formatted}`;
+            priceSpan.style.display = "inline-block";
+          }
+        };
+
+        if (window._giftboxPriceCache[giftboxId]) {
+          applyData(window._giftboxPriceCache[giftboxId]);
+          return;
+        }
+
+        // Mark as in-flight so concurrent calls don't fire duplicate fetches
+        window._giftboxPriceCache[giftboxId] = null;
+
+        fetch(`${window.routes.root_url || "/"}search?view=giftbox-ajax&q=${giftboxId}`)
           .then((res) => res.json())
           .then((data) => {
-            if (data && data.price_formatted) {
-              if (data.available === false) {
-                const checkboxWrapper = this.querySelector(".giftbox-checkbox-wrapper");
-                if (checkboxWrapper) checkboxWrapper.style.display = "none";
-                this.setAttribute("data-has-giftbox", "false");
-              } else {
-                if (priceSpan) {
-                  priceSpan.textContent = `+${data.price_formatted}`;
-                  priceSpan.style.display = "inline-block";
-                }
-              }
-            }
+            window._giftboxPriceCache[giftboxId] = data;
+            applyData(data);
           })
           .catch((err) => {
+            delete window._giftboxPriceCache[giftboxId];
             console.error("Failed to fetch gift box price:", err);
           });
       }
@@ -85,22 +114,123 @@ if (!customElements.get("product-form")) {
 
         const config = fetchConfig("javascript");
         config.headers["X-Requested-With"] = "XMLHttpRequest";
-        delete config.headers["Content-Type"];
+        // Do not delete Content-Type as we are sending JSON
 
         const formData = new FormData(this.form);
+        const mainVariantId = formData.get("id");
+        const quantity = Number(formData.get("quantity") || 1);
+
+        let bundleId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        let items = [];
+        let mainProperties = {};
+
+        for (let [key, value] of formData.entries()) {
+          if (key.startsWith("properties[")) {
+            let propName = key.match(/properties\[(.*?)\]/)[1];
+            if (value.trim() !== "") {
+              if (mainProperties[propName]) {
+                mainProperties[propName] = mainProperties[propName] + " - " + value;
+              } else {
+                mainProperties[propName] = value;
+              }
+            }
+          }
+        }
+
+        const customizer = document.querySelector('custom-shirt-customizer');
+        let hasCustomization = false;
+
+        if (customizer && customizer.style.display !== "none") {
+          const natId = parseInt(customizer.getAttribute("data-nationality-id"));
+          const natInput = customizer.querySelector("[data-logo-text-url-input]");
+          if (!isNaN(natId) && natInput && natInput.value.trim() !== "" && !customizer.isBestSellingVariant) {
+            items.push({
+              id: natId,
+              quantity: quantity,
+              properties: { _bundle_id: bundleId }
+            });
+            hasCustomization = true;
+          }
+
+          const nameId = parseInt(customizer.getAttribute("data-name-id"));
+          const nameInput = customizer.querySelector("[data-name-input]");
+          const numInput = customizer.querySelector("[data-number-input]");
+          if (!isNaN(nameId) && ((nameInput && nameInput.value.trim() !== "" && !nameInput.disabled) || (numInput && numInput.value.trim() !== "" && !numInput.disabled))) {
+            items.push({
+              id: nameId,
+              quantity: quantity,
+              properties: { _bundle_id: bundleId }
+            });
+            hasCustomization = true;
+          }
+
+          const logoId = parseInt(customizer.getAttribute("data-logo-id"));
+          const logoInput = customizer.querySelector("[data-logo-input]");
+          if (!isNaN(logoId) && logoInput && logoInput.value.trim() !== "" && !customizer.isBestSellingVariant) {
+            items.push({
+              id: logoId,
+              quantity: quantity,
+              properties: { _bundle_id: bundleId }
+            });
+            hasCustomization = true;
+          }
+        }
+
+        if (hasCustomization) {
+          mainProperties["_bundle_id"] = bundleId;
+        }
+
+        items.unshift({
+          id: parseInt(mainVariantId),
+          quantity: quantity,
+          properties: mainProperties
+        });
+
+        const checkboxEl = this.querySelector('input[name="giftbox_confirm"]');
+        const customGiftboxEl = document.getElementById('GiftboxCheckbox');
+        const isCheckboxChecked = !!(checkboxEl?.checked || customGiftboxEl?.checked);
+        const giftboxVariantId = this.getAttribute("data-giftbox-variant-id");
+        const hasGiftbox = this.getAttribute("data-has-giftbox") === "true";
+
+        let giftboxAddedToRequest = false;
+        if (isCheckboxChecked && hasGiftbox && giftboxVariantId) {
+          items.push({ id: parseInt(giftboxVariantId), quantity: 1 });
+          giftboxAddedToRequest = true;
+        }
+
+        const requestBody = { items: items };
+        let baseAddUrl = routes.cart_add_url;
+        if (!baseAddUrl.endsWith('.js')) {
+          baseAddUrl += '.js';
+        }
+        let addUrl = baseAddUrl;
+
         if (this.cart) {
-          formData.append(
-            "sections",
-            this.cart.getSectionsToRender().map((section) => section.id),
-          );
-          formData.append("sections_url", window.location.pathname);
+          const sectionsStr = this.cart.getSectionsToRender().map((section) => section.id).join(",");
+          addUrl = `${baseAddUrl}?sections=${sectionsStr}`;
+          requestBody.sections_url = window.location.pathname;
           this.cart.setActiveElement(document.activeElement);
         }
-        config.body = formData;
+        config.body = JSON.stringify(requestBody);
 
-        fetch(`${routes.cart_add_url}`, config)
-          .then((response) => response.json())
+        fetch(addUrl, config)
+          .then(async (response) => {
+            const text = await response.text();
+            if (!text) {
+              throw new Error(`Empty response from Shopify: ${response.status} ${response.statusText}`);
+            }
+            try {
+              return JSON.parse(text);
+            } catch (e) {
+              console.error("Shopify Non-JSON Response:", text);
+              throw new Error("Shopify returned invalid JSON. " + e.message);
+            }
+          })
           .then((response) => {
+            if (response.items && response.items.length > 0 && !response.key) {
+              response.key = response.items[0].key;
+            }
+
             if (response.status) {
               publish(PUB_SUB_EVENTS.cartError, {
                 source: "product-form",
@@ -123,49 +253,56 @@ if (!customElements.get("product-form")) {
               return;
             }
 
-            if (!this.error)
+            if (!this.error) {
               publish(PUB_SUB_EVENTS.cartUpdate, {
                 source: "product-form",
                 productVariantId: formData.get("id"),
                 cartData: response,
               });
+
+              // Force clear customizer
+              const customizer = document.querySelector("custom-shirt-customizer");
+              if (customizer && typeof customizer.clearCustomization === "function") {
+                customizer.clearCustomization();
+                customizer.validationActive = false;
+                if (customizer.errorNationality) customizer.errorNationality.style.display = "none";
+                if (customizer.errorLogo) customizer.errorLogo.style.display = "none";
+                if (customizer.errorName) customizer.errorName.style.display = "none";
+                if (customizer.errorNumber) customizer.errorNumber.style.display = "none";
+                if (customizer.drawer && customizer.drawer.style.display !== "none") {
+                  customizer.toggleDrawer();
+                }
+              }
+            }
             this.error = false;
 
-            const hasGiftbox = this.getAttribute("data-has-giftbox") === "true";
-            const giftboxId = this.getAttribute("data-giftbox-id");
-            const sectionId = this.getAttribute("data-section-id");
-            const giftboxModal = document.getElementById(
-              `GiftBoxModal-${sectionId}`,
-            );
-
-            const checkboxEl = this.querySelector(
-              'input[name="giftbox_confirm"]',
-            );
-            const isCheckboxChecked = checkboxEl ? checkboxEl.checked : false;
-
-            const giftboxVariantId = this.getAttribute("data-giftbox-variant-id");
-
-            if (hasGiftbox && giftboxId && giftboxModal) {
-              if (isCheckboxChecked && giftboxVariantId) {
-                this.addGiftboxOnly(giftboxVariantId, response, isBuyNow);
-              } else {
-                this.showGiftBoxPopup(
-                  giftboxId,
-                  response,
-                  giftboxModal,
-                  isBuyNow,
-                  isCheckboxChecked,
-                );
-              }
-            } else {
+            if (giftboxAddedToRequest) {
+              // Giftbox was included in the same cart request — render immediately
               this.resetCheckbox();
               if (isBuyNow) {
                 const checkoutUrl =
-                  (window.routes.root_url || "").replace(/\/$/, "") +
-                  "/checkout";
+                  (window.routes.root_url || "").replace(/\/$/, "") + "/checkout";
                 window.location = checkoutUrl;
               } else {
                 this.renderCartOrRedirect(response);
+              }
+            } else {
+              const giftboxId = this.getAttribute("data-giftbox-id");
+              const sectionId = this.getAttribute("data-section-id");
+              const giftboxModal = document.getElementById(`GiftBoxModal-${sectionId}`);
+
+              if (!isCheckboxChecked && hasGiftbox && giftboxId && giftboxModal) {
+                // Checkbox not checked → offer giftbox via popup
+                this.showGiftBoxPopup(giftboxId, response, giftboxModal, isBuyNow, false);
+              } else {
+                this.resetCheckbox();
+                if (isBuyNow) {
+                  const checkoutUrl =
+                    (window.routes.root_url || "").replace(/\/$/, "") + "/checkout";
+                  window.location = checkoutUrl;
+                } else {
+                  this.renderCartOrRedirect(response);
+                }
               }
             }
           })
@@ -209,24 +346,76 @@ if (!customElements.get("product-form")) {
           this.submitButton.removeAttribute("disabled");
           this.submitButtonText.textContent = window.variantStrings.addToCart;
         }
+
+        // Keep Buy It Now in sync with the Add to Cart state
+        const customBuyNow = this.querySelector(".custom-buy-now-btn");
+        if (customBuyNow) {
+          if (disable) {
+            customBuyNow.setAttribute("disabled", "disabled");
+          } else {
+            customBuyNow.removeAttribute("disabled");
+          }
+        }
+
+        // For Shopify's native payment buttons (Shop Pay, Apple Pay, etc.)
+        // hide the whole container — individual buttons inside aren't directly controllable
+        const shopifyPaymentBtn = this.querySelector(".shopify-payment-button");
+        if (shopifyPaymentBtn) {
+          shopifyPaymentBtn.style.display = disable ? "none" : "";
+        }
       }
 
       renderCartOrRedirect(response) {
-        const quickAddModal = this.closest("quick-add-modal");
-        if (quickAddModal) {
-          document.body.addEventListener(
-            "modalClosed",
-            () => {
-              setTimeout(() => {
-                this.cart.renderContents(response);
-              });
-            },
-            { once: true },
-          );
-          quickAddModal.hide(true);
-        } else {
-          this.cart.renderContents(response);
+        const doRender = (finalResponse) => {
+          const quickAddModal = this.closest("quick-add-modal");
+          if (quickAddModal) {
+            document.body.addEventListener(
+              "modalClosed",
+              () => {
+                setTimeout(() => {
+                  this.cart.renderContents(finalResponse);
+                });
+              },
+              { once: true },
+            );
+            quickAddModal.hide(true);
+          } else {
+            this.cart.renderContents(finalResponse);
+          }
+        };
+
+        if (this.cart && !response.sections) {
+          response.sections = {};
+          const rootUrl = (window.routes.root_url || "/").replace(/\/$/, "");
+          const sectionsToFetch = this.cart.getSectionsToRender().map((s) => s.id);
+
+          Promise.all(
+            sectionsToFetch.map((sectionId) =>
+              fetch(`${rootUrl}/?section_id=${sectionId}`)
+                .then((res) => res.text())
+                .then((html) => {
+                  response.sections[sectionId] = html;
+                })
+            )
+          )
+            .then(() => doRender(response))
+            .catch(() => doRender(response));
+          return;
         }
+
+        if (this.cart && response.sections && response.sections["cart-notification-product"] === null) {
+          const rootUrl = (window.routes.root_url || "/").replace(/\/$/, "");
+          fetch(`${rootUrl}/?section_id=cart-notification-product`)
+            .then((res) => res.text())
+            .then((html) => {
+              response.sections["cart-notification-product"] = html;
+              doRender(response);
+            })
+            .catch(() => doRender(response));
+          return;
+        }
+
+        doRender(response);
       }
 
       showGiftBoxPopup(
@@ -324,12 +513,12 @@ if (!customElements.get("product-form")) {
               if (imgEl) imgEl.style.display = "none";
               if (addBtn) addBtn.style.display = "none";
               if (declineBtn) {
-                 declineBtn.textContent = "Continue to cart";
-                 declineBtn.style.textDecoration = "none";
-                 declineBtn.classList.remove("button--tertiary");
-                 declineBtn.classList.add("button--primary");
+                declineBtn.textContent = "Continue to cart";
+                declineBtn.style.textDecoration = "none";
+                declineBtn.classList.remove("button--tertiary");
+                declineBtn.classList.add("button--primary");
               }
-              
+
               loadingEl.style.display = "none";
               contentEl.style.display = "block";
               return;
