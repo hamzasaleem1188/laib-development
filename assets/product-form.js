@@ -24,6 +24,11 @@ if (!customElements.get("product-form")) {
           (evt) => {
             const buyNowButton = evt.target.closest(".shopify-payment-button") || evt.target.closest(".custom-buy-now-btn");
             if (buyNowButton) {
+              // Capturing phase bypasses the browser's native disabled check — guard manually
+              const actualBtn = buyNowButton.matches("button") ? buyNowButton : buyNowButton.querySelector("button");
+              if (actualBtn && (actualBtn.disabled || actualBtn.getAttribute("aria-disabled") === "true")) return;
+              if (buyNowButton.disabled || buyNowButton.getAttribute("aria-disabled") === "true") return;
+
               const hasGiftbox = this.getAttribute("data-has-giftbox") === "true";
               const customizer = document.querySelector('custom-shirt-customizer');
               const hasCustomization = customizer && customizer.style.display !== "none";
@@ -340,6 +345,23 @@ if (!customElements.get("product-form")) {
         } else {
           this.submitButton.removeAttribute("disabled");
           this.submitButtonText.textContent = window.variantStrings.addToCart;
+        }
+
+        // Keep Buy It Now in sync with the Add to Cart state
+        const customBuyNow = this.querySelector(".custom-buy-now-btn");
+        if (customBuyNow) {
+          if (disable) {
+            customBuyNow.setAttribute("disabled", "disabled");
+          } else {
+            customBuyNow.removeAttribute("disabled");
+          }
+        }
+
+        // For Shopify's native payment buttons (Shop Pay, Apple Pay, etc.)
+        // hide the whole container — individual buttons inside aren't directly controllable
+        const shopifyPaymentBtn = this.querySelector(".shopify-payment-button");
+        if (shopifyPaymentBtn) {
+          shopifyPaymentBtn.style.display = disable ? "none" : "";
         }
       }
 

@@ -177,7 +177,7 @@ if (!customElements.get("custom-shirt-customizer")) {
             const basePriceStr = basePriceEl ? basePriceEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '.') : "0";
             let actualVariantPrice = parseFloat(basePriceStr) * 100 || 0;
             if (isNaN(actualVariantPrice)) actualVariantPrice = 0;
-            
+
             let totalPrice = actualVariantPrice;
             let displayBasePrice = actualVariantPrice;
 
@@ -205,8 +205,8 @@ if (!customElements.get("custom-shirt-customizer")) {
             // Logo (Nationality Icon)
             const logoVal = this.logoInput ? this.logoInput.value.trim() : "";
             const logoPriceCents = resolvePrice('data-logo-price');
-            const isPrePrinted = this.isBestSellingVariant; 
-            
+            const isPrePrinted = this.isBestSellingVariant;
+
             if (logoVal) {
               if (isPrePrinted) {
                 // Variant price already includes the logo.
@@ -267,9 +267,9 @@ if (!customElements.get("custom-shirt-customizer")) {
             const extraPriceVal = document.getElementById('SummaryValue-ExtraPrice');
             const totalDisplay = document.getElementById('Summary-TotalPrice');
             const baseDisplay = document.getElementById('Summary-BasePrice');
-            
+
             const loaderHTML = '<span class="price-calculating-loader"><span></span><span></span><span></span></span>';
-            
+
             if (extraPrice > 0) {
               if (extraRow) extraRow.style.display = "flex";
               if (extraPriceVal) extraPriceVal.innerHTML = loaderHTML;
@@ -281,7 +281,7 @@ if (!customElements.get("custom-shirt-customizer")) {
 
             // Clear previous timeout
             if (this.calcTimeout) clearTimeout(this.calcTimeout);
-            
+
             this.calcTimeout = setTimeout(() => {
               if (baseDisplay) baseDisplay.textContent = format(displayBasePrice);
               if (extraPrice > 0 && extraPriceVal) {
@@ -692,9 +692,22 @@ if (!customElements.get("custom-shirt-customizer")) {
 
         this.setupPriceObserver();
 
+        // Initial setup and inventory sync
         setTimeout(() => {
           this.clearCustomization();
+          this.autoSelectDefaultVariant();
+          this.updateInventoryState();
         }, 100);
+
+        // Track when variant changes to update inventory states
+        const variantForm = document.querySelector("variant-selects") || document.querySelector("variant-radios");
+        if (variantForm) {
+          variantForm.addEventListener("change", () => {
+            setTimeout(() => {
+              this.updateInventoryState();
+            }, 50);
+          });
+        }
 
         // Clear customization on browser back button
         window.addEventListener("pageshow", (event) => {
@@ -983,7 +996,7 @@ if (!customElements.get("custom-shirt-customizer")) {
           const selectedCountryLower = isBestSelling ? normalizeText(nationalityName) : 'base';
           console.log("===== selectedCountryLower:", selectedCountryLower);
           console.log("===== customMediaData available, length:", window.customMediaData.length);
-          
+
           let newFront = window.customMediaData.find(m => {
             const alt = normalizeText(m.alt);
             return alt.includes(selectedCountryLower) && alt.includes('front');
@@ -995,10 +1008,10 @@ if (!customElements.get("custom-shirt-customizer")) {
 
           if (!newFront) newFront = window.customMediaData.find(m => normalizeText(m.alt).includes('front')); // fallback
           if (!newBack) newBack = window.customMediaData.find(m => normalizeText(m.alt).includes('back')); // fallback
-          
+
           console.log("===== newFront found:", newFront);
           console.log("===== newBack found:", newBack);
-          
+
           if (newFront) window.customGalleryFrontIndex = newFront.index;
           if (newBack) window.customGalleryBackIndex = newBack.index;
 
@@ -1164,6 +1177,18 @@ if (!customElements.get("custom-shirt-customizer")) {
               selectedDisplay.innerText = "select nationality";
           }
           this.updateLogoPreview("", "", "");
+        }
+
+        // Reset Dawn variant to Base
+        if (this.productData && this.productData.variants) {
+          const baseVariant = this.productData.variants.find(v =>
+            v.options.includes("-") ||
+            v.options.some(opt => typeof opt === 'string' && opt.toLowerCase() === "base") ||
+            v.options.some(opt => typeof opt === 'string' && opt.toLowerCase() === "blank")
+          );
+          if (baseVariant) {
+            this.handleNationalityVariantSwitch("Base", false);
+          }
         }
 
         // Remove active visual states from grid items
@@ -1427,6 +1452,135 @@ if (!customElements.get("custom-shirt-customizer")) {
       }
 
 
+
+      autoSelectDefaultVariant() {
+        const variantJsonTag = document.querySelector('script[data-selected-variant]');
+        if (!variantJsonTag) return;
+        try {
+          const defaultVariant = JSON.parse(variantJsonTag.textContent);
+          if (!defaultVariant || !defaultVariant.options) return;
+
+          const nationalityIndex = this.productData?.options?.findIndex(o => o.toLowerCase().includes('nationality') || o.toLowerCase().includes('country'));
+
+          if (nationalityIndex >= 0) {
+            const defaultNationality = defaultVariant.options[nationalityIndex];
+            if (defaultNationality && defaultNationality.toLowerCase() !== 'base') {
+              if (this.logoList) {
+                const items = this.logoList.querySelectorAll(".item");
+                let foundItem = Array.from(items).find(item => item.getAttribute("data-value") === defaultNationality);
+                if (foundItem) {
+                  foundItem.click(); // This will select the logo and update image
+                }
+              }
+            }
+          }
+        } catch (e) { console.error("Error parsing default variant", e); }
+      }
+
+      updateInventoryState() {
+        if (!this.productData || !this.productData.variants) return;
+
+        const container = document.querySelector("variant-selects") || document.querySelector("variant-radios");
+        if (!container) return;
+
+        // Get currently selected options (ignoring Nationality/Country)
+        const currentOptions = this.productData.options.map((optName) => {
+          if (optName.toLowerCase().includes('nationality') || optName.toLowerCase().includes('country')) {
+            return null; // We will test this one
+          }
+          let uiValue = "";
+          const select = container.querySelector(`select[name="options[${optName}]"]`) || container.querySelector(`select[name^="${optName}"]`);
+          if (select) {
+            uiValue = select.value;
+          } else {
+            const checkedInput = container.querySelector(`input[name="options[${optName}]"]:checked`) || container.querySelector(`input[name^="${optName}"]:checked`) || container.querySelector(`input[data-option-name="${optName}"]:checked`);
+            if (checkedInput) uiValue = checkedInput.value;
+          }
+          return uiValue;
+        });
+
+        // Test each logo item in the dropdown
+        if (this.logoList) {
+          const items = this.logoList.querySelectorAll(".item");
+          let anyAvailable = false;
+          let firstAvailableItem = null;
+
+          items.forEach(item => {
+            const isBestSelling = item.getAttribute("data-is-best-selling") === "true";
+            const val = item.getAttribute("data-value");
+
+            if (this.isMixedInventory && isBestSelling) {
+              const matchingVariant = this.productData.variants.find(v => {
+                return v.options.every((opt, i) => {
+                  if (currentOptions[i] === null) {
+                    return typeof opt === 'string' && opt.toLowerCase() === val.toLowerCase();
+                  }
+                  return opt === currentOptions[i];
+                });
+              });
+
+              if (!matchingVariant || !matchingVariant.available) {
+                item.classList.add("is-disabled");
+              } else {
+                item.classList.remove("is-disabled");
+                anyAvailable = true;
+                if (!firstAvailableItem) firstAvailableItem = item;
+              }
+            } else {
+              item.classList.remove("is-disabled");
+            }
+          });
+
+          // Check if Base variant is available for current size/color
+          const baseVariant = this.productData.variants.find(v => {
+            return v.options.every((opt, i) => {
+              if (currentOptions[i] === null) {
+                return typeof opt === 'string' && (opt.toLowerCase() === "base" || opt.toLowerCase() === "blank" || opt === "-");
+              }
+              return opt === currentOptions[i];
+            });
+          });
+
+          const baseIsAvailable = baseVariant && baseVariant.available;
+
+          // If base is NOT available, and user hasn't selected a logo, we should auto-select an available best-selling variant
+          const hasLogo = this.logoInput && this.logoInput.value.trim() !== "";
+          if (!baseIsAvailable && !hasLogo && firstAvailableItem) {
+            firstAvailableItem.click(); // Auto-select best-selling to prevent confusion
+          }
+
+          // Check the fully assembled currently selected variant
+          const fullCurrentOptions = this.productData.options.map((optName) => {
+            let uiValue = "";
+            const select = container.querySelector(`select[name="options[${optName}]"]`) || container.querySelector(`select[name^="${optName}"]`);
+            if (select) {
+              uiValue = select.value;
+            } else {
+              const checkedInput = container.querySelector(`input[name="options[${optName}]"]:checked`) || container.querySelector(`input[name^="${optName}"]:checked`) || container.querySelector(`input[data-option-name="${optName}"]:checked`);
+              if (checkedInput) uiValue = checkedInput.value;
+            }
+            return uiValue;
+          });
+
+          const currentVariant = this.productData.variants.find(v => {
+            return v.options.every((opt, i) => opt === fullCurrentOptions[i]);
+          });
+
+          const isCurrentAvailable = currentVariant && currentVariant.available;
+
+          // Hide Buy It Now button with animation natively
+          const customBuyNowBtns = document.querySelectorAll('.custom-buy-now-btn');
+          customBuyNowBtns.forEach(btn => {
+            if (!isCurrentAvailable) {
+              btn.classList.add('is-hidden-animated');
+              btn.disabled = true;
+            } else {
+              btn.classList.remove('is-hidden-animated');
+              btn.disabled = false;
+            }
+          });
+        }
+      }
 
       closeLogoDropdown() {
         if (!this.logoItems) return;

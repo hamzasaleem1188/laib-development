@@ -1409,3 +1409,44 @@
     min-height: 5.6rem !important;
   }
 }
+
+/* Out of Stock visual indicators for customizer */
+.logo-item.is-disabled,
+.personalization-dropdown-content-inner .item.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  position: relative;
+  filter: grayscale(100%);
+}
+
+.logo-item.is-disabled::after,
+.personalization-dropdown-content-inner .item.is-disabled::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  width: 80%;
+  height: 2px;
+  background-color: #ff0000;
+  transform: rotate(-45deg);
+  z-index: 10;
+  opacity: 0.7;
+}
+
+/* Buy it now button hide animation */
+.custom-buy-now-btn {
+  transition: all 0.3s ease-in-out !important;
+  overflow: hidden;
+}
+
+.custom-buy-now-btn.is-hidden-animated {
+  opacity: 0;
+  visibility: hidden;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-width: 0 !important;
+}

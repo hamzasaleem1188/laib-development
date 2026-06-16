@@ -259,7 +259,14 @@
           </button>
           {%- if show_dynamic_checkout -%}
             {%- if product.tags contains 'custom_pdp' -%}
-              <button type="button" class="shopify-payment-button__button shopify-payment-button__button--unbranded custom-buy-now-btn" style="display: block; width: 100%; margin-top: 1rem;"
+              <style>
+                .custom-buy-now-btn[disabled] {
+                  opacity: 0.5;
+                  cursor: not-allowed;
+                  pointer-events: none;
+                }
+              </style>
+              <button type="button" class="shopify-payment-button__button shopify-payment-button__button--unbranded custom-buy-now-btn" style="display: block; width: 100%; margin-top: 1rem; transition: opacity 0.2s;"
                 {% if product.selected_or_first_available_variant.available == false
                   or quantity_rule_soldout
                   or product.selected_or_first_available_variant == null
