@@ -292,6 +292,7 @@
     @media screen and (min-width: 1025px) {
       #PreviewName {
         font-size: 4.5rem;
+        margin-bottom: 4rem;
       }
       #PreviewName[data-char-count='5'],
       #PreviewName[data-char-count='6'] {
@@ -318,6 +319,7 @@
     @media screen and (min-width: 481px) and (max-width: 1024px) {
       #PreviewName {
         font-size: 3.3rem;
+        margin-bottom: 2rem;
       }
       #PreviewName[data-char-count='5'] {
         font-size: 3rem;
@@ -373,6 +375,11 @@
       #PreviewName[data-char-count='10'] {
         font-size: 2.3rem;
       }
+    }
+    body.search-is-open .slider-nav-btn,
+    body:has(details[open] > .search-modal) .slider-nav-btn {
+      display: none !important;
+      transition: none !important;
     }
   </style>
 
@@ -450,7 +457,7 @@
           <div style="position: absolute; top: 20%; left: 0; right: 0; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
             <span
               id="PreviewName"
-              style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; letter-spacing: 0.5px; line-height: 1; margin-top: 0.5rem; margin-bottom: 2rem;"
+              style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; letter-spacing: 0.5px; line-height: 1; margin-top: 0.5rem;"
             ></span>
             <span
               id="PreviewNumber"
@@ -613,6 +620,20 @@
       
       // Auto-init to 0
       window.goToSlide(0);
+
+      // Hide nav arrows when search modal is open
+      var searchDetails = document.querySelectorAll('details-modal details');
+      if (searchDetails.length) {
+        var searchObserver = new MutationObserver(function() {
+          var isOpen = Array.prototype.some.call(searchDetails, function(d) {
+            return d.hasAttribute('open');
+          });
+          document.body.classList.toggle('search-is-open', isOpen);
+        });
+        searchDetails.forEach(function(d) {
+          searchObserver.observe(d, { attributes: true, attributeFilter: ['open'] });
+        });
+      }
     });
   </script>
 </div>

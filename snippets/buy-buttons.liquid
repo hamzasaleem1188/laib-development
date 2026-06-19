@@ -39,7 +39,7 @@
 
       # Fallback to default gift box product handle
       if gift_product_obj == blank
-        assign default_gift_handle = 'gift-box'
+        assign default_gift_handle = 'laib-limited-gift-box'
         assign gift_product_obj = all_products[default_gift_handle]
       endif
 
@@ -59,6 +59,11 @@
       data-giftbox-price="{{ gift_product_obj.price }}"
       data-giftbox-price-text="{{ gift_product_obj.price | money }}"
     >
+      <style>
+        html body .giftbox-checkbox-wrapper {
+          display: flex !important;
+        }
+      </style>
       <div class="product-form__error-message-wrapper" role="alert" hidden>
         <svg
           aria-hidden="true"
@@ -86,10 +91,7 @@
           type="hidden"
           name="id"
           value="{{ initial_variant.id }}"
-          {% if initial_variant.available == false
-            or quantity_rule_soldout
-            or initial_variant == null
-          %}
+          {% if initial_variant.available == false or quantity_rule_soldout or initial_variant == null %}
             disabled
           {% endif %}
           class="product-variant-id"
@@ -239,10 +241,7 @@
             type="submit"
             name="add"
             class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
-            {% if initial_variant.available == false
-              or quantity_rule_soldout
-              or initial_variant == null
-            %}
+            {% if initial_variant.available == false or quantity_rule_soldout or initial_variant == null %}
               disabled
             {% endif %}
           >
@@ -259,14 +258,10 @@
           </button>
           {%- if show_dynamic_checkout -%}
             {%- if product.tags contains 'custom_pdp' -%}
-              <style>
-                .custom-buy-now-btn[disabled] {
-                  opacity: 0.5;
-                  cursor: not-allowed;
-                  pointer-events: none;
-                }
-              </style>
-              <button type="button" class="shopify-payment-button__button shopify-payment-button__button--unbranded custom-buy-now-btn" style="display: block; width: 100%; margin-top: 1rem; transition: opacity 0.2s;"
+              <button
+                type="button"
+                class="button button--primary custom-buy-now-btn custom-buy-now-btn-gold"
+                style="transition: opacity 0.2s;"
                 {% if product.selected_or_first_available_variant.available == false
                   or quantity_rule_soldout
                   or product.selected_or_first_available_variant == null

@@ -196,7 +196,7 @@
     }
 
     @media screen and (min-width: 1025px) {
-      #PreviewName { font-size: 4.5rem; }
+      #PreviewName { font-size: 4.5rem; margin-bottom: 4rem; }
       #PreviewName[data-char-count='5'], #PreviewName[data-char-count='6'] { font-size: 5rem; }
       #PreviewName[data-char-count='7'], #PreviewName[data-char-count='8'] { font-size: 4.5rem; }
       #PreviewName[data-char-count='9'], #PreviewName[data-char-count='10'] { font-size: 4rem; }
@@ -204,7 +204,7 @@
       #PreviewNumber[data-char-count='2'] { font-size: 17rem; }
     }
     @media screen and (min-width: 481px) and (max-width: 1024px) {
-      #PreviewName { font-size: 3.3rem; }
+      #PreviewName { font-size: 3.3rem; margin-bottom: 2rem; }
       #PreviewName[data-char-count='5'] { font-size: 3rem; }
       #PreviewName[data-char-count='6'] { font-size: 3rem; }
       #PreviewName[data-char-count='7'] { font-size: 2.8rem; }
@@ -216,7 +216,7 @@
     @media screen and (max-width: 480px) {
       #PreviewNumber { font-size: 10rem; }
       #PreviewNumber[data-char-count='2'] { font-size: 9rem; }
-      #PreviewName { font-size: 3.5rem; }
+      #PreviewName { font-size: 3.5rem; margin-bottom: 2rem; }
       #PreviewName[data-char-count='4'] { font-size: 3.5rem; }
       #PreviewName[data-char-count='5'] { font-size: 3.2rem; }
       #PreviewName[data-char-count='6'] { font-size: 3rem; }
@@ -320,7 +320,7 @@
           <div style="position: absolute; top: 18%; left: 0; right: 0; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
             <span
               id="PreviewName"
-              style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; letter-spacing: 0.5px; line-height: 1; margin-top: 0.5rem; margin-bottom: 2rem;"
+              style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; letter-spacing: 0.5px; line-height: 1; margin-top: 0.5rem;"
             ></span>
             <span
               id="PreviewNumber"
@@ -366,8 +366,8 @@
   <!-- Front/Back toggle (below the image) -->
   <div class="custom-media-controls-wrap">
     <div class="custom-media-controls" id="custom-media-controls-container">
-      <button id="btn-front" class="toggle-btn" type="button" onclick="switchMedia('front')">Front</button>
-      <button id="btn-back" class="toggle-btn" type="button" onclick="switchMedia('back')">Back</button>
+      <button id="btn-front" class="toggle-btn" type="button" onclick="window.customGalleryUserInteracted = true; switchMedia('front')">Front</button>
+      <button id="btn-back" class="toggle-btn" type="button" onclick="window.customGalleryUserInteracted = true; switchMedia('back')">Back</button>
     </div>
   </div>
 
@@ -405,7 +405,13 @@
     window.customGalleryFrontIndex = {{ front_index }};
     window.customGalleryBackIndex = {{ back_index }};
     window.customGalleryTotalSlides = {{ product.media.size }};
-    window.customGalleryCurrentIndex = {{ front_index }};
+    {%- if product.tags contains 'mixed_inventory' -%}
+    window.customGalleryDefaultIndex = 0;
+    {%- else -%}
+    window.customGalleryDefaultIndex = {{ front_index }};
+    {%- endif -%}
+    window.customGalleryCurrentIndex = window.customGalleryDefaultIndex;
+    window.customGalleryUserInteracted = false;
 
     window.goToSlide = function(index) {
       if (index < 0 || index >= window.customGalleryTotalSlides) return;
@@ -466,6 +472,7 @@
     };
 
     window.switchMedia = function(type) {
+      if (!window.customGalleryUserInteracted) return;
       if (type === 'front') {
         window.goToSlide(window.customGalleryFrontIndex);
       } else if (type === 'back') {
@@ -487,7 +494,21 @@
         });
       }
 
-      goToSlide(window.customGalleryFrontIndex);
+      goToSlide(window.customGalleryDefaultIndex);
+
+      // Toggle body class when search modal opens/closes so CSS can lower arrow z-index
+      var searchDetails = document.querySelectorAll('details-modal details');
+      if (searchDetails.length) {
+        var searchObserver = new MutationObserver(function() {
+          var isOpen = Array.prototype.some.call(searchDetails, function(d) {
+            return d.hasAttribute('open');
+          });
+          document.body.classList.toggle('search-is-open', isOpen);
+        });
+        searchDetails.forEach(function(d) {
+          searchObserver.observe(d, { attributes: true, attributeFilter: ['open'] });
+        });
+      }
     });
   </script>
 </div>

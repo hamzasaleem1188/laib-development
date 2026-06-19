@@ -60,6 +60,42 @@
         .custom-price-breakdown {
           font-size: 1.2rem;
         }
+
+        /* ── Button layout on mobile: full-width vertical stack ─────── */
+        .product-form__buttons {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 0.8rem;
+          max-width: 100%;
+        }
+
+        /* Every button (Add to cart, Add to wishlist, Buy it now) spans
+           the full width and stacks vertically. */
+        .product-form__buttons > * {
+          grid-column: 1 / -1;
+          width: 100%;
+          max-width: 100%;
+          margin: 0;
+          box-sizing: border-box;
+        }
+
+        .product-form__buttons .product-form__submit {
+          min-height: 4.8rem;
+          font-size: 1.35rem;
+        }
+
+        .product-form__buttons .custom-buy-now-btn {
+          min-height: 4.4rem !important;
+          font-size: 1.3rem;
+          margin-top: 0 !important;
+          padding-top: 1rem;
+          padding-bottom: 1rem;
+        }
+
+        /* Push page content above the fixed wishlist sticky widget */
+        .product__info-container {
+          padding-bottom: 6rem;
+        }
       }
       /* Prevent overlapping by ensuring price container has space for badges */
       .price.price--show-badge {
@@ -182,14 +218,12 @@
                 assign only_custom_inputs = true
               endunless
             endif
+            assign is_mixed_inventory = false
+            if product.tags contains 'mixed_inventory'
+              assign is_mixed_inventory = true
+            endif
           -%}
-          {%- if product.tags contains 'custom-inputs' or product.tags contains 'city_input' -%}
-            <custom-shirt-customizer
-              class="customization-section"
-              style="display: block;"
-              data-only-custom-inputs="{{ only_custom_inputs }}"
-            >
-          {%- endif -%}
+          
           {%- for block in section.blocks -%}
             {%- case block.type -%}
               {%- when '@app' -%}
@@ -576,6 +610,18 @@
                 {%- endcomment -%}
               {%- when 'custom_name_num' -%}
                 {%- if product.tags contains 'custom-inputs' or product.tags contains 'city_input' -%}
+                  <custom-shirt-customizer
+                    class="customization-section"
+                    data-nationality-id="{{ product.metafields.custom.nationality_addon.value.first_available_variant.id }}"
+                    data-nationality-price="{{ product.metafields.custom.nationality_addon.value.first_available_variant.price }}"
+                    data-name-id="{{ product.metafields.custom.name_number_addon.value.first_available_variant.id }}"
+                    data-name-price="{{ product.metafields.custom.name_number_addon.value.first_available_variant.price }}"
+                    data-logo-id="{{ product.metafields.custom.logo_addon.value.first_available_variant.id }}"
+                    data-logo-price="{{ product.metafields.custom.logo_addon.value.first_available_variant.price }}"
+                    style="display: block;"
+                    data-only-custom-inputs="{{ only_custom_inputs }}"
+                    data-mixed-inventory="{{ is_mixed_inventory }}"
+                  >
                   <div
                     class="product-form__input customizer-accordion-container"
                     style="margin-bottom: 2rem; border: 1px solid rgba(var(--color-foreground), 0.15); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03);"
@@ -714,7 +760,7 @@
                             class="field__input"
                             type="text"
                             id="CustomNationalityInput-{{ section.id }}"
-                            name="properties[Country]"
+                            name="properties[Nationality/City]"
                             placeholder="Enter nationality or city"
                             data-logo-text-url-input
                             form="{{ product_form_id }}"
@@ -894,6 +940,7 @@
                       transform: rotate(180deg);
                     }
                   </style>
+                  </custom-shirt-customizer>
                 {%- endif -%}
 
               {%- when 'buy_buttons' -%}
@@ -1093,9 +1140,6 @@
                 {% render 'icon-with-text', block: block %}
             {%- endcase -%}
           {%- endfor -%}
-          {%- if product.tags contains 'custom-inputs' or product.tags contains 'city_input' -%}
-            </custom-shirt-customizer>
-          {%- endif -%}
           <a href="{{ product.url }}" class="link product__view-details animate-arrow">
             {{ 'products.product.view_full_details' | t }}
             {% render 'icon-arrow' %}
@@ -1103,6 +1147,76 @@
         </section>
       </div>
     </div>
+
+    <script>
+      (function () {
+        var KEYS = ['wishlist', 'swym', 'growave'];
+
+        function isWishlistEl(el) {
+          var own = ((el.className || '') + ' ' + (el.id || '')).toLowerCase();
+          for (var i = 0; i < KEYS.length; i++) {
+            if (own.indexOf(KEYS[i]) !== -1) return true;
+            // Check any descendant with matching class/id
+            if (el.querySelector && el.querySelector('[class*="' + KEYS[i] + '"],[id*="' + KEYS[i] + '"]')) return true;
+          }
+          var attrs = Array.from(el.attributes || []);
+          for (var a = 0; a < attrs.length; a++) {
+            var s = (attrs[a].name + ' ' + attrs[a].value).toLowerCase();
+            for (var i = 0; i < KEYS.length; i++) {
+              if (s.indexOf(KEYS[i]) !== -1) return true;
+            }
+          }
+          return false;
+        }
+
+        function fixWishlistPosition() {
+          var infoSection = document.querySelector('#ProductInfo-{{ section.id }}');
+          if (!infoSection) return;
+
+          var buyWrapper = null;
+          Array.from(infoSection.children).forEach(function (child) {
+            if (child.querySelector && child.querySelector('product-form, .product-form')) {
+              buyWrapper = child;
+            }
+          });
+          if (!buyWrapper) return;
+
+          var children = Array.from(infoSection.children);
+          var buyIdx = children.indexOf(buyWrapper);
+
+          var toMove = [];
+          children.forEach(function (child, i) {
+            if (i >= buyIdx) return;
+            if (isWishlistEl(child)) toMove.push(child);
+          });
+
+          toMove.forEach(function (el) {
+            buyWrapper.insertAdjacentElement('afterend', el);
+          });
+        }
+
+        function init() {
+          fixWishlistPosition();
+          setTimeout(fixWishlistPosition, 800);
+          setTimeout(fixWishlistPosition, 2500);
+          setTimeout(fixWishlistPosition, 5000);
+
+          // Watch for elements injected after initial render
+          var target = document.querySelector('#ProductInfo-{{ section.id }}');
+          if (target && window.MutationObserver) {
+            var observer = new MutationObserver(function () { fixWishlistPosition(); });
+            observer.observe(target, { childList: true });
+            setTimeout(function () { observer.disconnect(); }, 15000);
+          }
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
+      })();
+    </script>
 
     {% render 'product-media-modal', variant_images: variant_images %}
 
@@ -1147,6 +1261,33 @@
 
     <script type="application/ld+json">
       {{ product | structured_data }}
+    </script>
+
+    <script>
+      // Shopify CDN caches the initial HTML, so pages can show stale "Sold Out"
+      // after stock is restocked. Force product-info.js to re-fetch section HTML
+      // (section renders are never CDN-cached) by re-dispatching a change event
+      // on the already-selected variant input. This refreshes button state with
+      // live inventory data.
+      (function () {
+        function refreshVariantAvailability() {
+          var variantSelects = document.querySelector('variant-selects');
+          if (!variantSelects) return;
+          var checkedInput =
+            variantSelects.querySelector('input[type="radio"]:checked') ||
+            variantSelects.querySelector('select');
+          if (!checkedInput) return;
+          checkedInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(refreshVariantAvailability, 1000);
+          });
+        } else {
+          setTimeout(refreshVariantAvailability, 1000);
+        }
+      })();
     </script>
   </div>
 </product-info>

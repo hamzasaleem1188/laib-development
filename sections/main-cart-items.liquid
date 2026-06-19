@@ -77,9 +77,49 @@
                 </tr>
               </thead>
 
+              {%- assign _visible_item_count = 0 -%}
+              {%- for _ci in cart.items -%}
+                {%- unless _ci.product.tags contains 'hidden_addon' -%}
+                  {%- assign _visible_item_count = _visible_item_count | plus: 1 -%}
+                {%- endunless -%}
+              {%- endfor -%}
               <tbody>
                 {%- for item in cart.items -%}
-                  <tr class="cart-item" id="CartItem-{{ item.index | plus: 1 }}">
+                  {%- if item.product.tags contains 'hidden_addon' -%}{%- continue -%}{%- endif -%}
+                  {%- assign is_giftbox = false -%}
+                  {%- assign item_bundle_id = '' -%}
+                  {%- for prop in item.properties -%}
+                    {%- if prop.first == '_bundle_id' -%}{%- assign item_bundle_id = prop.last -%}{%- endif -%}
+                    {%- if prop.first == '_is_giftbox' -%}{%- assign is_giftbox = true -%}{%- endif -%}
+                  {%- endfor -%}
+                  {%- assign bundle_addon_total = 0 -%}
+                  {%- assign bundle_addon_unit_total = 0 -%}
+                  {%- if is_giftbox == false -%}
+                    {%- if _visible_item_count == 1 -%}
+                      {%- for addon in cart.items -%}
+                        {%- if addon.product.tags contains 'hidden_addon' -%}
+                          {%- assign bundle_addon_total = bundle_addon_total | plus: addon.original_line_price -%}
+                          {%- assign bundle_addon_unit_total = bundle_addon_unit_total | plus: addon.original_price -%}
+                        {%- endif -%}
+                      {%- endfor -%}
+                    {%- elsif item_bundle_id != '' -%}
+                    {%- for addon in cart.items -%}
+                      {%- if addon.product.tags contains 'hidden_addon' -%}
+                        {%- for ap in addon.properties -%}
+                          {%- if ap.first == '_bundle_id' and ap.last == item_bundle_id -%}
+                            {%- assign bundle_addon_total = bundle_addon_total | plus: addon.original_line_price -%}
+                            {%- assign bundle_addon_unit_total = bundle_addon_unit_total | plus: addon.original_price -%}
+                          {%- endif -%}
+                        {%- endfor -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                  {%- endif -%}
+                  {%- endif -%}
+                  {%- assign combined_line_price = item.original_line_price | plus: bundle_addon_total -%}
+                  {%- assign combined_final_line_price = item.final_line_price | plus: bundle_addon_total -%}
+                  {%- assign combined_original_price = item.original_price | plus: bundle_addon_unit_total -%}
+                  {%- assign combined_final_price = item.final_price | plus: bundle_addon_unit_total -%}
+                  <tr class="cart-item" id="CartItem-{{ item.index | plus: 1 }}" data-bundle-id="{{ item_bundle_id }}" data-key="{{ item.key }}">
                     <td class="cart-item__media">
                       {% if item.image %}
                         {% comment %} Leave empty space due to a:empty CSS display: none rule {% endcomment %}
@@ -104,27 +144,26 @@
 
                       <a href="{{ item.url }}" class="cart-item__name h4 break">{{ item.product.title | escape }}</a>
 
-                      {%- if item.original_price != item.final_price -%}
+                      {%- if combined_original_price != combined_final_price -%}
                         <div class="cart-item__discounted-prices">
                           <span class="visually-hidden">
                             {{ 'products.product.price.regular_price' | t }}
                           </span>
                           <s class="cart-item__old-price product-option">
-                            {{- item.original_price | money -}}
+                            {{- combined_original_price | money -}}
                           </s>
                           <span class="visually-hidden">
                             {{ 'products.product.price.sale_price' | t }}
                           </span>
                           <strong class="cart-item__final-price product-option">
-                            {{ item.final_price | money }}
+                            {{ combined_final_price | money }}
                           </strong>
                         </div>
                       {%- else -%}
                         <div class="product-option">
-                          {{ item.original_price | money }}
+                          {{ combined_original_price | money }}
                         </div>
                       {%- endif -%}
-
                       {%- if item.product.has_only_default_variant == false
                         or item.properties.size != 0
                         or item.selling_plan_allocation != null
@@ -180,26 +219,26 @@
                     <td class="cart-item__totals right medium-hide large-up-hide">
                       {%- render 'loading-spinner' -%}
                       <div class="cart-item__price-wrapper">
-                        {%- if item.original_line_price != item.final_line_price -%}
+                        {%- if combined_line_price != combined_final_line_price -%}
                           <dl class="cart-item__discounted-prices">
                             <dt class="visually-hidden">
                               {{ 'products.product.price.regular_price' | t }}
                             </dt>
                             <dd>
                               <s class="cart-item__old-price price price--end">
-                                {{ item.original_line_price | money }}
+                                {{ combined_line_price | money }}
                               </s>
                             </dd>
                             <dt class="visually-hidden">
                               {{ 'products.product.price.sale_price' | t }}
                             </dt>
                             <dd class="price price--end">
-                              {{ item.final_line_price | money }}
+                              {{ combined_final_line_price | money }}
                             </dd>
                           </dl>
                         {%- else -%}
                           <span class="price price--end">
-                            {{ item.original_line_price | money }}
+                            {{ combined_line_price | money }}
                           </span>
                         {%- endif -%}
 
@@ -283,6 +322,8 @@
                           <cart-remove-button
                             id="Remove-{{ item.index | plus: 1 }}"
                             data-index="{{ item.index | plus: 1 }}"
+                            data-bundle-id="{{ item_bundle_id }}"
+                            data-key="{{ item.key }}"
                           >
                             <a
                               href="{{ item.url_to_remove }}"
@@ -396,26 +437,26 @@
                     <td class="cart-item__totals right small-hide">
                       {%- render 'loading-spinner' -%}
                       <div class="cart-item__price-wrapper">
-                        {%- if item.original_line_price != item.final_line_price -%}
+                        {%- if combined_line_price != combined_final_line_price -%}
                           <dl class="cart-item__discounted-prices">
                             <dt class="visually-hidden">
                               {{ 'products.product.price.regular_price' | t }}
                             </dt>
                             <dd>
                               <s class="cart-item__old-price price price--end">
-                                {{ item.original_line_price | money }}
+                                {{ combined_line_price | money }}
                               </s>
                             </dd>
                             <dt class="visually-hidden">
                               {{ 'products.product.price.sale_price' | t }}
                             </dt>
                             <dd class="price price--end">
-                              {{ item.final_line_price | money }}
+                              {{ combined_final_line_price | money }}
                             </dd>
                           </dl>
                         {%- else -%}
                           <span class="price price--end">
-                            {{ item.original_line_price | money }}
+                            {{ combined_line_price | money }}
                           </span>
                         {%- endif -%}
 
@@ -439,6 +480,23 @@
                 {%- endfor -%}
               </tbody>
             </table>
+            {%- assign _addon_lines_json = '' -%}
+            {%- for item in cart.items -%}
+              {%- if item.product.tags contains 'hidden_addon' -%}
+                {%- assign _ibid = '' -%}
+                {%- for prop in item.properties -%}
+                  {%- if prop.first == '_bundle_id' -%}{%- assign _ibid = prop.last -%}{%- endif -%}
+                {%- endfor -%}
+                {%- assign _iline = item.index | plus: 1 -%}
+                {%- capture _entry %}{"line":{{ _iline }},"bundleId":{{ _ibid | json }},"key":{{ item.key | json }}}{% endcapture -%}
+                {%- if _addon_lines_json == '' -%}
+                  {%- assign _addon_lines_json = _entry -%}
+                {%- else -%}
+                  {%- assign _addon_lines_json = _addon_lines_json | append: ',' | append: _entry -%}
+                {%- endif -%}
+              {%- endif -%}
+            {%- endfor -%}
+            <script type="application/json" id="bundle-addon-lines">[{{ _addon_lines_json }}]</script>
           {%- endif -%}
         </div>
       </div>

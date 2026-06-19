@@ -281,14 +281,28 @@
           else
             render 'icon-cart'
           endif
+
+          assign main_item_count = 0
+          assign seen_bundles = ''
+          for item in cart.items
+            if item.properties._bundle_id != blank
+              assign bundle_id_str = item.properties._bundle_id | append: ','
+              unless seen_bundles contains bundle_id_str
+                assign main_item_count = main_item_count | plus: item.quantity
+                assign seen_bundles = seen_bundles | append: bundle_id_str
+              endunless
+            else
+              assign main_item_count = main_item_count | plus: item.quantity
+            endif
+          endfor
         -%}
         <span class="visually-hidden">{{ 'templates.cart.cart' | t }}</span>
-        {%- if cart != empty -%}
+        {%- if cart != empty and main_item_count > 0 -%}
           <div class="cart-count-bubble">
-            {%- if cart.item_count < 100 -%}
-              <span aria-hidden="true">{{ cart.item_count }}</span>
+            {%- if main_item_count < 100 -%}
+              <span aria-hidden="true">{{ main_item_count }}</span>
             {%- endif -%}
-            <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: cart.item_count }}</span>
+            <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: main_item_count }}</span>
           </div>
         {%- endif -%}
       </a>

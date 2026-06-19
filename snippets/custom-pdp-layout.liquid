@@ -50,7 +50,7 @@
   {%- endif -%}
 {%- endif -%}
 {%- unless has_giftbox -%}
-  {%- assign gift_product_obj = all_products['gift-box'] -%}
+  {%- assign gift_product_obj = all_products['laib-limited-gift-box'] -%}
   {%- if gift_product_obj != blank and gift_product_obj.handle != product.handle and gift_product_obj.available -%}
     {%- assign has_giftbox = true -%}
   {%- endif -%}
@@ -89,6 +89,7 @@
     {%- endif -%}
     <custom-shirt-customizer
       class="custom-pdp-customizer"
+
       {% if mixed_inventory %}
         data-mixed-inventory="true"
       {% endif %}
@@ -286,7 +287,7 @@
                     <input
                       class="field__input custom-pdp-input"
                       type="text"
-                      name="properties[Country]"
+                      name="properties[Nationality/City]"
                       placeholder="e.g. Stockholm"
                       data-logo-text-url-input
                       form="{{ product_form_id }}"
@@ -657,3 +658,137 @@
     </custom-shirt-customizer>
   </div>
 </div>
+
+<script>
+  (function () {
+    var isMixedInventory = {% if mixed_inventory %}true{% else %}false{% endif %};
+
+    // Dynamically adjust z-index and bottom position of the wishlist app's fixed
+    // floating drawer button so it appears exactly above our sticky bar.
+    function fixWishlistFloatingBtn() {
+      var candidates = document.querySelectorAll(
+        '[class*="wishlist"],[id*="wishlist"],[class*="swym"],[id*="swym"],[class*="growave"],[id*="growave"]'
+      );
+
+      var stickyBar = document.querySelector('.custom-pdp-sticky-bottom');
+      var offsetPx = 20; // Default gap if no sticky bar
+
+      if (stickyBar && window.innerWidth < 990) {
+        var stickyRect = stickyBar.getBoundingClientRect();
+        if (stickyRect.height > 0 && window.getComputedStyle(stickyBar).position === 'fixed') {
+          // Add 15px extra spacing above the sticky bar's exact height
+          offsetPx = stickyRect.height + 15;
+        }
+      }
+
+      candidates.forEach(function (el) {
+        // Skip our own sticky bar and any inline wishlist button inside the
+        // product info column — we only want the app's floating drawer button.
+        if (el.closest('.custom-pdp-sticky-bottom')) return;
+        if (el.closest('.custom-pdp-right')) return;
+        var pos = window.getComputedStyle(el).position;
+        if (pos === 'fixed' || pos === 'sticky') {
+          el.style.setProperty('z-index', '10002', 'important');
+          if (window.innerWidth < 990) {
+            el.style.setProperty('bottom', offsetPx + 'px', 'important');
+            el.style.setProperty('top', '', 'important');
+            el.style.setProperty('transition', 'bottom 0.2s ease', 'important');
+          } else if (isMixedInventory) {
+            // On mixed-inventory desktop the app positions this button off-screen.
+            // Anchor it by top so it stays visible (verified value: top 95%).
+            el.style.setProperty('top', '95%', 'important');
+            el.style.setProperty('bottom', 'auto', 'important');
+          } else {
+            // Unset dynamic bottom on desktop
+            el.style.bottom = '';
+          }
+        }
+      });
+    }
+
+    // Run after DOM ready and again after app scripts load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fixWishlistFloatingBtn);
+    } else {
+      fixWishlistFloatingBtn();
+    }
+    setTimeout(fixWishlistFloatingBtn, 800);
+    setTimeout(fixWishlistFloatingBtn, 2500);
+
+    // Watch the sticky bar for height changes (e.g. extra price loading)
+    // so the floating button perfectly tracks its height!
+    window.addEventListener('load', function () {
+      var stickyBarEl = document.querySelector('.custom-pdp-sticky-bottom');
+      if (stickyBarEl && window.ResizeObserver) {
+        var ro = new ResizeObserver(function () {
+          fixWishlistFloatingBtn();
+        });
+        ro.observe(stickyBarEl);
+      }
+    });
+  })();
+</script>
+
+{% if mixed_inventory %}
+<script>
+  (function () {
+    function getBtn() { return document.querySelector('.nm-wishlist-open-list-button'); }
+    function hideBtn() { var b = getBtn(); if (b && b.style.display !== 'none') b.style.setProperty('display', 'none', 'important'); }
+    function showBtn() { var b = getBtn(); if (b && b.style.display === 'none') b.style.removeProperty('display'); }
+
+    // Stateless check: is a wishlist panel currently covering a large part of the screen?
+    // Computes the element's visible area inside the viewport — a closed/off-screen
+    // drawer has ~0 visible area, so this self-corrects no matter how it opens/closes.
+    function isWishlistOpen() {
+      var btn = getBtn();
+      var vw = window.innerWidth, vh = window.innerHeight;
+      var threshold = vw * vh * 0.2; // panel must cover >20% of the viewport
+      var all = document.querySelectorAll('[class*="nm-wishlist"],[id*="nm-wishlist"]');
+      for (var i = 0; i < all.length; i++) {
+        var el = all[i];
+        if (btn && (el === btn || btn.contains(el) || el.contains(btn))) continue;
+        var s = window.getComputedStyle(el);
+        if (s.display === 'none' || s.visibility === 'hidden' || parseFloat(s.opacity) < 0.1) continue;
+        var r = el.getBoundingClientRect();
+        // Area of the element that is actually inside the viewport
+        var ix = Math.max(0, Math.min(r.right, vw) - Math.max(r.left, 0));
+        var iy = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0));
+        if (ix * iy > threshold) return true;
+      }
+      return false;
+    }
+
+    // We only hide AFTER the user clicks the wishlist button (armed = true).
+    // This prevents false-positive hiding on load/desktop when a wishlist panel
+    // may persistently occupy screen area. Once the drawer closes, we re-show
+    // and disarm. Desktop always stays visible.
+    var armed = false;
+
+    function tick() {
+      if (window.innerWidth >= 990) { armed = false; showBtn(); return; }
+      if (!armed) return;
+      if (isWishlistOpen()) {
+        hideBtn();
+      } else {
+        showBtn();
+        armed = false;
+      }
+    }
+
+    window.addEventListener('load', function () {
+      document.addEventListener('click', function (e) {
+        // Only a genuine user tap arms hiding — ignore programmatic .click()
+        // that the wishlist app fires during its own initialization.
+        if (!e.isTrusted) return;
+        if (!e.target.closest('.nm-wishlist-open-list-button')) return;
+        if (window.innerWidth >= 990) return;
+        armed = true;
+        hideBtn();
+      }, true);
+
+      // Self-correcting poll detects when the opened drawer is closed
+      setInterval(tick, 200);
+    });
+  })();
+</script>
+{% endif %}

@@ -55,6 +55,21 @@ if (!customElements.get("product-form")) {
         if (giftboxId) {
           this.fetchGiftboxPrice(giftboxId);
         }
+
+        // Preserve giftbox checkbox state across section re-renders (variant changes
+        // cause product-info.js to replace section HTML, which resets the checkbox).
+        const sectionId = this.getAttribute("data-section-id");
+        const checkboxEl = this.querySelector('input[name="giftbox_confirm"]');
+        if (checkboxEl && sectionId) {
+          if (!window._laibGiftboxChecked) window._laibGiftboxChecked = {};
+          if (window._laibGiftboxChecked[sectionId]) {
+            checkboxEl.checked = true;
+          }
+          checkboxEl.addEventListener("change", () => {
+            if (!window._laibGiftboxChecked) window._laibGiftboxChecked = {};
+            window._laibGiftboxChecked[sectionId] = checkboxEl.checked;
+          });
+        }
       }
 
       fetchGiftboxPrice(giftboxId) {
@@ -75,6 +90,11 @@ if (!customElements.get("product-form")) {
           } else {
             priceSpan.textContent = `+${data.price_formatted}`;
             priceSpan.style.display = "inline-block";
+            // Sync to freshest available variant (Liquid-cached ID may be stale)
+            const freshVariant = data.variants?.find(v => v.available);
+            if (freshVariant) {
+              this.setAttribute("data-giftbox-variant-id", String(freshVariant.id));
+            }
           }
         };
 
@@ -143,7 +163,9 @@ if (!customElements.get("product-form")) {
         if (customizer && customizer.style.display !== "none") {
           const natId = parseInt(customizer.getAttribute("data-nationality-id"));
           const natInput = customizer.querySelector("[data-logo-text-url-input]");
-          if (!isNaN(natId) && natInput && natInput.value.trim() !== "" && !customizer.isBestSellingVariant) {
+          const hasNatText = natInput && natInput.value.trim() !== "";
+          
+          if (!isNaN(natId) && hasNatText) {
             items.push({
               id: natId,
               quantity: quantity,
@@ -165,8 +187,8 @@ if (!customElements.get("product-form")) {
           }
 
           const logoId = parseInt(customizer.getAttribute("data-logo-id"));
-          const logoInput = customizer.querySelector("[data-logo-input]");
-          if (!isNaN(logoId) && logoInput && logoInput.value.trim() !== "" && !customizer.isBestSellingVariant) {
+          const extraLogoInput = customizer.querySelector("[data-logo-input]");
+          if (!isNaN(logoId) && extraLogoInput && extraLogoInput.value.trim() !== "" && !customizer.isBestSellingVariant) {
             items.push({
               id: logoId,
               quantity: quantity,
@@ -176,9 +198,11 @@ if (!customElements.get("product-form")) {
           }
         }
 
-        if (hasCustomization) {
-          mainProperties["_bundle_id"] = bundleId;
+        if (customizer && customizer.isBestSellingVariant) {
+          delete mainProperties["_Logo URL"];
         }
+
+        mainProperties["_bundle_id"] = bundleId;
 
         items.unshift({
           id: parseInt(mainVariantId),
@@ -194,7 +218,7 @@ if (!customElements.get("product-form")) {
 
         let giftboxAddedToRequest = false;
         if (isCheckboxChecked && hasGiftbox && giftboxVariantId) {
-          items.push({ id: parseInt(giftboxVariantId), quantity: 1 });
+          items.push({ id: parseInt(giftboxVariantId), quantity: 1, properties: { _is_giftbox: "true" } });
           giftboxAddedToRequest = true;
         }
 
@@ -678,6 +702,10 @@ if (!customElements.get("product-form")) {
       resetCheckbox() {
         const checkboxEl = this.querySelector('input[name="giftbox_confirm"]');
         if (checkboxEl) checkboxEl.checked = false;
+        const sectionId = this.getAttribute("data-section-id");
+        if (sectionId && window._laibGiftboxChecked) {
+          window._laibGiftboxChecked[sectionId] = false;
+        }
       }
 
       get variantIdInput() {
