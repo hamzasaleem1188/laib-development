@@ -1974,36 +1974,6 @@ if (!customElements.get("custom-shirt-customizer")) {
           let anyAvailable = false;
           let firstAvailableItem = null;
 
-          items.forEach((item) => {
-            const isBestSelling =
-              item.getAttribute("data-is-best-selling") === "true";
-            const val = item.getAttribute("data-value");
-
-            if (isBestSelling) {
-              const matchingVariant = this.productData.variants.find((v) => {
-                return v.options.every((opt, i) => {
-                  if (currentOptions[i] === null) {
-                    return (
-                      typeof opt === "string" &&
-                      opt.toLowerCase() === val.toLowerCase()
-                    );
-                  }
-                  return opt === currentOptions[i];
-                });
-              });
-
-              if (!matchingVariant || !matchingVariant.available) {
-                item.classList.add("is-disabled");
-              } else {
-                item.classList.remove("is-disabled");
-                anyAvailable = true;
-                if (!firstAvailableItem) firstAvailableItem = item;
-              }
-            } else {
-              item.classList.remove("is-disabled");
-            }
-          });
-
           // Check if Base variant is available for current size/color
           const baseVariant = this.productData.variants.find((v) => {
             return v.options.every((opt, i) => {
@@ -2020,6 +1990,50 @@ if (!customElements.get("custom-shirt-customizer")) {
           });
 
           const baseIsAvailable = baseVariant && baseVariant.available;
+
+          items.forEach((item) => {
+            const isBestSelling =
+              item.getAttribute("data-is-best-selling") === "true";
+            const val = item.getAttribute("data-value");
+
+            let isAvailable = false;
+
+            if (isBestSelling) {
+              const matchingVariant = this.productData.variants.find((v) => {
+                return v.options.every((opt, i) => {
+                  if (currentOptions[i] === null) {
+                    return (
+                      typeof opt === "string" &&
+                      opt.toLowerCase() === val.toLowerCase()
+                    );
+                  }
+                  return opt === currentOptions[i];
+                });
+              });
+
+              isAvailable = matchingVariant && matchingVariant.available;
+            } else {
+              isAvailable = baseIsAvailable;
+            }
+
+            // Append " - Unavailable" to the option label (like native variants)
+            // instead of drawing a strikethrough line over it.
+            const span = item.querySelector("span");
+            if (!isAvailable) {
+              if (span && !span.innerText.includes("Unavailable")) {
+                item.dataset.originalText = span.innerText;
+                span.innerText = `${span.innerText} - Unavailable`;
+              }
+            } else {
+              if (span && item.dataset.originalText) {
+                span.innerText = item.dataset.originalText;
+              }
+              anyAvailable = true;
+              if (!firstAvailableItem) firstAvailableItem = item;
+            }
+
+            item.classList.remove("is-disabled");
+          });
 
           // If base is NOT available, and user hasn't selected a logo, we should auto-select an available best-selling variant
           const hasLogo = this.logoInput && this.logoInput.value.trim() !== "";
