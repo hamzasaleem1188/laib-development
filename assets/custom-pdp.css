@@ -282,11 +282,153 @@
 
 .custom-pdp-right variant-selects,
 .custom-pdp-right .product-form__input,
-.custom-pdp-right .product-form,
+.custom-pdp-right .product-form {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 .custom-pdp-right .product-form__buttons {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 0.8rem !important;
+}
+
+/* Every button (Add to cart, Add to wishlist, Buy it now) stacks full width */
+.custom-pdp-right .product-form__buttons>*:not([type="hidden"]):not(template) {
+  width: 100% !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  text-align: center;
+}
+
+/* Remove any injected padding from Wishlist app wrappers to fix the gap */
+.custom-pdp-right .product-form__buttons>div,
+.custom-pdp-right .product-form__buttons>span {
+  padding: 0 !important;
+}
+
+/* When the Wishlist app wraps its button in a div/span/anchor,
+   make the inner clickable element fill the full width too so it
+   aligns with Add to cart and Buy it now. */
+.custom-pdp-right .product-form__buttons>div>button,
+.custom-pdp-right .product-form__buttons>div>a,
+.custom-pdp-right .product-form__buttons>span>button,
+.custom-pdp-right .product-form__buttons>span>a {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* If the wishlist app groups its button and Buy it now into a flex-row
+   wrapper, force that wrapper to stack vertically (full-width column)
+   so they never sit side-by-side on a single row. */
+.custom-pdp-right .product-form__buttons>div {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 0.8rem !important;
+  width: 100% !important;
+}
+
+/* Nesting-agnostic: whatever element directly contains the Buy it now
+   button (or a wishlist button) is forced to a full-width vertical stack,
+   no matter its class or how deeply the app nested it. */
+.custom-pdp-right .product-form__buttons :has(> .custom-buy-now-btn),
+.custom-pdp-right .product-form__buttons :has(> [class*="wishlist"]),
+.custom-pdp-right .product-form__buttons :has(> [id*="wishlist"]) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 0.8rem !important;
+  width: 100% !important;
+}
+
+/* Buy it now spans full width, matching the Add to cart button. */
+.custom-pdp-right .product-form__buttons .custom-buy-now-btn {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 0 0 auto !important;
+  box-sizing: border-box !important;
+}
+
+/* ── Inline "Add to wishlist" button (injected by the wishlist app) ──────
+   Only the OUTERMOST wishlist element (direct child of product-form__buttons)
+   takes the full button width. */
+.custom-pdp-right .product-form__buttons > [class*="wishlist"],
+.custom-pdp-right .product-form__buttons > [id*="wishlist"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 0 0 auto !important;
+  box-sizing: border-box !important;
+  min-height: 4.4rem !important;
+  height: auto !important;
+}
+
+/* The interactive wishlist element AND any wishlist wrapper at any depth are
+   laid out as a centered single row (icon + label on one line). Applied at any
+   depth because the real button is often nested inside a wrapper. */
+.custom-pdp-right .product-form__buttons [class*="wishlist"],
+.custom-pdp-right .product-form__buttons [id*="wishlist"] {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.6rem !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+/* Neutralize app positioning so the icon flows inline next to the label. */
+.custom-pdp-right .product-form__buttons [class*="wishlist"] *,
+.custom-pdp-right .product-form__buttons [id*="wishlist"] * {
+  position: static !important;
+  float: none !important;
+  inset: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  top: auto !important;
+  left: auto !important;
+  vertical-align: middle !important;
+}
+
+/* Force the inner clickable element (button/a/div) that actually holds the
+   icon + label to be a horizontal centered row, even if it has no
+   wishlist class of its own. */
+.custom-pdp-right .product-form__buttons [class*="wishlist"] a,
+.custom-pdp-right .product-form__buttons [class*="wishlist"] button,
+.custom-pdp-right .product-form__buttons [class*="wishlist"] > div,
+.custom-pdp-right .product-form__buttons [id*="wishlist"] a,
+.custom-pdp-right .product-form__buttons [id*="wishlist"] button,
+.custom-pdp-right .product-form__buttons [id*="wishlist"] > div {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.6rem !important;
+  width: 100% !important;
+  height: 100% !important;
+  white-space: nowrap !important;
+}
+
+/* Small heart icon, never balloons */
+.custom-pdp-right .product-form__buttons [class*="wishlist"] svg,
+.custom-pdp-right .product-form__buttons [id*="wishlist"] svg {
+  width: 18px !important;
+  height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  flex-shrink: 0 !important;
+  align-self: center !important;
 }
 
 /* Customizer Cards Wrapper */
@@ -314,7 +456,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #f5f5f5;
+  background-color: #c99c52;
   color: #111;
   padding: 1.6rem 2rem;
   border-radius: 12px;
@@ -475,7 +617,7 @@
 .card-icon {
   width: 48px;
   height: 48px;
-  background: #f5f5f5;
+  background: #c99c52;
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -575,20 +717,29 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-  background: #111;
+  background: transparent;
+  border: 1px solid #ddd;
   color: #fff;
   border-radius: 50%;
-  opacity: 0.15;
-  transition: opacity 0.25s, transform 0.25s;
+  transition: all 0.25s ease;
   transform: scale(1);
 }
 
+.card-checkmark svg {
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s ease;
+}
+
 .card-accordion-icon {
-  margin-left: auto;
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
   transition: transform 0.3s ease;
-  color: #999;
+  opacity: 0.6;
 }
 
 .custom-pdp-card.is-open .card-accordion-icon {
@@ -596,12 +747,26 @@
 }
 
 .is-black-gold .card-checkmark {
-  background: #c99c52;
+  border-color: rgba(201, 156, 82, 0.4);
   color: #111;
 }
 
 .card-checkmark.is-visible {
-  opacity: 1;
+  background: #111;
+  border-color: #111;
+  color: #fff;
+}
+
+.is-black-gold .card-checkmark.is-visible {
+  background: #c99c52 !important;
+  border-color: #c99c52 !important;
+  color: #111 !important;
+}
+
+.card-checkmark.is-visible svg {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+  stroke: currentColor !important;
 }
 
 /* Card Inputs */
@@ -821,7 +986,7 @@
 }
 
 .is-black-gold .summary-row {
-  color: #f5f5f5;
+  color: #c99c52;
 }
 
 .summary-label span {
@@ -856,14 +1021,17 @@
     left: 0;
     width: 100%;
     background-color: #fff;
-    z-index: 999;
-    padding: 0.5rem 0.8rem 0.8rem;
-    padding-bottom: calc(0.3rem + env(safe-area-inset-bottom));
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    z-index: 10;
+    /* Lowered from 10001 to allow Wishlist drawer to sit on top */
+    padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.12);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
   }
 
   .is-black-gold .custom-pdp-sticky-bottom {
     background-color: #1a1a1a;
+    border-top-color: rgba(201, 156, 82, 0.2);
+    box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -873,7 +1041,7 @@
     top: 4rem;
     align-self: start;
     height: max-content;
-    z-index: 10;
+    z-index: 1;
   }
 
   .custom-pdp-sticky-bottom {
@@ -938,7 +1106,7 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  height: 100%;
+  min-height: 1.2em;
 }
 
 .price-calculating-loader span {
@@ -980,16 +1148,17 @@
 
 .custom-pdp-sticky-bottom .custom-pdp-add-btn,
 .custom-pdp-sticky-bottom .product-form__submit,
+.custom-pdp-sticky-bottom .custom-buy-now-btn,
 .custom-pdp-sticky-bottom .shopify-payment-button__button,
 .custom-pdp-sticky-bottom .shopify-payment-button__button--unbranded {
-  height: 3.6rem !important;
-  font-size: 1rem !important;
+  height: 3.2rem !important;
+  font-size: 0.95rem !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: 1px !important;
   border-radius: 8px !important;
   border: none !important;
-  min-height: 3.6rem !important;
+  min-height: 3.2rem !important;
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   flex: 1;
@@ -1021,6 +1190,7 @@
   transform: scale(0.98) !important;
 }
 
+.custom-pdp-sticky-bottom .custom-buy-now-btn,
 .custom-pdp-sticky-bottom .shopify-payment-button__button,
 .custom-pdp-sticky-bottom .shopify-payment-button__button--unbranded {
   background-color: #c99c52 !important;
@@ -1229,8 +1399,7 @@
   letter-spacing: 1px;
 }
 
-.custom-pdp-customizer [data-custom-total-price-wrapper],
-.custom-pdp-customizer .giftbox-checkbox-wrapper {
+.custom-pdp-customizer [data-custom-total-price-wrapper] {
   display: none !important;
 }
 
@@ -1402,6 +1571,7 @@
 
   .custom-pdp-sticky-bottom .custom-pdp-add-btn,
   .custom-pdp-sticky-bottom .product-form__submit,
+  .custom-pdp-sticky-bottom .custom-buy-now-btn,
   .custom-pdp-sticky-bottom .shopify-payment-button__button,
   .custom-pdp-sticky-bottom .shopify-payment-button__button--unbranded {
     height: 5.6rem !important;
@@ -1410,30 +1580,38 @@
   }
 }
 
-/* Out of Stock visual indicators for customizer */
+/* Out of Stock visual indicator for customizer dropdown options.
+   Unavailable options are marked with a " - Unavailable" text suffix in JS
+   (like the native variant picker), so we only dim them here — no strikethrough. */
 .logo-item.is-disabled,
 .personalization-dropdown-content-inner .item.is-disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   pointer-events: none;
-  position: relative;
-  filter: grayscale(100%);
 }
 
-.logo-item.is-disabled::after,
-.personalization-dropdown-content-inner .item.is-disabled::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 10%;
-  width: 80%;
-  height: 2px;
-  background-color: #ff0000;
-  transform: rotate(-45deg);
-  z-index: 10;
-  opacity: 0.7;
+
+
+/* Disabled state for Buy it Now */
+.custom-buy-now-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
-/* Buy it now button hide animation */
+/* Buy it now button hide animation and gold styles */
+.custom-buy-now-btn-gold {
+  background-color: #c99c52 !important;
+  color: #111 !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(201, 156, 82, 0.3) !important;
+  border-radius: 8px !important;
+}
+
+.custom-buy-now-btn-gold:hover {
+  background-color: #b58943 !important;
+  color: #fff !important;
+}
+
 .custom-buy-now-btn {
   transition: all 0.3s ease-in-out !important;
   overflow: hidden;
@@ -1449,4 +1627,174 @@
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   border-width: 0 !important;
+}
+
+@media screen and (max-width: 749px) {
+
+  /* Reduce summary box spacing and text sizes */
+  .custom-pdp-summary-box {
+    padding: 1.2rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .custom-pdp-summary-item {
+    font-size: 1.2rem !important;
+    margin-bottom: 0.6rem !important;
+  }
+
+  .custom-pdp-summary-total {
+    font-size: 1.4rem !important;
+    padding-top: 1rem !important;
+    margin-top: 1rem !important;
+  }
+
+  /* Content-area (non-sticky) add-to-cart button height on mobile */
+  .custom-pdp-buy-buttons .product-form__submit {
+    height: 4.8rem !important;
+    min-height: 4.8rem !important;
+    font-size: 1.3rem !important;
+  }
+
+  /* Sticky bar: 2-row layout — Add to Cart + Buy it Now side-by-side, Wishlist full width below */
+  .custom-pdp-sticky-bottom .product-form__buttons {
+    flex-wrap: wrap !important;
+    flex-direction: row !important;
+    align-items: stretch;
+    gap: 0.5rem !important;
+  }
+
+  /* Row 1 Left: Add to Cart */
+  .custom-pdp-sticky-bottom .product-form__buttons .product-form__submit {
+    order: 1;
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: 3.2rem !important;
+    min-height: 3.2rem !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Row 1 Right: Buy it Now */
+  .custom-pdp-sticky-bottom .product-form__buttons .custom-buy-now-btn {
+    order: 2;
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: 3.2rem !important;
+    min-height: 3.2rem !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Row 2: app-injected wishlist element (direct button OR wrapper div) */
+  .custom-pdp-sticky-bottom .product-form__buttons > *:not(.product-form__submit):not(.custom-buy-now-btn):not([type="hidden"]):not(template) {
+    order: 3;
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    height: 3.2rem !important;
+    min-height: 3.2rem !important;
+    box-sizing: border-box !important;
+    /* Visual */
+    border-radius: 8px !important;
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.55) !important;
+    overflow: hidden !important;
+    /* Text — applies when the element itself IS the button */
+    color: #fff !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.4px !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    /* Layout for icon + text */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.35rem !important;
+    padding: 0 0.6rem !important;
+    cursor: pointer !important;
+  }
+
+  /* When the app wraps the button in a div — reset the inner button so it fills the wrapper */
+  .custom-pdp-sticky-bottom .product-form__buttons>*:not(.product-form__submit):not(.custom-buy-now-btn):not([type="hidden"]):not(template)>button,
+  .custom-pdp-sticky-bottom .product-form__buttons>*:not(.product-form__submit):not(.custom-buy-now-btn):not([type="hidden"]):not(template)>a {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: transparent !important;
+    border: none !important;
+    color: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    letter-spacing: inherit !important;
+    text-transform: inherit !important;
+    white-space: inherit !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.35rem !important;
+    padding: 0 !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
+  }
+
+  /* SVG icon size for both cases */
+  .custom-pdp-sticky-bottom .product-form__buttons>*:not(.product-form__submit):not(.custom-buy-now-btn):not([type="hidden"]):not(template) svg {
+    flex-shrink: 0 !important;
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  /* Dark (is-black-gold) theme */
+  .is-black-gold .custom-pdp-sticky-bottom .product-form__buttons>*:not(.product-form__submit):not(.custom-buy-now-btn):not([type="hidden"]):not(template) {
+    border-color: rgba(201, 156, 82, 0.6) !important;
+    color: #c99c52 !important;
+  }
+}
+/* Override colors for third party apps (like viewer count or recently purchased) on dark theme */
+.is-black-gold .custom-pdp-right .shopify-app-block {
+  color: #c99c52;
+}
+
+.is-black-gold .custom-pdp-right p,
+.is-black-gold .custom-pdp-right span,
+.is-black-gold .custom-pdp-right div {
+  color: inherit;
+}
+
+
+.is-black-gold .custom-pdp-right {
+  color: #c99c52;
+}
+
+/* Force app-injected widgets like "1 person viewing" to be white */
+.is-black-gold .custom-pdp-right .product-form__buttons ~ div {
+  color: #c99c52 !important;
+}
+.is-black-gold .custom-pdp-right .product-form__buttons ~ div * {
+  color: #c99c52 !important;
+}
+
+
+
+.custom-pdp-wishlist-pushed {
+  bottom: var(--custom-wishlist-offset) !important;
+  transition: bottom 0.2s ease !important;
+}
+
+/* Card-Giftbox is the giftbox UI for custom_pdp products.
+   Hide the duplicate buy-buttons giftbox wrapper and price breakdown — the custom PDP
+   has its own summary card and price display via updateCustomPDPSummaryAndCheckmarks. */
+.custom-pdp-container .giftbox-checkbox-wrapper {
+  display: none !important;
+}
+.custom-pdp-container [data-custom-total-price-wrapper] {
+  display: none !important;
+}
+
+/* Hide gallery nav arrows instantly when search modal is open */
+body.search-is-open .slider-nav-btn,
+body:has(details[open] > .search-modal) .slider-nav-btn {
+  display: none !important;
+  transition: none !important;
 }

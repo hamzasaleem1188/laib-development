@@ -101,73 +101,6 @@
         "padding_bottom": 12
       }
     },
-    "social_videos_trXNLz": {
-      "type": "social-videos",
-      "blocks": {
-        "video_HBegAb": {
-          "type": "video",
-          "settings": {
-            "video_url": "https://www.tiktok.com/@laib__/video/7647608162161265942?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
-            "duration": "",
-            "alt_text": ""
-          }
-        },
-        "video_QMHjwm": {
-          "type": "video",
-          "settings": {
-            "video_url": "https://www.tiktok.com/@laib__/video/7647906805720386838?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
-            "duration": "",
-            "alt_text": ""
-          }
-        },
-        "video_Gy6aHc": {
-          "type": "video",
-          "settings": {
-            "video_url": "https://www.tiktok.com/@laib__/video/7649734691557395734?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
-            "duration": "",
-            "alt_text": ""
-          }
-        },
-        "video_34rMd8": {
-          "type": "video",
-          "settings": {
-            "video_url": "https://www.tiktok.com/@laib__/video/7385304160524176673?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
-            "duration": "",
-            "alt_text": ""
-          }
-        },
-        "video_C4ghmy": {
-          "type": "video",
-          "settings": {
-            "video_url": "https://www.tiktok.com/@laib__/video/7363765766639947041?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
-            "duration": "",
-            "alt_text": ""
-          }
-        },
-        "video_TaEYYg": {
-          "type": "video",
-          "settings": {
-            "video_url": "https://www.tiktok.com/@laib__/video/7650080549423402262?is_from_webapp=1&sender_device=pc&web_id=7650447082654221844",
-            "duration": "",
-            "alt_text": ""
-          }
-        }
-      },
-      "block_order": [
-        "video_HBegAb",
-        "video_QMHjwm",
-        "video_Gy6aHc",
-        "video_34rMd8",
-        "video_C4ghmy",
-        "video_TaEYYg"
-      ],
-      "name": "Social Videos",
-      "settings": {
-        "title": "AS SEEN ON TIKTOK",
-        "view_more_text": "View more",
-        "view_more_url": ""
-      }
-    },
     "related-products": {
       "type": "related-products",
       "settings": {
@@ -189,7 +122,6 @@
   },
   "order": [
     "main",
-    "social_videos_trXNLz",
     "related-products"
   ]
 }

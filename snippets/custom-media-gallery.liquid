@@ -34,6 +34,8 @@
     ];
   </script>
   <style>
+    /* Times-like Arabic serif fallback for personalization preview text */
+    @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
     :root {
       --print-color: {{ print_color }};
     }
@@ -292,6 +294,7 @@
     @media screen and (min-width: 1025px) {
       #PreviewName {
         font-size: 4.5rem;
+        margin-bottom: 4.5rem;
       }
       #PreviewName[data-char-count='5'],
       #PreviewName[data-char-count='6'] {
@@ -318,6 +321,7 @@
     @media screen and (min-width: 481px) and (max-width: 1024px) {
       #PreviewName {
         font-size: 3.3rem;
+        margin-bottom: 3.5rem;
       }
       #PreviewName[data-char-count='5'] {
         font-size: 3rem;
@@ -355,6 +359,7 @@
 
       #PreviewName {
         font-size: 3.5rem;
+        margin-bottom: 2.5rem;
       }
       #PreviewName[data-char-count='4'] {
         font-size: 3.5rem;
@@ -374,6 +379,37 @@
         font-size: 2.3rem;
       }
     }
+    body.search-is-open .slider-nav-btn,
+    body:has(details[open] > .search-modal) .slider-nav-btn {
+      display: none !important;
+      transition: none !important;
+    }
+
+    /* Extended sizing for 13–15 character personalization (limit raised to 15) */
+    @media screen and (min-width: 1025px) {
+      #PreviewCountryName[data-char-count='13'], #PreviewCountryName[data-char-count='14'], #PreviewCountryName[data-char-count='15'], #PreviewLogoLabel[data-char-count='13'], #PreviewLogoLabel[data-char-count='14'], #PreviewLogoLabel[data-char-count='15'] { font-size: 3rem !important; }
+      #PreviewName[data-char-count='11'], #PreviewName[data-char-count='12'] { font-size: 3.5rem !important; }
+      #PreviewName[data-char-count='13'], #PreviewName[data-char-count='14'], #PreviewName[data-char-count='15'] { font-size: 3rem !important; }
+    }
+    @media screen and (min-width: 481px) and (max-width: 1024px) {
+      #PreviewCountryName[data-char-count='13'], #PreviewCountryName[data-char-count='14'], #PreviewCountryName[data-char-count='15'], #PreviewLogoLabel[data-char-count='13'], #PreviewLogoLabel[data-char-count='14'], #PreviewLogoLabel[data-char-count='15'] { font-size: 2rem !important; }
+      #PreviewName[data-char-count='11'], #PreviewName[data-char-count='12'] { font-size: 2rem !important; }
+      #PreviewName[data-char-count='13'], #PreviewName[data-char-count='14'], #PreviewName[data-char-count='15'] { font-size: 1.8rem !important; }
+    }
+    @media screen and (max-width: 480px) {
+      #PreviewCountryName[data-char-count='13'], #PreviewCountryName[data-char-count='14'], #PreviewCountryName[data-char-count='15'], #PreviewLogoLabel[data-char-count='13'], #PreviewLogoLabel[data-char-count='14'], #PreviewLogoLabel[data-char-count='15'] { font-size: 1.4rem !important; }
+      #PreviewName[data-char-count='11'], #PreviewName[data-char-count='12'] { font-size: 1.6rem !important; }
+      #PreviewName[data-char-count='13'], #PreviewName[data-char-count='14'], #PreviewName[data-char-count='15'] { font-size: 1.4rem !important; }
+    }
+    
+    {% if template.suffix == 'black-gold' %}
+    /* Black Gold Template Overrides: image is physically narrower/shorter, so text needs narrower boundaries */
+    #PreviewLogoLabelContainer,
+    #PreviewCountryNameContainer {
+      left: 38% !important;
+      right: 36% !important;
+    }
+    {% endif %}
   </style>
 
   <div class="custom-media-images" style="width: 100%; max-width: 650px; margin: 0 auto; position: relative;">
@@ -415,7 +451,7 @@
         </div>
         <div
           id="PreviewLogoLabelContainer"
-          style="position: absolute; top: 33%; left: 19%; right: 16%; pointer-events: none; display: none; text-align: center;"
+          style="position: absolute; top: 33%; left: 11%; right: 9%; pointer-events: none; display: none; text-align: center;"
         >
           <span
             id="PreviewLogoLabel"
@@ -424,7 +460,7 @@
         </div>
         <div
           id="PreviewCountryNameContainer"
-          style="position: absolute; top: 33%; left: 19%; right: 16%; pointer-events: none; display: none; text-align: center;"
+          style="position: absolute; top: 33%; left: 11%; right: 9%; pointer-events: none; display: none; text-align: center;"
         >
           <span
             id="PreviewCountryName"
@@ -450,7 +486,7 @@
           <div style="position: absolute; top: 20%; left: 0; right: 0; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
             <span
               id="PreviewName"
-              style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; letter-spacing: 0.5px; line-height: 1; margin-top: 0.5rem; margin-bottom: 2rem;"
+              style="font-weight: normal; font-family: 'Vogue'; text-transform: uppercase; color: {{ print_color }}; letter-spacing: 0.5px; line-height: 1; margin-top: 0.5rem;"
             ></span>
             <span
               id="PreviewNumber"
@@ -613,6 +649,20 @@
       
       // Auto-init to 0
       window.goToSlide(0);
+
+      // Hide nav arrows when search modal is open
+      var searchDetails = document.querySelectorAll('details-modal details');
+      if (searchDetails.length) {
+        var searchObserver = new MutationObserver(function() {
+          var isOpen = Array.prototype.some.call(searchDetails, function(d) {
+            return d.hasAttribute('open');
+          });
+          document.body.classList.toggle('search-is-open', isOpen);
+        });
+        searchDetails.forEach(function(d) {
+          searchObserver.observe(d, { attributes: true, attributeFilter: ['open'] });
+        });
+      }
     });
   </script>
 </div>

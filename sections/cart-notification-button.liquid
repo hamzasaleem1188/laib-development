@@ -1,1 +1,14 @@
-{{ 'general.cart.view' | t: count: cart.item_count }}
+{%- assign visible_item_count = 0 -%}
+{%- assign seen_bundles = '' -%}
+{%- for item in cart.items -%}
+  {%- if item.properties._bundle_id != blank -%}
+    {%- assign bundle_id_str = item.properties._bundle_id | append: ',' -%}
+    {%- unless seen_bundles contains bundle_id_str -%}
+      {%- assign visible_item_count = visible_item_count | plus: item.quantity -%}
+      {%- assign seen_bundles = seen_bundles | append: bundle_id_str -%}
+    {%- endunless -%}
+  {%- else -%}
+    {%- assign visible_item_count = visible_item_count | plus: item.quantity -%}
+  {%- endif -%}
+{%- endfor -%}
+{{ 'general.cart.view' | t: count: visible_item_count }}

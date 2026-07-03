@@ -1,23 +1,7 @@
 {% layout none %}
 {%- liquid
-  assign search_id = search.terms | plus: 0
-  assign found_product = nil
-  
-  for item in search.results
-    if item.id == search_id
-      assign found_product = item
-      break
-    endif
-  endfor
-  
-  if found_product == nil
-    for item in collections.all.products
-      if item.id == search_id
-        assign found_product = item
-        break
-      endif
-    endfor
-  endif
+  assign search_handle = search.terms | escape
+  assign found_product = all_products[search_handle]
 -%}
 {%- if found_product != blank -%}
 {
@@ -44,6 +28,6 @@
 {%- else -%}
 {
   "error": "Product not found",
-  "searched_id": {{ search_id }}
+  "searched_handle": {{ search_handle | json }}
 }
 {%- endif -%}
