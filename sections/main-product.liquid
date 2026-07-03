@@ -764,7 +764,7 @@
                             placeholder="Enter nationality or city"
                             data-logo-text-url-input
                             form="{{ product_form_id }}"
-                            maxlength="12"
+                            maxlength="15"
                             style="border-radius: 4px; margin: 0;"
                           >
                           <label class="field__label" for="CustomNationalityInput-{{ section.id }}"
@@ -776,7 +776,7 @@
                             class="field__counter"
                             data-nationality-counter
                             style="font-size: 1.1rem; opacity: 0.6;"
-                            >0/12</small
+                            >0/15</small
                           >
                         </div>
                       {%- endif -%}
@@ -804,8 +804,8 @@
                                 type="text"
                                 id="CustomNameInput-{{ section.id }}"
                                 name="properties[Name]"
-                                placeholder="Name (Max 10)"
-                                maxlength="10"
+                                placeholder="Name (Max 15)"
+                                maxlength="15"
                                 data-name-input
                                 form="{{ product_form_id }}"
                                 style="border-radius: 4px; margin: 0;"
@@ -814,7 +814,7 @@
                                 class="field__label"
                                 for="CustomNameInput-{{ section.id }}"
                                 style="white-space: nowrap; max-width: calc(100% - 2rem); overflow: hidden; text-overflow: ellipsis;"
-                                >Name (Max 10)</label
+                                >Name (Max 15)</label
                               >
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -829,7 +829,7 @@
                                 class="field__counter"
                                 data-name-counter
                                 style="margin-left: auto; font-size: 1.1rem; opacity: 0.6;"
-                                >0/10</small
+                                >0/15</small
                               >
                             </div>
                           </div>
@@ -1292,16 +1292,35 @@
   </div>
 </product-info>
 
-{%- assign has_giftbox_tag = false -%}
-{%- if product.tags contains 'add_gift_product' -%}
-  {%- assign has_giftbox_tag = true -%}
-{%- endif -%}
-{%- if has_giftbox_tag and product.metafields.global.add_gift_product != blank -%}
+{%- liquid
+  assign giftbox_meta = product.metafields.global.add_gift_product
+  assign gift_product_obj = giftbox_meta.value
+
+  if gift_product_obj.first
+    assign gift_product_obj = gift_product_obj.first
+  endif
+
+  if gift_product_obj == blank and giftbox_meta != blank
+    assign gift_product_obj = all_products[giftbox_meta]
+  endif
+
+  # Fallback to default gift box product handle
+  if gift_product_obj == blank
+    assign default_gift_handle = 'laib-limited-gift-box'
+    assign gift_product_obj = all_products[default_gift_handle]
+  endif
+
+  assign has_giftbox = false
+  if gift_product_obj != blank and gift_product_obj.handle != product.handle and gift_product_obj.available
+    assign has_giftbox = true
+  endif
+-%}
+{%- if has_giftbox -%}
   <div
     id="GiftBoxModal-{{ section.id }}"
     class="custom-modal giftbox-modal"
     style="display: none;"
-    data-gift-product-id="{{ product.metafields.global.add_gift_product }}"
+    data-gift-product-id="{{ gift_product_obj.id }}"
   >
     <div class="custom-modal__content" style="max-width: 500px; padding: 30px 20px 20px;">
       <button type="button" class="custom-modal__close" data-modal-close>&times;</button>

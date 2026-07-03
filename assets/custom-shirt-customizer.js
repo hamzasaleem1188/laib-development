@@ -41,7 +41,7 @@ if (!customElements.get("custom-shirt-customizer")) {
           "[data-logo-text-url-input]",
         );
         this.nationalityCityCounter = this.querySelector(
-          "[data-nationality-counter]",
+          "[data-nationality-counter], [data-nationality-city-counter]",
         );
 
         this.updateClearButtons();
@@ -109,7 +109,7 @@ if (!customElements.get("custom-shirt-customizer")) {
               try {
                 const formatted = window.Shopify.formatMoney(cents);
                 if (formatted && formatted !== `${cents}`) return formatted;
-              } catch (e) {}
+              } catch (e) { }
             }
             return new Intl.NumberFormat(
               document.documentElement.lang || "sv-SE",
@@ -189,7 +189,7 @@ if (!customElements.get("custom-shirt-customizer")) {
                 try {
                   const formatted = window.Shopify.formatMoney(cents);
                   if (formatted && formatted !== `${cents}`) return formatted;
-                } catch (e) {}
+                } catch (e) { }
               }
               return new Intl.NumberFormat(
                 document.documentElement.lang || "sv-SE",
@@ -464,7 +464,8 @@ if (!customElements.get("custom-shirt-customizer")) {
               if (this.nationalityCityInput.value !== clean)
                 this.nationalityCityInput.value = clean;
               updateCustomPDPSummaryAndCheckmarks();
-              if (clean.trim()) pdpScrollFront();
+              // Scroll is handled by the sanitized-field listener, which only
+              // fires when a valid character was actually entered.
             });
           }
           if (this.nameInput) {
@@ -472,7 +473,6 @@ if (!customElements.get("custom-shirt-customizer")) {
               const clean = this.nameInput.value.replace(/[0-9]/g, "");
               if (this.nameInput.value !== clean) this.nameInput.value = clean;
               updateCustomPDPSummaryAndCheckmarks();
-              if (clean.trim()) pdpScrollBack();
             });
           }
           if (this.numberInput) {
@@ -481,7 +481,6 @@ if (!customElements.get("custom-shirt-customizer")) {
               if (this.numberInput.value !== clean)
                 this.numberInput.value = clean;
               updateCustomPDPSummaryAndCheckmarks();
-              if (clean.trim()) pdpScrollBack();
             });
           }
 
@@ -555,7 +554,7 @@ if (!customElements.get("custom-shirt-customizer")) {
               try {
                 const formatted = window.Shopify.formatMoney(cents);
                 if (formatted && formatted !== `${cents}`) return formatted;
-              } catch (e) {}
+              } catch (e) { }
             }
             return new Intl.NumberFormat(
               document.documentElement.lang || "sv-SE",
@@ -836,17 +835,21 @@ if (!customElements.get("custom-shirt-customizer")) {
         }
 
         if (this.nationalityCityInput) {
-          this.bindSanitizedLetterField(this.nationalityCityInput, () => {
+          this.bindSanitizedLetterField(this.nationalityCityInput, (changed) => {
             if (this.nationalityCityCounter) {
-              this.nationalityCityCounter.innerText = `${this.nationalityCityInput.value.length}/12`;
+              this.nationalityCityCounter.innerText = `${this.nationalityCityInput.value.length}/15`;
             }
             this.updateLogoPreview(
               this.logoUrlInput?.value,
               this.nationalityCityInput.value,
             );
             // this.updateVariantOption(); removed
-            if (window.switchMedia) window.switchMedia("front");
-            this.debouncedScroll();
+            // Move/scroll to the preview whenever the text changes (added OR removed)
+            // so the user always sees the updated shirt — even with the keyboard open.
+            if (changed) {
+              if (window.switchMedia) window.switchMedia("front");
+              this.debouncedScroll();
+            }
           });
         }
 
@@ -862,23 +865,32 @@ if (!customElements.get("custom-shirt-customizer")) {
         }
 
         this.debouncedScroll = this.debounce(() => {
-          if (this.dataset.onlyCustomInputs === "true") return;
           if (window.innerWidth < 1024) {
             this.scrollToPreview();
           }
         }, 1000);
 
-        this.bindSanitizedLetterField(this.nameInput, () => {
+        this.bindSanitizedLetterField(this.nameInput, (changed) => {
           this.updatePreview();
-          if (window.switchMedia) window.switchMedia("back");
-          this.debouncedScroll();
-        });
-        if (this.numberInput)
-          this.numberInput.addEventListener("input", () => {
-            this.updatePreview();
+          // Scroll to the preview whenever the name changes (added OR removed).
+          if (changed) {
             if (window.switchMedia) window.switchMedia("back");
             this.debouncedScroll();
+          }
+        });
+        if (this.numberInput) {
+          let lastNumberLen = (this.numberInput.value || "").trim().length;
+          this.numberInput.addEventListener("input", () => {
+            this.updatePreview();
+            // Scroll when the number changes (a digit added OR removed).
+            const curLen = (this.numberInput.value || "").trim().length;
+            if (curLen !== lastNumberLen) {
+              if (window.switchMedia) window.switchMedia("back");
+              this.debouncedScroll();
+            }
+            lastNumberLen = curLen;
           });
+        }
 
         if (this.clearBtn)
           this.clearBtn.addEventListener("click", () => {
@@ -900,7 +912,7 @@ if (!customElements.get("custom-shirt-customizer")) {
             if (this.nationalityCityInput) {
               this.nationalityCityInput.value = "";
               if (this.nationalityCityCounter)
-                this.nationalityCityCounter.innerText = "0/12";
+                this.nationalityCityCounter.innerText = "0/15";
             }
             if (this.logoSelect) {
               const selectedDisplay = this.logoSelect.querySelector(
@@ -1479,6 +1491,8 @@ if (!customElements.get("custom-shirt-customizer")) {
         if (frontLogoLabel && labelText) {
           frontLogoLabel.innerText = labelText;
           frontLogoLabel.setAttribute("data-char-count", labelText.length);
+          this.applyArabicFont(frontLogoLabel, labelText);
+          this.fitPreviewText(frontLogoLabel);
           if (frontLogoLabelContainer)
             frontLogoLabelContainer.style.display = "block";
         } else if (frontLogoLabel) {
@@ -1567,7 +1581,7 @@ if (!customElements.get("custom-shirt-customizer")) {
           if (this.nationalityCityInput) {
             this.nationalityCityInput.value = "";
             if (this.nationalityCityCounter)
-              this.nationalityCityCounter.innerText = "0/12";
+              this.nationalityCityCounter.innerText = "0/15";
           }
           if (this.logoSelect) {
             const selectedDisplay = this.logoSelect.querySelector(
@@ -1617,7 +1631,7 @@ if (!customElements.get("custom-shirt-customizer")) {
         const previewNumber = document.getElementById("PreviewNumber");
 
         if (this.nameInput && this.nameCounter) {
-          this.nameCounter.innerText = `${this.nameInput.value.length}/10`;
+          this.nameCounter.innerText = `${this.nameInput.value.length}/15`;
         }
         if (this.numberInput && this.numberCounter) {
           this.numberCounter.innerText = `${this.numberInput.value.length}/2`;
@@ -1627,6 +1641,8 @@ if (!customElements.get("custom-shirt-customizer")) {
           const name = this.nameInput.value;
           previewName.innerText = name;
           previewName.setAttribute("data-char-count", name.length);
+          this.applyArabicFont(previewName, name);
+          this.fitPreviewText(previewName);
         }
         if (previewNumber && this.numberInput) {
           const num = this.numberInput.value;
@@ -1754,7 +1770,7 @@ if (!customElements.get("custom-shirt-customizer")) {
             try {
               const formatted = window.Shopify.formatMoney(cents);
               if (formatted && formatted !== `${cents}`) return formatted;
-            } catch (e) {}
+            } catch (e) { }
           }
           return new Intl.NumberFormat(
             document.documentElement.lang || "sv-SE",
@@ -1839,8 +1855,10 @@ if (!customElements.get("custom-shirt-customizer")) {
       // handleFormSubmit is no longer used, replaced by click listener on button
 
       /**
-       * Keeps personalization text to letters and spaces, but allows combining marks
-       * and spacing modifier symbols (e.g. ¨) so Swedish ä/ö/å work with dead keys and IME.
+       * Keeps personalization text to letters and spaces from any language
+       * (Latin, Swedish, Arabic, etc.), but allows combining marks and spacing
+       * modifier symbols (e.g. ¨) so dead keys and IME input work. Digits,
+       * punctuation and emoji are removed.
        */
       sanitizePersonalizationText(value) {
         return String(value)
@@ -1848,13 +1866,97 @@ if (!customElements.get("custom-shirt-customizer")) {
           .replace(/[^\p{L}\p{M}\p{Sk}\s]/gu, "");
       }
 
+      /**
+       * Applies Times New Roman to a preview element ONLY when its text contains
+       * Arabic characters. Any other language keeps its existing (CSS) font.
+       */
+      applyArabicFont(el, text) {
+        if (!el) return;
+        // Remember the element's original (non-Arabic) font once so we can restore it.
+        if (el.dataset.originalFont === undefined) {
+          el.dataset.originalFont = el.style.fontFamily || "";
+        }
+        // Arabic, Arabic Supplement, Extended-A, and Presentation Forms A/B.
+        const hasArabic =
+          /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/.test(
+            text || "",
+          );
+        if (hasArabic) {
+          // Times New Roman where available; Amiri (web font) is a Times-like
+          // Arabic serif fallback for devices that don't ship Times New Roman.
+          el.style.setProperty(
+            "font-family",
+            "'Times New Roman', 'Amiri', Times, serif",
+            "important",
+          );
+        } else {
+          // Restore the original font (e.g. 'Vogue') for non-Arabic languages.
+          el.style.setProperty("font-family", el.dataset.originalFont);
+        }
+      }
+
+      /**
+       * Shrinks a preview text element's font so it never exceeds the shirt
+       * artwork width. The per-char-count CSS still sets the "ideal" size (bigger
+       * for shorter text); this only scales DOWN when that size would overflow.
+       * Uses canvas measurement so it works even while the overlay is hidden.
+       */
+      fitPreviewText(el) {
+        if (!el) return;
+        // Reset to the CSS (char-count tier) size first.
+        el.style.removeProperty("font-size");
+        const raw = el.innerText || "";
+        if (!raw.trim()) return;
+
+        // Available width: the label's own container when laid out, otherwise
+        // estimate from the always-rendered shirt image.
+        const container = el.parentElement;
+        let avail = container ? container.clientWidth : 0;
+        if (!avail) {
+          const img =
+            this.querySelector(".custom-media-images") ||
+            document.querySelector(".custom-media-images");
+          if (img && img.clientWidth) {
+            // Both front and back labels span 80% of the image.
+            avail = img.clientWidth * 0.8;
+          }
+        }
+        if (!avail) return;
+
+        const cs = window.getComputedStyle(el);
+        let fontPx = parseFloat(cs.fontSize) || 16;
+        const text =
+          cs.textTransform === "uppercase" ? raw.toUpperCase() : raw;
+
+        this._measureCtx =
+          this._measureCtx ||
+          document.createElement("canvas").getContext("2d");
+        const ctx = this._measureCtx;
+        ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${fontPx}px ${cs.fontFamily}`;
+        let width = ctx.measureText(text).width;
+        const ls = parseFloat(cs.letterSpacing) || 0;
+        if (ls) width += ls * text.length;
+
+        const target = avail * 0.94; // small safety margin
+        if (width > target && width > 0) {
+          fontPx = Math.max(3, fontPx * (target / width));
+          el.style.setProperty("font-size", `${fontPx}px`, "important");
+        }
+      }
+
       bindSanitizedLetterField(inputEl, onAfterChange) {
         if (!inputEl) return;
         let composing = false;
+        let lastValue = this.sanitizePersonalizationText(inputEl.value || "");
         const apply = () => {
           const next = this.sanitizePersonalizationText(inputEl.value);
           if (next !== inputEl.value) inputEl.value = next;
-          onAfterChange();
+          // changed is true when the sanitized value actually changed — whether a
+          // valid character was added OR removed. If the user typed an unsupported
+          // character it gets stripped, the value is unchanged, and we do NOT scroll.
+          const changed = next !== lastValue;
+          lastValue = next;
+          onAfterChange(changed);
         };
         inputEl.addEventListener("compositionstart", () => {
           composing = true;

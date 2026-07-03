@@ -51,7 +51,7 @@ if (!customElements.get("product-form")) {
           true,
         ); // capturing phase to intercept Shopify listener
 
-        const giftboxId = this.getAttribute("data-giftbox-id");
+        const giftboxId = this.getAttribute("data-giftbox-handle");
         if (giftboxId) {
           this.fetchGiftboxPrice(giftboxId);
         }
@@ -311,7 +311,7 @@ if (!customElements.get("product-form")) {
                 this.renderCartOrRedirect(response);
               }
             } else {
-              const giftboxId = this.getAttribute("data-giftbox-id");
+              const giftboxId = this.getAttribute("data-giftbox-handle");
               const sectionId = this.getAttribute("data-section-id");
               const giftboxModal = document.getElementById(`GiftBoxModal-${sectionId}`);
 
